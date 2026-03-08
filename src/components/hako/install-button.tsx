@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { PlusSquare, Download } from 'lucide-react'
 
 // Modal component for iOS instructions
 function IOSInstallModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
       <div className="glass w-full max-w-sm rounded-[24px] p-6 relative overflow-hidden bg-black/80 border-purple-500/30">
         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-[40px] pointer-events-none" />
         
@@ -38,7 +41,8 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
           閉じる
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
