@@ -2,8 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { User, Loader2, Camera } from 'lucide-react'
-import { supabase } from '@/lib/supabase/client'
-import { updateUserAvatar } from '@/core/hako/actions'
+import { uploadAndUpdateUserAvatar } from '@/core/hako/actions'
 import { ImageCropperModal } from './image-cropper-modal'
 
 interface UserAvatarUploadProps {
@@ -40,23 +39,15 @@ export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' 
     setIsUploading(true)
 
     try {
-      // Use webp for cropped result
-      const fileExt = 'webp'
-      const fileName = `${hakoId}/${Math.random().toString(36).substring(2)}.${fileExt}`
+      const formData = new FormData()
+      // File needs a name for the server action
+      formData.append('file', croppedBlob, 'avatar.webp')
 
-      // Upload to existing hako-assets bucket
-      const { error: uploadError } = await supabase.storage
-        .from('hako-assets')
-        .upload(fileName, croppedBlob)
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('hako-assets')
-        .getPublicUrl(fileName)
-
-      // Update hako_members avatar_url via Server Action
-      await updateUserAvatar(hakoId, publicUrl)
+      const result = await uploadAndUpdateUserAvatar(hakoId, formData)
+      
+      if (!result.success) {
+        throw new Error('Upload failed')
+      }
 
     } catch (error) {
       console.error('Upload Error:', error)

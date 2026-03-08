@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Cropper from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/crop-image'
 import { X, Check } from 'lucide-react'
@@ -23,6 +24,12 @@ export function ImageCropperModal({ imageSrc, onCropComplete, onCancel }: ImageC
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -49,7 +56,9 @@ export function ImageCropperModal({ imageSrc, onCropComplete, onCancel }: ImageC
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-[200] flex flex-col bg-black/95 backdrop-blur-xl animate-fade-in">
       <div className="flex items-center justify-between p-4 z-10 glass border-b border-white/10">
         <button
@@ -102,7 +111,7 @@ export function ImageCropperModal({ imageSrc, onCropComplete, onCancel }: ImageC
         />
       </div>
 
-      <div className="p-8 z-10 glass border-t border-white/10">
+      <div className="p-8 pb-12 z-10 glass border-t border-white/10">
         <div className="max-w-md mx-auto flex items-center gap-4">
           <span className="text-sm font-bold text-gray-400 shrink-0">縮小</span>
           <input
@@ -120,6 +129,7 @@ export function ImageCropperModal({ imageSrc, onCropComplete, onCancel }: ImageC
           <span className="text-sm font-bold text-gray-400 shrink-0">拡大</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { AlertCircle, Loader2 } from 'lucide-react'
 
 interface LeaveHakoModalProps {
@@ -11,8 +12,14 @@ interface LeaveHakoModalProps {
 
 export function LeaveHakoModal({ isOpen, onClose, onConfirm }: LeaveHakoModalProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!isOpen || !mounted) return null
 
   const handleConfirm = async () => {
     setIsDeleting(true)
@@ -24,7 +31,7 @@ export function LeaveHakoModal({ isOpen, onClose, onConfirm }: LeaveHakoModalPro
     }
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         className="glass-card w-full max-w-sm p-6 rounded-3xl border border-red-500/20 shadow-2xl shadow-red-900/20 animate-in zoom-in-95 duration-200"
@@ -61,6 +68,7 @@ export function LeaveHakoModal({ isOpen, onClose, onConfirm }: LeaveHakoModalPro
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

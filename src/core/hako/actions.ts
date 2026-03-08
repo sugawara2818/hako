@@ -81,7 +81,7 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
   return { success: true }
 }
 
-// メンバーアバター更新
+// メンバーアバター更新 (URL直接指定)
 export async function updateUserAvatar(hakoId: string, avatarUrl: string | null) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -96,6 +96,46 @@ export async function updateUserAvatar(hakoId: string, avatarUrl: string | null)
   if (error) throw error
   revalidatePath(`/hako/${hakoId}`)
   return { success: true }
+}
+
+// メンバーアバター画像アップロードとDB更新 (FormData経由)
+export async function uploadAndUpdateUserAvatar(hakoId: string, formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const file = formData.get('file') as File
+  if (!file || file.size === 0) throw new Error('File is missing')
+  if (file.size > 5 * 1024 * 1024) throw new Error('File is too large')
+
+  const ext = (file.name.split('.').pop() || 'webp').toLowerCase()
+  const fileName = `${user.id}/avatar_${Date.now()}.${ext}`
+
+  // Ensure we use the existing functional bucket 'post-images' to bypass bucket creation issues
+  const { error: uploadError } = await supabase.storage
+    .from('post-images')
+    .upload(fileName, file, { contentType: file.type, upsert: true })
+
+  if (uploadError) {
+    console.error('Avatar upload error:', uploadError)
+    throw new Error('Failed to upload avatar image')
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('post-images')
+    .getPublicUrl(fileName)
+
+  // Update DB
+  const { error: dbError } = await supabase
+    .from('hako_members')
+    .update({ avatar_url: publicUrl })
+    .eq('hako_id', hakoId)
+    .eq('user_id', user.id)
+
+  if (dbError) throw dbError
+
+  revalidatePath(`/hako/${hakoId}`)
+  return { success: true, url: publicUrl }
 }
 
 // 箱の情報更新 (オーナー向け)
