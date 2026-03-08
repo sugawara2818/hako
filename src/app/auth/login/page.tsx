@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase/client'
 import { Blocks, ArrowRight, Loader2, LogIn } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')

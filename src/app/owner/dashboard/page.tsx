@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight } from 'lucide-react'
+import { signOut } from '@/core/auth/actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,7 +51,7 @@ export default async function OwnerDashboardPage() {
           <span className="font-bold tracking-tight">Hako Admin</span>
         </Link>
 
-        <form action="/auth/signout" method="post">
+        <form action={signOut}>
            <button type="submit" className="text-sm font-medium text-gray-400 hover:text-white flex items-center gap-2 transition-colors">
                <LogOut className="w-4 h-4" /> ログアウト
            </button>

@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Hash, Users, ShieldAlert, LogOut, Settings, AtSign, LayoutDashboard } from 'lucide-react'
+import { signOut } from '@/core/auth/actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,9 +89,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                  </Link>
                </>
             )}
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm text-left">
-                <LogOut className="w-4 h-4" /> ログアウト
-            </button>
+            <form action={signOut} className="w-full">
+                <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm text-left">
+                    <LogOut className="w-4 h-4" /> ログアウト
+                </button>
+            </form>
         </div>
       </aside>
 
@@ -113,9 +116,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                          </Link>
                      </>
                  )}
-                 <button className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
-                     <LogOut className="w-5 h-5" />
-                 </button>
+                 <form action={signOut}>
+                     <button type="submit" className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
+                         <LogOut className="w-5 h-5" />
+                     </button>
+                 </form>
              </div>
          </header>
 

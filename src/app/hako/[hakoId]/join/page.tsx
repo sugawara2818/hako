@@ -8,6 +8,8 @@ import { joinHako } from '@/core/hako/actions'
 import { ShieldCheck, Check, Loader2, CreditCard, Lock, Sparkles, AlertCircle } from 'lucide-react'
 import { use } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 export default function JoinHakoPage({ params }: { params: Promise<{ hakoId: string }> }) {
   const { hakoId } = use(params)
   const router = useRouter()
