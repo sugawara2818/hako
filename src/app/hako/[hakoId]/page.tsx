@@ -54,8 +54,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   const isOwner = member.role === 'owner'
   
   // 4. Fetch Timeline Posts
-  const { getTimelinePosts } = await import('@/core/timeline/actions')
-  const initialPosts = await getTimelinePosts(hakoId)
+  let initialPosts: any[] = []
+  try {
+    const { getTimelinePosts } = await import('@/core/timeline/actions')
+    initialPosts = await getTimelinePosts(hakoId)
+  } catch (err) {
+    console.error('Failed to fetch initial posts:', err)
+  }
 
   // 5. Import components
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
