@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { User, Loader2, Camera } from 'lucide-react'
 import { uploadAndUpdateUserAvatar } from '@/core/hako/actions'
 import { ImageCropperModal } from './image-cropper-modal'
@@ -13,9 +14,15 @@ interface UserAvatarUploadProps {
 }
 
 export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' }: UserAvatarUploadProps) {
+  const router = useRouter()
   const [isUploading, setIsUploading] = useState(false)
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null)
+  const [localAvatar, setLocalAvatar] = useState(avatarUrl)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setLocalAvatar(avatarUrl)
+  }, [avatarUrl])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -45,9 +52,12 @@ export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' 
 
       const result = await uploadAndUpdateUserAvatar(hakoId, formData)
       
-      if (!result.success) {
+      if (!result.success || !result.url) {
         throw new Error('Upload failed')
       }
+
+      setLocalAvatar(result.url)
+      router.refresh()
 
     } catch (error) {
       console.error('Upload Error:', error)
@@ -82,8 +92,8 @@ export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' 
             </div>
           ) : null}
           
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+          {localAvatar ? (
+            <img src={localAvatar} alt="User Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <User className="w-1/2 h-1/2 text-gray-400 group-hover:text-purple-400 transition-colors" />
