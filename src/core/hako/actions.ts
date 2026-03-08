@@ -46,3 +46,19 @@ export async function fetchHakoMembers(hakoId: string) {
   if (error) throw error
   return data
 }
+
+// メンバー退会
+export async function leaveHako(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase
+    .from('hako_members')
+    .delete()
+    .eq('hako_id', hakoId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+  return { success: true }
+}

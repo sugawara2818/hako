@@ -60,12 +60,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   const { getTimelinePosts } = await import('@/core/timeline/actions')
   const initialPosts = await getTimelinePosts(hakoId)
 
-  // 5. Import TimelineFeed and InstallButton
+  // 5. Import components
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
   const { InstallButton } = await import('@/components/hako/install-button')
+  const { UserMenu } = await import('@/components/hako/user-menu')
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex font-sans">
+    <div className="min-h-screen bg-[#050505] text-white flex font-sans overflow-hidden">
 
       {/* Dynamic Background Pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -79,41 +80,38 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
           <span className="font-bold truncate">{hako.name}</span>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto no-scrollbar">
-          <Link href={`/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-white font-medium">
-            <Hash className="w-5 h-5 text-purple-400" />
-            タイムライン
-          </Link>
-          <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-white/5 transition-colors font-medium">
-            <Users className="w-5 h-5" />
-            メンバー ({membersWithEmail?.length || 0})
-          </Link>
-          
-          <div className="pt-2">
+        <nav className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">メニュー</p>
+            <Link href={`/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold transition-all border border-white/5">
+              <Hash className="w-5 h-5 text-purple-400" />
+              タイムライン
+            </Link>
+            <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 transition-all font-bold">
+              <Users className="w-5 h-5" />
+              メンバー ({membersWithEmail?.length || 0})
+            </Link>
+          </div>
+
+          {isOwner && (
+            <div className="space-y-1">
+              <p className="px-4 text-[10px] font-black text-blue-500/50 uppercase tracking-widest mb-2">管理ツール</p>
+              <Link href="/owner/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-400/70 hover:text-blue-400 hover:bg-blue-500/10 transition-all font-bold">
+                  <LayoutDashboard className="w-5 h-5" /> 一覧へ戻る
+              </Link>
+              <Link href={`/owner/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-purple-400/70 hover:text-purple-400 hover:bg-purple-500/10 transition-all font-bold">
+                  <Settings className="w-5 h-5" /> 箱の設定
+              </Link>
+            </div>
+          )}
+
+          <div className="pt-4 px-2">
              <InstallButton variant="sidebar" />
           </div>
         </nav>
 
-        <div className="p-4 border-t border-white/5 space-y-2">
-            {isOwner ? (
-               <>
-                 <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors font-medium text-sm">
-                     <Home className="w-4 h-4" /> トップページへ
-                 </Link>
-                 <Link href="/owner/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl text-blue-400 hover:bg-blue-500/10 transition-colors font-medium text-sm">
-                     <LayoutDashboard className="w-4 h-4" /> 一覧へ戻る
-                 </Link>
-                 <Link href={`/owner/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-xl text-purple-400 hover:bg-purple-500/10 transition-colors font-medium text-sm">
-                     <Settings className="w-4 h-4" /> 管理画面へ
-                 </Link>
-               </>
-            ) : (
-                <form action={signOut} className="w-full">
-                    <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm text-left">
-                        <LogOut className="w-4 h-4" /> ログアウト
-                    </button>
-                </form>
-            )}
+        <div className="p-4 border-t border-white/5 bg-black/40">
+           <UserMenu email={user.email!} hakoId={hakoId} isOwner={isOwner} />
         </div>
       </aside>
 
@@ -125,30 +123,12 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm mr-3">H</div>
                  <span className="font-bold truncate max-w-[150px]">{hako.name}</span>
              </div>
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1">
                  <InstallButton variant="icon" />
-                 
-                 {isOwner ? (
-                     <>
-                         <Link href="/" className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
-                             <Home className="w-5 h-5" />
-                         </Link>
-                         <Link href="/owner/dashboard" className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-xl transition-colors">
-                             <LayoutDashboard className="w-5 h-5" />
-                         </Link>
-                         <Link href={`/owner/hako/${hakoId}`} className="p-2 text-purple-400 hover:bg-purple-500/10 rounded-xl transition-colors">
-                             <Settings className="w-5 h-5" />
-                         </Link>
-                     </>
-                 ) : (
-                     <form action={signOut}>
-                         <button type="submit" className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
-                             <LogOut className="w-5 h-5" />
-                         </button>
-                     </form>
-                 )}
+                 <div className="w-[1px] h-4 bg-white/10 mx-1" />
+                 <UserMenu email={user.email!} hakoId={hakoId} isOwner={isOwner} />
              </div>
-         </header>
+          </header>
 
          {/* Content */}
          <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
