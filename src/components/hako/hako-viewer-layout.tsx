@@ -21,6 +21,8 @@ interface HakoViewerLayoutProps {
   children: React.ReactNode
 }
 
+import { usePathname } from 'next/navigation'
+
 const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 320)
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful drag
@@ -28,13 +30,18 @@ const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful dra
 export function HakoViewerLayout({
   hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, features = ['timeline'], children
 }: HakoViewerLayoutProps) {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
   const [dragProgress, setDragProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   
+  const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
+  const isTimelineActive = pathname === `/hako/${hakoId}`
+  
   const touchStartX = useRef<number | null>(null)
   const touchX = useRef<number>(0)
+
   const lastProgress = useRef(0)
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -149,14 +156,28 @@ export function HakoViewerLayout({
           <div className="space-y-1">
             <p className="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">メニュー</p>
             {features.includes('timeline') && (
-              <Link href={`/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold transition-all border border-white/5">
-                <Hash className="w-5 h-5 text-purple-400" />
+              <Link 
+                href={`/hako/${hakoId}`} 
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${
+                  isTimelineActive 
+                    ? 'bg-white/10 text-white border border-white/5' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
                 タイムライン
               </Link>
             )}
             {features.includes('diary') && (
-              <Link href={`/hako/${hakoId}/diary`} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all font-bold">
-                <BookOpen className="w-5 h-5 text-blue-400" />
+              <Link 
+                href={`/hako/${hakoId}/diary`} 
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${
+                  isDiaryActive 
+                    ? 'bg-white/10 text-white border border-white/5' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
                 日記
               </Link>
             )}

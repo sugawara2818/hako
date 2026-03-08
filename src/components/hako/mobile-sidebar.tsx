@@ -5,7 +5,7 @@ import { Hash, LayoutDashboard, Settings, User, UserMinus, X, BookOpen } from 'l
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { getHakoGradient } from '@/lib/hako-utils'
 
 interface MobileSidebarProps {
@@ -26,6 +26,10 @@ export function MobileSidebar({
   hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, features = ['timeline'], onClose
 }: MobileSidebarProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  
+  const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
+  const isTimelineActive = pathname === `/hako/${hakoId}`
 
   const shownName = displayName || email.split('@')[0]
 
@@ -60,14 +64,30 @@ export function MobileSidebar({
         <div className="space-y-1">
           <p className="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">メニュー</p>
           {features.includes('timeline') && (
-            <Link href={`/hako/${hakoId}`} onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold border border-white/5">
-              <Hash className="w-5 h-5 text-purple-400" />
+            <Link 
+              href={`/hako/${hakoId}`} 
+              onClick={onClose} 
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border ${
+                isTimelineActive 
+                  ? 'bg-white/10 text-white border-white/5' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+              }`}
+            >
+              <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
               タイムライン
             </Link>
           )}
           {features.includes('diary') && (
-            <Link href={`/hako/${hakoId}/diary`} onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all font-bold">
-              <BookOpen className="w-5 h-5 text-blue-400" />
+            <Link 
+              href={`/hako/${hakoId}/diary`} 
+              onClick={onClose} 
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border ${
+                isDiaryActive 
+                  ? 'bg-white/10 text-white border-white/5' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+              }`}
+            >
+              <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
               日記
             </Link>
           )}
