@@ -81,11 +81,9 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     .from('hako_diaries')
     .select(`
       *,
-      profiles:user_id (display_name, avatar_url),
-      hako_members!left(display_name)
+      profiles:user_id (display_name, avatar_url)
     `)
     .eq('hako_id', hakoId)
-    .eq('hako_members.hako_id', hakoId)
     .order('diary_date', { ascending: false })
 
   // Filtering: Users can see their own private ones and public ones of others
@@ -101,8 +99,32 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     console.error('fetchDiaryEntries Error:', error)
     throw error
   }
+
+  // Separately fetch per-Hako display names from hako_members to avoid complex join crash
+  // Pattern borrowed from timeline actions
+  const displayNameMap: Record<string, string> = {}
+  try {
+    const { data: hakoMemberNames } = await supabase
+      .from('hako_members')
+      .select('user_id, display_name')
+      .eq('hako_id', hakoId)
+
+    if (hakoMemberNames) {
+      for (const m of hakoMemberNames) {
+        if (m.display_name) displayNameMap[m.user_id] = m.display_name
+      }
+    }
+  } catch (e) {
+    console.error('fetchHakoMemberNames Error:', e)
+  }
+
+  // Map display names into the data structure for the UI
+  const entriesWithNames = (data || []).map(entry => ({
+    ...entry,
+    hako_members: [{ display_name: displayNameMap[entry.user_id] || null }]
+  }))
   
-  return data
+  return entriesWithNames
 }
 
 export async function fetchDiaryStats(hakoId: string, year: number, month: number) {

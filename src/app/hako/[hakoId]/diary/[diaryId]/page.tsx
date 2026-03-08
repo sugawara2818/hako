@@ -19,20 +19,30 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
     supabase.from('hako_diaries')
       .select(`
         *,
-        profiles:user_id (avatar_url, display_name),
-        hako_members:user_id(display_name)
+        profiles:user_id (avatar_url, display_name)
       `)
       .eq('id', diaryId)
-      .eq('hako_members.hako_id', hakoId)
       .single()
   ])
 
   const { data: hako } = hakoResponse
   const { data: member } = memberResponse
-  const { count } = countResponse
-  const { data: diary } = diaryResponse
+  const { data: diaryData } = diaryResponse
 
-  if (!hako || !member || !diary) return notFound()
+  if (!hako || !member || !diaryData) return notFound()
+
+  // Separately fetch author's hako-specific name
+  const { data: authorMember } = await supabase
+    .from('hako_members')
+    .select('display_name')
+    .eq('hako_id', hakoId)
+    .eq('user_id', diaryData.user_id)
+    .maybeSingle()
+
+  const diary = {
+    ...diaryData,
+    hako_members: [{ display_name: authorMember?.display_name || null }]
+  }
 
   // Privacy check: If not public and not author, deny access
   if (!diary.is_public && diary.user_id !== user.id) {
@@ -47,7 +57,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
       iconColor={hako.icon_color || null}
       email={user.email || ''}
       isOwner={member.role === 'owner'}
-      memberCount={count || 1}
+      memberCount={countResponse.count || 1}
       displayName={member.display_name}
       features={hako.features || ['timeline']}
     >
