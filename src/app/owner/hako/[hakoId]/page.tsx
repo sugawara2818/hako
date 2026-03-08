@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Settings, Users, ArrowUpRight, Copy, Share2, Globe, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
+import { CopyInviteLink } from '@/components/hako/copy-invite-link'
 
 export default async function OwnerDashboardPage({
   params,
@@ -53,13 +54,13 @@ export default async function OwnerDashboardPage({
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
               {hako.name?.charAt(0) || 'H'}
             </div>
-            <span className="font-bold text-sm md:text-lg truncate">{hako.name}</span>
-            <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 shrink-0 hidden sm:inline-block">Owner</span>
+            <span className="font-bold text-sm md:text-lg truncate flex-1 min-w-0">{hako.name}</span>
+            <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 shrink-0 hidden sm:inline-block whitespace-nowrap">Owner</span>
           </div>
           <div className="flex items-center gap-2 md:gap-4 shrink-0 pl-2">
             <Link 
               href={`/hako/${hako.id}`}
-              className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-400 hover:text-white transition-colors whitespace-nowrap"
               target="_blank"
             >
               <span className="hidden sm:inline">箱を見る</span>
@@ -67,8 +68,8 @@ export default async function OwnerDashboardPage({
             </Link>
             <div className="h-4 w-[1px] bg-white/10 mx-0.5 md:mx-1" />
             <form action={signOut}>
-                <button type="submit" className="text-xs md:text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-1 md:gap-2 transition-colors" title="ログアウト">
-                    <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">ログアウト</span>
+                <button type="submit" className="text-xs md:text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap" title="ログアウト">
+                    <LogOut className="w-4 h-4 shrink-0" /> <span className="hidden sm:inline">ログアウト</span>
                 </button>
             </form>
           </div>
@@ -81,9 +82,9 @@ export default async function OwnerDashboardPage({
           <p className="text-sm md:text-base text-gray-400">箱の運営状況と各種設定を管理します。</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-6 min-w-0">
           {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
             
             {/* Stats Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -147,7 +148,7 @@ export default async function OwnerDashboardPage({
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="space-y-6 animate-fade-in min-w-0" style={{ animationDelay: '0.3s' }}>
             
             {/* Invite Card */}
             <div className="p-6 rounded-2xl border border-purple-500/20 bg-gradient-to-b from-purple-900/20 to-black relative overflow-hidden">
@@ -160,21 +161,7 @@ export default async function OwnerDashboardPage({
                 以下の専用リンクをSNS等でシェアして、あなたの箱にユーザーを招待しましょう。
               </p>
               
-              <div className="relative z-10 w-full">
-                <div className="bg-black/80 border border-white/10 rounded-xl p-3 flex items-center justify-between group w-full">
-                  <div className="flex-1 min-w-0 mr-3">
-                    <span className="text-sm text-gray-300 font-mono block truncate w-full">
-                      {joinLink}
-                    </span>
-                  </div>
-                  <button 
-                    className="p-2 bg-white/10 hover:bg-purple-500/50 hover:text-white rounded-lg transition-all text-gray-400 shrink-0"
-                    title="URLをコピー"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <CopyInviteLink joinLink={joinLink} />
             </div>
 
             {/* Quick Settings */}
