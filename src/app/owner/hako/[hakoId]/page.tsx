@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { Settings, Users, ArrowUpRight, Copy, Share2, Globe, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 import { CopyInviteLink } from '@/components/hako/copy-invite-link'
@@ -39,7 +40,11 @@ export default async function OwnerDashboardPage({
     .select('*', { count: 'exact', head: true })
     .eq('hako_id', hakoId)
 
-  const joinLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/hako/${hakoId}/join`
+  // Dynamically generate the base URL using the incoming request headers
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  const joinLink = `${protocol}://${host}/hako/${hakoId}/join`
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans">
