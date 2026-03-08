@@ -17,7 +17,7 @@ interface DiaryPortalProps {
 export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPortalProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [entries, setEntries] = useState(initialEntries)
-  const [loading, setLoading] = useState(false)
+  const [selectedFilterDate, setSelectedFilterDate] = useState<string | null>(null)
   const router = useRouter()
 
   const handleDelete = async (id: string) => {
@@ -31,9 +31,13 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   }
 
   const handleDateSelect = (date: string) => {
-    // Optionally filter list or redirect to a date-specific view
-    console.log('Selected date:', date)
+    setSelectedFilterDate(date)
+    setView('list')
   }
+
+  const filteredEntries = selectedFilterDate 
+    ? entries.filter(e => e.diary_date === selectedFilterDate)
+    : entries
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
@@ -54,13 +58,23 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
           </button>
         </div>
 
-        <Link
-          href={`/hako/${hakoId}/diary/new`}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm group"
-        >
-          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          日記を書く
-        </Link>
+        <div className="flex items-center gap-3">
+          {selectedFilterDate && (
+            <button 
+              onClick={() => setSelectedFilterDate(null)}
+              className="px-4 py-2 text-xs font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all"
+            >
+              {selectedFilterDate} のフィルターを解除
+            </button>
+          )}
+          <Link
+            href={`/hako/${hakoId}/diary/new${selectedFilterDate ? `?date=${selectedFilterDate}` : ''}`}
+            className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm group"
+          >
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            {selectedFilterDate ? `${selectedFilterDate} の日記を書く` : '日記を書く'}
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
@@ -69,12 +83,12 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
           <DiaryFeed 
             hakoId={hakoId} 
             currentUserId={currentUserId} 
-            entries={entries} 
+            entries={filteredEntries} 
             onDelete={handleDelete}
           />
         ) : (
           <div className="max-w-md mx-auto">
-             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} />
+             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} selectedDate={selectedFilterDate} />
           </div>
         )}
       </div>

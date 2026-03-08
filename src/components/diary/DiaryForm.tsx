@@ -57,8 +57,9 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
     try {
       if (initialData) {
         await updateDiaryEntry(initialData.id, hakoId, { 
-          title: title.trim() || null as any, 
+          title: title.trim() || (null as any), 
           content, 
+          diary_date: diaryDate,
           is_public: isPublic 
         })
       } else {
@@ -77,26 +78,24 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div className="space-y-4">
         {/* Date Selection */}
-        {!initialData && (
-          <div className="relative">
-            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">日付</label>
-            <div className="relative group">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
-              <input 
-                type="date" 
-                value={diaryDate}
-                onChange={(e) => setDiaryDate(e.target.value)}
-                max={format(new Date(), 'yyyy-MM-dd')}
-                className={`w-full bg-[#111] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium appearance-none`}
-              />
-            </div>
-            {isAlreadyExists && (
-               <p className="mt-2 text-xs text-red-400 flex items-center gap-1 px-1">
-                 <AlertCircle className="w-3 h-3" /> この日付は既に日記を書いています
-               </p>
-            )}
+        <div className="relative">
+          <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">日付</label>
+          <div className="relative group">
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+            <input 
+              type="date" 
+              value={diaryDate}
+              onChange={(e) => setDiaryDate(e.target.value)}
+              max={format(new Date(), 'yyyy-MM-dd')}
+              className={`w-full bg-[#111] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium appearance-none`}
+            />
           </div>
-        )}
+          {isAlreadyExists && (
+              <p className="mt-2 text-xs text-red-400 flex items-center gap-1 px-1">
+                <AlertCircle className="w-3 h-3" /> この日付は既に日記を書いています
+              </p>
+          )}
+        </div>
 
         {/* Title */}
         <div className="relative">

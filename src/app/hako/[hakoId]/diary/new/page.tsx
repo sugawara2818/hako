@@ -7,8 +7,15 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-export default async function NewDiaryPage({ params }: { params: Promise<{ hakoId: string }> }) {
+export default async function NewDiaryPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ hakoId: string }>,
+  searchParams: Promise<{ date?: string }>
+}) {
   const { hakoId } = await params
+  const { date: defaultDate } = await searchParams
   const supabase = await createServerSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,7 +55,7 @@ export default async function NewDiaryPage({ params }: { params: Promise<{ hakoI
               </h1>
           </div>
 
-          <DiaryForm hakoId={hakoId} />
+          <DiaryForm hakoId={hakoId} initialData={defaultDate ? { diary_date: defaultDate, title: '', content: '', id: '', is_public: true } : undefined} />
       </div>
     </HakoViewerLayout>
   )

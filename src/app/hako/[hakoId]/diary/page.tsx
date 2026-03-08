@@ -44,7 +44,6 @@ export default async function DiaryPage({ params }: { params: Promise<{ hakoId: 
               <h1 className="text-4xl md:text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
                   日記
               </h1>
-              <p className="text-gray-500 font-medium">日々の想い、発見、軌跡をここに。</p>
           </div>
 
           <DiaryPortal 

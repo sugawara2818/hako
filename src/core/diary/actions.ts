@@ -32,7 +32,7 @@ export async function createDiaryEntry(hakoId: string, title: string, content: s
   return data
 }
 
-export async function updateDiaryEntry(diaryId: string, hakoId: string, updates: { title?: string, content?: string, is_public?: boolean }) {
+export async function updateDiaryEntry(diaryId: string, hakoId: string, updates: { title?: string, content?: string, diary_date?: string, is_public?: boolean }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -48,7 +48,12 @@ export async function updateDiaryEntry(diaryId: string, hakoId: string, updates:
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (error.code === '23505') {
+       throw new Error('変更先の日付には既に日記が存在します。')
+    }
+    throw error
+  }
 
   revalidatePath(`/hako/${hakoId}/diary`)
   revalidatePath(`/hako/${hakoId}/diary/${diaryId}`)
