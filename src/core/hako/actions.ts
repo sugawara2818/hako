@@ -111,3 +111,40 @@ export async function updateHako(hakoId: string, updates: { name?: string, icon_
   
   return { success: true }
 }
+
+// 箱を削除 (オーナー向け)
+export async function deleteHako(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Check ownership
+  const { data: hako } = await supabase
+    .from('hako')
+    .select('owner_id')
+    .eq('id', hakoId)
+    .single()
+
+  if (!hako || hako.owner_id !== user.id) {
+    throw new Error('Not authorized')
+  }
+
+  // Delete everything related to this hako
+  // Note: If cascading is not set up in DB, we do it manually
+  await supabase.from('hako_timeline_likes').delete().eq('hako_id', hakoId)
+  await supabase.from('hako_timeline_comments').delete().eq('hako_id', hakoId)
+  await supabase.from('hako_timeline_posts').delete().eq('hako_id', hakoId)
+  await supabase.from('hako_members').delete().eq('hako_id', hakoId)
+  
+  const { error } = await supabase
+    .from('hako')
+    .delete()
+    .eq('id', hakoId)
+
+  if (error) throw error
+  
+  revalidatePath('/owner/dashboard')
+  revalidatePath('/')
+  
+  return { success: true }
+}
