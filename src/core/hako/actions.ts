@@ -80,3 +80,34 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
   revalidatePath(`/hako/${hakoId}`)
   return { success: true }
 }
+
+// 箱の情報更新 (オーナー向け)
+export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null }) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Check ownership
+  const { data: hako } = await supabase
+    .from('hako')
+    .select('owner_id')
+    .eq('id', hakoId)
+    .single()
+
+  if (!hako || hako.owner_id !== user.id) {
+    throw new Error('Not authorized')
+  }
+
+  const { error } = await supabase
+    .from('hako')
+    .update(updates)
+    .eq('id', hakoId)
+
+  if (error) throw error
+  
+  revalidatePath(`/hako/${hakoId}`)
+  revalidatePath(`/owner/hako/${hakoId}`)
+  revalidatePath('/owner/dashboard')
+  
+  return { success: true }
+}

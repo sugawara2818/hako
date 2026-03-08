@@ -56,8 +56,8 @@ export default async function OwnerDashboardPage({
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="font-medium hidden sm:inline">一覧に戻る</span>
             </Link>
-            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
-              {hako.name?.charAt(0) || 'H'}
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0 overflow-hidden">
+              {hako.icon_url ? <img src={hako.icon_url} alt="" className="w-full h-full object-cover" /> : (hako.name?.charAt(0) || 'H')}
             </div>
             <span className="font-bold text-sm md:text-lg truncate flex-1 min-w-0">{hako.name}</span>
             <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 shrink-0 hidden sm:inline-block whitespace-nowrap">Owner</span>
@@ -169,31 +169,59 @@ export default async function OwnerDashboardPage({
               <CopyInviteLink joinLink={joinLink} />
             </div>
 
-            {/* Quick Settings */}
-            <div className="glass p-6 rounded-2xl border border-white/5 shadow-xl">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-gray-400" />
-                設定
+            {/* Hako Settings */}
+            <div id="settings" className="glass p-6 md:p-8 rounded-3xl border border-white/5 shadow-2xl animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <h2 className="text-xl font-bold mb-8 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-purple-400" />
+                箱の基本設定
               </h2>
+              
+              <HakoSettingsForm 
+                hakoId={hako.id} 
+                initialName={hako.name} 
+                initialIconUrl={hako.icon_url || null} 
+              />
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6 animate-fade-in min-w-0" style={{ animationDelay: '0.5s' }}>
+            
+            {/* Invite Card */}
+            <div className="p-6 rounded-3xl border border-purple-500/20 bg-gradient-to-b from-purple-900/20 to-black relative overflow-hidden shadow-xl">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-[50px]" />
+              <h2 className="text-lg font-bold mb-2 relative z-10 flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-purple-400" />
+                ユーザーを招待
+              </h2>
+              <p className="text-sm text-gray-400 mb-6 relative z-10 leading-relaxed">
+                以下の専用リンクをSNS等でシェアして、あなたの箱にユーザーを招待しましょう。
+              </p>
+              
+              <CopyInviteLink joinLink={joinLink} />
+            </div>
+
+            {/* Quick Links */}
+            <div className="glass p-6 rounded-3xl border border-white/5 shadow-xl">
+              <h2 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-4">クイックリンク</h2>
               <div className="space-y-2">
-                <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  <span className="truncate pr-2">箱の基本情報</span>
+                <Link href={`/hako/${hako.id}`} target="_blank" className="w-full text-left px-4 py-3 rounded-2xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
+                  <span className="truncate pr-2">パブリック表示を確認</span>
                   <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
-                </button>
-                <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  <span className="truncate pr-2">デザインカスタマイズ</span>
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
-                </button>
-                <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  <span className="truncate pr-2">決済連携 (Coming Soon)</span>
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
+                </Link>
+                <button className="w-full text-left px-4 py-3 rounded-2xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group opacity-50 cursor-not-allowed">
+                  <span className="truncate pr-2">メンバー管理 (近日公開)</span>
+                  <Users className="w-4 h-4 text-gray-600 shrink-0" />
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </main>
     </div>
   )
 }
+
+// Add HakoSettingsForm import if missing
+import { HakoSettingsForm } from '@/components/hako/hako-settings-form'
+

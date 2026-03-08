@@ -10,6 +10,7 @@ import { MobileSidebar } from '@/components/hako/mobile-sidebar'
 interface HakoViewerLayoutProps {
   hakoId: string
   hakoName: string
+  iconUrl: string | null
   email: string
   isOwner: boolean
   memberCount: number
@@ -21,7 +22,7 @@ const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerW
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 
 export function HakoViewerLayout({
-  hakoId, hakoName, email, isOwner, memberCount, displayName, children
+  hakoId, hakoName, iconUrl, email, isOwner, memberCount, displayName, children
 }: HakoViewerLayoutProps) {
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
@@ -105,7 +106,9 @@ export function HakoViewerLayout({
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-white/5 bg-black/50 backdrop-blur-xl h-screen sticky top-0 flex flex-col z-10 hidden md:flex">
         <div className="h-16 flex items-center px-4 border-b border-white/5 gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0">H</div>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden">
+            {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
+          </div>
           <span className="font-bold truncate flex-1 text-sm">{hakoName}</span>
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
             {isOwner ? <ShieldAlert className="w-3 h-3" /> : <AtSign className="w-3 h-3" />}
@@ -173,6 +176,7 @@ export function HakoViewerLayout({
           <MobileSidebar
             hakoId={hakoId}
             hakoName={hakoName}
+            iconUrl={iconUrl}
             email={email}
             isOwner={isOwner}
             memberCount={memberCount}
@@ -189,10 +193,12 @@ export function HakoViewerLayout({
         <header className="md:hidden h-16 border-b border-white/5 flex items-center justify-between px-4 glass sticky top-0 z-50">
           <button
             onClick={() => { setIsOpen(true); setDragProgress(1) }}
-            className="flex items-center gap-2 min-w-0 flex-1"
+            className="flex items-center gap-2 min-w-0 flex-1 h-full"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0">H</div>
-            <span className="font-bold truncate max-w-[100px] text-sm">{hakoName}</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden">
+              {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-bold truncate max-w-[120px] text-sm">{hakoName}</span>
             <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
               {isOwner ? <ShieldAlert className="w-2.5 h-2.5" /> : <AtSign className="w-2.5 h-2.5" />}
               {isOwner ? 'Owner' : 'Member'}

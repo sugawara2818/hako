@@ -21,37 +21,28 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   const { hakoId } = await params
   const supabase = await createServerSupabaseClient()
 
+  // 1. Fetch current user and check authentication
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/hako/${hakoId}/login`)
 
-  // 1. Check if user is a member
-  const { data: member, error: memberError } = await supabase
-    .from('hako_members')
-    .select('role, display_name')
-    .eq('hako_id', hakoId)
-    .eq('user_id', user.id)
-    .single()
+  // 2. Fetch hako data and member info concurrently
+  const [hakoResponse, memberResponse, countResponse] = await Promise.all([
+    supabase.from('hako').select('*').eq('id', hakoId).single(),
+    supabase.from('hako_members').select('*').eq('hako_id', hakoId).eq('user_id', user.id).maybeSingle(),
+    supabase.from('hako_members').select('*', { count: 'exact', head: true }).eq('hako_id', hakoId)
+  ])
 
-  if (memberError || !member) {
-    redirect(`/hako/${hakoId}/join`)
+  const { data: hako, error: hakoError } = hakoResponse
+  const { data: member } = memberResponse
+  const { count } = countResponse
+
+  if (hakoError || !hako) {
+    return notFound()
   }
 
-  // 2. Fetch hako data
-  const { data: hako } = await supabase
-    .from('hako')
-    .select('*')
-    .eq('id', hakoId)
-    .single()
-
-  if (!hako) return notFound()
-
-  // 3. Fetch member count
-  const { data: members } = await supabase
-    .from('hako_members')
-    .select('user_id')
-    .eq('hako_id', hakoId)
-
-  const isOwner = member.role === 'owner'
+  if (!member) {
+    return redirect(`/hako/${hakoId}/join`)
+  }
   
   // 4. Fetch Timeline Posts
   let initialPosts: any[] = []
@@ -68,12 +59,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
 
   return (
     <HakoViewerLayout
-      hakoId={hakoId}
+      hakoId={hako.id}
       hakoName={hako.name}
-      email={user.email!}
-      isOwner={isOwner}
-      memberCount={members?.length || 0}
-      displayName={member?.display_name || null}
+      iconUrl={hako.icon_url || null}
+      email={user.email || ''}
+      isOwner={member.role === 'owner'}
+      memberCount={count || 1}
+      displayName={member.display_name}
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
