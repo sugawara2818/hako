@@ -22,7 +22,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   const supabase = await createServerSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return notFound()
+  if (!user) redirect(`/hako/${hakoId}/login`)
 
   // 1. Check if user is a member
   const { data: member, error: memberError } = await supabase
