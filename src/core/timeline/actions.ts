@@ -27,46 +27,56 @@ export async function getTimelinePosts(hakoId: string) {
   if (!user) throw new Error('Unauthorized')
 
   // We need to fetch basic profile info and likes for each post
-  // Since we don't have graphql, we'll do a join in Supabase
+  // Fetch posts with profiles and likes/comments
   const { data, error } = await supabase
     .from('hako_timeline_posts')
     .select(`
       *,
       profiles:user_id (id, display_name, avatar_url),
-      hako_member:hako_members!inner (display_name),
       likes:hako_timeline_likes (user_id),
       comments:hako_timeline_comments (
         id, content, created_at, user_id,
-        profiles:user_id (id, display_name, avatar_url),
-        hako_member:hako_members!inner (display_name)
+        profiles:user_id (id, display_name, avatar_url)
       )
     `)
     .eq('hako_id', hakoId)
-    .eq('hako_member.hako_id', hakoId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
-  // Format the data to make it easier for the frontend
-  // Sort comments by created_at (oldest first)
+  // Separately fetch per-Hako display names from hako_members
+  const { data: hakoMemberNames } = await supabase
+    .from('hako_members')
+    .select('user_id, display_name')
+    .eq('hako_id', hakoId)
+    .not('display_name', 'is', null)
+
+  // Build a lookup map: userId -> hako-specific display_name
+  const displayNameMap: Record<string, string> = {}
+  for (const m of hakoMemberNames || []) {
+    if (m.display_name) displayNameMap[m.user_id] = m.display_name
+  }
+
+  const resolveName = (userId: string, profileName?: string | null) =>
+    displayNameMap[userId] || profileName || 'ユーザー'
+
   const posts = data.map(post => ({
     ...post,
-    // Prefer the per-Hako display_name in hako_members over the global profile name
     profiles: {
       ...post.profiles,
-      display_name: (post as any).hako_member?.display_name || post.profiles?.display_name || 'ユーザー'
+      display_name: resolveName(post.user_id, post.profiles?.display_name)
     },
     likes_count: post.likes.length,
     is_liked: post.likes.some((like: any) => like.user_id === user.id),
     comments: post.comments
-      .sort((a: any, b: any) => 
+      .sort((a: any, b: any) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       )
       .map((c: any) => ({
         ...c,
         profiles: {
           ...c.profiles,
-          display_name: c.hako_member?.display_name || c.profiles?.display_name || 'ユーザー'
+          display_name: resolveName(c.user_id, c.profiles?.display_name)
         }
       }))
   }))
