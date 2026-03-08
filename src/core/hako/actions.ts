@@ -82,7 +82,7 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
 }
 
 // 箱の情報更新 (オーナー向け)
-export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null }) {
+export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null, icon_color?: string | null }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')

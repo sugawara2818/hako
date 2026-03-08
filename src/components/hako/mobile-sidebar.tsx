@@ -6,11 +6,13 @@ import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
+import { getHakoGradient } from '@/lib/hako-utils'
 
 interface MobileSidebarProps {
   hakoId: string
   hakoName: string
   iconUrl: string | null
+  iconColor: string | null
   email: string
   isOwner: boolean
   memberCount: number
@@ -20,7 +22,7 @@ interface MobileSidebarProps {
 }
 
 export function MobileSidebar({
-  hakoId, hakoName, iconUrl, email, isOwner, memberCount, displayName, onClose
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, onClose
 }: MobileSidebarProps) {
   const router = useRouter()
 
@@ -42,7 +44,7 @@ export function MobileSidebar({
       {/* Header */}
       <div className="h-16 flex items-center justify-between px-5 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${getHakoGradient(iconColor)}` : ''}`}>
             {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
           </div>
           <span className="font-bold truncate text-sm">{hakoName}</span>

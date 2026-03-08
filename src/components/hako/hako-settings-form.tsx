@@ -10,11 +10,24 @@ interface HakoSettingsFormProps {
   hakoId: string
   initialName: string
   initialIconUrl: string | null
+  initialIconColor: string | null
 }
 
-export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSettingsFormProps) {
+const PRESET_GRADIENTS = [
+  { id: 'purple', class: 'from-purple-500 to-pink-500' },
+  { id: 'blue', class: 'from-blue-500 to-cyan-500' },
+  { id: 'emerald', class: 'from-emerald-500 to-teal-500' },
+  { id: 'orange', class: 'from-orange-500 to-yellow-500' },
+  { id: 'red', class: 'from-red-600 to-orange-500' },
+  { id: 'indigo', class: 'from-indigo-500 to-purple-500' },
+  { id: 'black', class: 'from-gray-700 to-gray-900' },
+]
+
+export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialIconColor }: HakoSettingsFormProps) {
   const [name, setName] = useState(initialName)
   const [iconUrl, setIconUrl] = useState(initialIconUrl)
+  const [iconColor, setIconColor] = useState(initialIconColor || 'purple')
+  const [iconType, setIconType] = useState<'image' | 'template'>(initialIconUrl ? 'image' : 'template')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,6 +55,7 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
 
       if (result.success && result.url) {
         setIconUrl(result.url)
+        setIconType('image')
       } else {
         throw new Error(result.error || '画像のアップロードに失敗しました')
       }
@@ -63,7 +77,8 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
     try {
       const result = await updateHako(hakoId, { 
         name: name.trim(), 
-        icon_url: iconUrl 
+        icon_url: iconType === 'image' ? iconUrl : null,
+        icon_color: iconType === 'template' ? iconColor : null
       })
 
       if (result.success) {
@@ -79,15 +94,17 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
     }
   }
 
+  const currentGradient = PRESET_GRADIENTS.find(g => g.id === iconColor)?.class || PRESET_GRADIENTS[0].class
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex flex-col items-center gap-4 mb-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="flex flex-col items-center gap-6 mb-8">
         <div className="relative group">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-3xl overflow-hidden shadow-2xl border-2 border-white/10 group-hover:border-purple-500/50 transition-all">
-            {iconUrl ? (
+          <div className={`w-28 h-28 rounded-[2rem] flex items-center justify-center font-bold text-4xl overflow-hidden shadow-2xl border-4 border-white/10 group-hover:border-purple-500/50 transition-all duration-300 ${iconType === 'template' ? `bg-gradient-to-br ${currentGradient}` : 'bg-black'}`}>
+            {iconType === 'image' && iconUrl ? (
               <img src={iconUrl} alt="Hako Icon" className="w-full h-full object-cover" />
             ) : (
-              name.charAt(0).toUpperCase()
+              <span className="text-white drop-shadow-md">{name.charAt(0).toUpperCase()}</span>
             )}
             
             {isUploading && (
@@ -100,8 +117,9 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-2 -right-2 p-2.5 rounded-2xl bg-white text-black shadow-lg hover:bg-gray-100 hover:scale-110 active:scale-95 transition-all z-10"
+            className="absolute -bottom-1 -right-1 p-3 rounded-2xl bg-white text-black shadow-xl hover:bg-gray-100 hover:scale-110 active:scale-95 transition-all z-10"
             disabled={isUploading}
+            title="画像をアップロード"
           >
             <Camera className="w-4 h-4" />
           </button>
@@ -114,8 +132,50 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
             onChange={handleIconUpload}
           />
         </div>
-        <p className="text-xs text-gray-400">箱のアイコン画像をアップロード</p>
+
+        {/* Icon Mode Switch */}
+        <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5 w-full max-w-xs">
+          <button
+            type="button"
+            onClick={() => setIconType('template')}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${iconType === 'template' ? 'bg-white/10 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            カラーテンプレ
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+                if (iconUrl) setIconType('image')
+                else fileInputRef.current?.click()
+            }}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${iconType === 'image' ? 'bg-white/10 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            写真
+          </button>
+        </div>
       </div>
+
+      {iconType === 'template' && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+           <label className="text-sm font-bold text-gray-400 ml-1">色を選択</label>
+           <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
+             {PRESET_GRADIENTS.map((g) => (
+               <button
+                 key={g.id}
+                 type="button"
+                 onClick={() => setIconColor(g.id)}
+                 className={`w-full aspect-square rounded-2xl bg-gradient-to-br ${g.class} border-2 transition-all p-0.5 ${iconColor === g.id ? 'border-white scale-110 shadow-lg shadow-white/20' : 'border-transparent hover:scale-105'}`}
+               >
+                 {iconColor === g.id && (
+                   <div className="w-full h-full flex items-center justify-center">
+                     <Check className="w-5 h-5 text-white" />
+                   </div>
+                 )}
+               </button>
+             ))}
+           </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label className="text-sm font-bold text-gray-400 ml-1">箱の名前</label>
@@ -123,7 +183,7 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full glass border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:outline-none focus:border-purple-500/50 focus:bg-white/5 transition-all"
+          className="w-full glass border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-purple-500/50 focus:bg-white/5 transition-all shadow-inner"
           placeholder="箱の名前を入力"
           maxLength={50}
           required
@@ -147,9 +207,9 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl }: HakoSe
       <button
         type="submit"
         disabled={isSubmitting || isUploading}
-        className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-bold shadow-xl shadow-purple-900/40 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full py-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-[1.5rem] font-black shadow-xl shadow-purple-900/40 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
       >
-        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+        {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Check className="w-6 h-6" />}
         設定を保存する
       </button>
     </form>

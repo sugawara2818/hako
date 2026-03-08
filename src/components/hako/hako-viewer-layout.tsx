@@ -1,5 +1,6 @@
 'use client'
 
+import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign } from 'lucide-react'
@@ -11,6 +12,7 @@ interface HakoViewerLayoutProps {
   hakoId: string
   hakoName: string
   iconUrl: string | null
+  iconColor: string | null
   email: string
   isOwner: boolean
   memberCount: number
@@ -22,7 +24,7 @@ const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerW
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 
 export function HakoViewerLayout({
-  hakoId, hakoName, iconUrl, email, isOwner, memberCount, displayName, children
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, children
 }: HakoViewerLayoutProps) {
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
@@ -98,6 +100,8 @@ export function HakoViewerLayout({
   const backdropBlur = activeProgress * 4 // px
   const showBackdrop = activeProgress > 0.01
 
+  const hakoGradient = getHakoGradient(iconColor)
+
   return (
     <div className="min-h-screen bg-[#050505] text-white flex font-sans overflow-hidden">
       {/* Dynamic Background Pattern */}
@@ -106,7 +110,7 @@ export function HakoViewerLayout({
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-white/5 bg-black/50 backdrop-blur-xl h-screen sticky top-0 flex flex-col z-10 hidden md:flex">
         <div className="h-16 flex items-center px-4 border-b border-white/5 gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
             {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
           </div>
           <span className="font-bold truncate flex-1 text-sm">{hakoName}</span>
@@ -177,6 +181,7 @@ export function HakoViewerLayout({
             hakoId={hakoId}
             hakoName={hakoName}
             iconUrl={iconUrl}
+            iconColor={iconColor}
             email={email}
             isOwner={isOwner}
             memberCount={memberCount}
@@ -195,7 +200,7 @@ export function HakoViewerLayout({
             onClick={() => { setIsOpen(true); setDragProgress(1) }}
             className="flex items-center gap-2 min-w-0 flex-1 h-full"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
               {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
             </div>
             <span className="font-bold truncate max-w-[120px] text-sm">{hakoName}</span>
@@ -204,6 +209,7 @@ export function HakoViewerLayout({
               {isOwner ? 'Owner' : 'Member'}
             </div>
           </button>
+
           <div className="flex items-center gap-1 shrink-0">
             <InstallButton variant="icon" />
           </div>

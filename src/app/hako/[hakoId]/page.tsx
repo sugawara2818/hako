@@ -62,6 +62,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       hakoId={hako.id}
       hakoName={hako.name}
       iconUrl={hako.icon_url || null}
+      iconColor={hako.icon_color || null}
       email={user.email || ''}
       isOwner={member.role === 'owner'}
       memberCount={count || 1}

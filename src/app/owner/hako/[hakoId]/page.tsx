@@ -180,25 +180,8 @@ export default async function OwnerDashboardPage({
                 hakoId={hako.id} 
                 initialName={hako.name} 
                 initialIconUrl={hako.icon_url || null} 
+                initialIconColor={hako.icon_color || null}
               />
-            </div>
-          </div>
-
-          {/* Right Sidebar */}
-          <div className="space-y-6 animate-fade-in min-w-0" style={{ animationDelay: '0.5s' }}>
-            
-            {/* Invite Card */}
-            <div className="p-6 rounded-3xl border border-purple-500/20 bg-gradient-to-b from-purple-900/20 to-black relative overflow-hidden shadow-xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-[50px]" />
-              <h2 className="text-lg font-bold mb-2 relative z-10 flex items-center gap-2">
-                <Share2 className="w-5 h-5 text-purple-400" />
-                ユーザーを招待
-              </h2>
-              <p className="text-sm text-gray-400 mb-6 relative z-10 leading-relaxed">
-                以下の専用リンクをSNS等でシェアして、あなたの箱にユーザーを招待しましょう。
-              </p>
-              
-              <CopyInviteLink joinLink={joinLink} />
             </div>
 
             {/* Quick Links */}
