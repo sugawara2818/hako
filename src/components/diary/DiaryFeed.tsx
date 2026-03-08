@@ -15,11 +15,11 @@ interface DiaryEntry {
   diary_date: string
   is_public: boolean
   created_at: string
-  profiles: {
+  profiles?: {
     display_name: string | null
     avatar_url: string | null
   }
-  hako_members: {
+  hako_members?: {
     display_name: string | null
   }[]
 }
@@ -62,7 +62,9 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
 function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => Promise<void> }) {
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
-  const displayName = entry.hako_members[0]?.display_name || 'Anonymous'
+  
+  // Robust display name resolution: Hako-specific name > Profile global name > Default
+  const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
 
   return (
     <div className="group relative bg-[#111] border border-white/5 rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">

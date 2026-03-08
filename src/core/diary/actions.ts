@@ -81,9 +81,11 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     .from('hako_diaries')
     .select(`
       *,
-      profiles:user_id (display_name, avatar_url)
+      profiles:user_id (display_name, avatar_url),
+      hako_members!left(display_name)
     `)
     .eq('hako_id', hakoId)
+    .eq('hako_members.hako_id', hakoId)
     .order('diary_date', { ascending: false })
 
   // Filtering: Users can see their own private ones and public ones of others
@@ -95,7 +97,11 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
 
   const { data, error } = await query
 
-  if (error) throw error
+  if (error) {
+    console.error('fetchDiaryEntries Error:', error)
+    throw error
+  }
+  
   return data
 }
 

@@ -19,7 +19,9 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
   const isAuthor = entry.user_id === currentUserId
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
-  const displayName = entry.hako_members[0]?.display_name || 'Anonymous'
+  
+  // Robust display name resolution: Hako-specific name > Profile global name > Default
+  const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
   
   const [isDeleting, setIsDeleting] = useState(false)
 

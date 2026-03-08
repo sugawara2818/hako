@@ -19,11 +19,11 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
     supabase.from('hako_diaries')
       .select(`
         *,
-        profiles:user_id (avatar_url),
-        hako_members!inner(display_name)
+        profiles:user_id (avatar_url, display_name),
+        hako_members:user_id(display_name)
       `)
       .eq('id', diaryId)
-      .eq('hako_members.user_id', user.id) // Security check via join
+      .eq('hako_members.hako_id', hakoId)
       .single()
   ])
 
