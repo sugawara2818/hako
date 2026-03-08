@@ -51,12 +51,18 @@ export default function CreateHakoPage() {
   return (
     <div className="min-h-screen bg-black text-white p-6 font-sans">
       {/* Top Nav */}
-      <header className="flex items-center justify-between max-w-5xl mx-auto py-6 mb-12">
-        <Link href="/" className="flex items-center gap-2">
-          <Blocks className="w-6 h-6 text-purple-500" />
-          <span className="text-xl font-bold">hako</span>
-        </Link>
-        <div className="text-sm text-gray-400">Step 1 of 2: Create Space</div>
+      <header className="flex items-center justify-between max-w-5xl mx-auto py-4 md:py-6 mb-8 md:mb-12">
+        <div className="flex items-center gap-4 md:gap-8">
+            <Link href="/owner/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
+              <Blocks className="w-6 h-6 text-purple-500 transition-transform group-hover:scale-110" />
+              <span className="text-lg md:text-xl font-bold">hako</span>
+            </Link>
+            <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
+            <Link href="/owner/dashboard" className="hidden sm:flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors">
+                 ダッシュボードへ戻る
+            </Link>
+        </div>
+        <div className="text-[10px] md:text-sm text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">Step 1 of 2: Create Space</div>
       </header>
 
       <main className="max-w-3xl mx-auto animate-fade-in relative z-10">
@@ -148,11 +154,11 @@ export default function CreateHakoPage() {
           </div>
 
           {/* Action */}
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-center md:justify-end pt-4 pb-12">
             <button
               type="submit"
               disabled={loading || !hakoName}
-              className="px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
+              className="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
             >
               {loading ? (
                 <>

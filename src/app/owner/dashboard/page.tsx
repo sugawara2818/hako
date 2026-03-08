@@ -22,21 +22,25 @@ export default async function OwnerDashboardPage() {
     .eq('role', 'owner')
 
   if (memberError || !memberships || memberships.length === 0) {
-     // No hakos owned, redirect to create
-     redirect('/owner/hako/create')
+     // No hakos owned - we'll handle this in the UI below
   }
 
   // 2. Fetch the actual Hako details
-  const hakoIds = memberships.map(m => m.hako_id)
-  const { data: ownedHakos, error: hakosError } = await supabase
-    .from('hako')
-    .select('id, name, created_at')
-    .in('id', hakoIds)
-    .order('created_at', { ascending: false })
-
-  if (hakosError || !ownedHakos) {
-      redirect('/owner/hako/create')
+  let ownedHakos: any[] = []
+  if (memberships && memberships.length > 0) {
+    const hakoIds = memberships.map(m => m.hako_id)
+    const { data, error: hakosError } = await supabase
+      .from('hako')
+      .select('id, name, created_at')
+      .in('id', hakoIds)
+      .order('created_at', { ascending: false })
+    
+    if (!hakosError && data) {
+      ownedHakos = data
+    }
   }
+
+  const hasHakos = ownedHakos.length > 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans relative overflow-hidden">
@@ -75,47 +79,71 @@ export default async function OwnerDashboardPage() {
             </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ownedHakos.map((hako: any) => (
-                <div key={hako.id} className="glass p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden flex flex-col h-full">
-                    {/* decorative background glow */}
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[30px] group-hover:bg-purple-500/20 transition-all" />
-                    
-                    <div className="flex items-center gap-3 mb-6 relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center font-bold text-lg border border-white/5 shadow-inner">
-                            {hako.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <h2 className="text-xl font-bold text-white truncate">{hako.name}</h2>
-                            <p className="text-gray-500 text-xs font-mono">{new Date(hako.created_at).toLocaleDateString()}</p>
-                        </div>
-                    </div>
+        {hasHakos ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ownedHakos.map((hako: any) => (
+                  <div key={hako.id} className="glass p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden flex flex-col h-full">
+                      {/* decorative background glow */}
+                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[30px] group-hover:bg-purple-500/20 transition-all" />
+                      
+                      <div className="flex items-center gap-3 mb-6 relative z-10">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center font-bold text-lg border border-white/5 shadow-inner">
+                              {hako.name.charAt(0)}
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                              <h2 className="text-xl font-bold text-white truncate">{hako.name}</h2>
+                              <p className="text-gray-500 text-xs font-mono">{new Date(hako.created_at).toLocaleDateString()}</p>
+                          </div>
+                      </div>
 
-                    <div className="mt-auto space-y-3 relative z-10 pt-6">
-                         <Link 
-                            href={`/hako/${hako.id}`} 
-                            className="flex items-center justify-between w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors group/btn"
-                         >
-                             <div className="flex items-center gap-2">
-                                <Hash className="w-4 h-4 text-gray-400 group-hover/btn:text-white transition-colors" />
-                                <span className="text-sm font-medium">箱を開く (アプリ)</span>
-                             </div>
-                             <ArrowRight className="w-4 h-4 text-gray-500 group-hover/btn:text-white transition-colors group-hover/btn:translate-x-1" />
-                         </Link>
+                      <div className="mt-auto space-y-3 relative z-10 pt-6">
+                           <Link 
+                              href={`/hako/${hako.id}`} 
+                              className="flex items-center justify-between w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors group/btn"
+                           >
+                               <div className="flex items-center gap-2">
+                                  <Hash className="w-4 h-4 text-gray-400 group-hover/btn:text-white transition-colors" />
+                                  <span className="text-sm font-medium">箱を開く (アプリ)</span>
+                               </div>
+                               <ArrowRight className="w-4 h-4 text-gray-500 group-hover/btn:text-white transition-colors group-hover/btn:translate-x-1" />
+                           </Link>
 
-                         <Link 
-                            href={`/owner/hako/${hako.id}`} 
-                            className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group/btn"
-                         >
-                             <div className="flex items-center gap-2">
-                                <Settings className="w-4 h-4" />
-                                <span className="text-sm">管理画面設定</span>
-                             </div>
-                         </Link>
-                    </div>
-                </div>
-            ))}
-        </div>
+                           <Link 
+                              href={`/owner/hako/${hako.id}`} 
+                              className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group/btn"
+                           >
+                               <div className="flex items-center gap-2">
+                                  <Settings className="w-4 h-4" />
+                                  <span className="text-sm">管理画面設定</span>
+                               </div>
+                           </Link>
+                      </div>
+                  </div>
+              ))}
+          </div>
+        ) : (
+          <div className="max-w-2xl mx-auto py-12 md:py-20 animate-fade-in">
+              <div className="glass-card p-8 md:p-12 rounded-[2.5rem] border border-white/10 text-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+                  <div className="relative z-10">
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-purple-500/20">
+                          <Blocks className="w-10 h-10 text-white" />
+                      </div>
+                      <h2 className="text-3xl font-bold mb-4">オーナー登録が完了しました！</h2>
+                      <p className="text-gray-400 text-lg mb-10 leading-relaxed">
+                          hakoへようこそ。まだ箱（あなた専用のSNS空間）がありません。<br className="hidden md:block" />
+                          最初の箱を作成して、あなたの世界を構築しましょう。
+                      </p>
+                      <Link 
+                        href="/owner/hako/create" 
+                        className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-white/5"
+                      >
+                        <Plus className="w-6 h-6" /> 最初の箱を作成する
+                      </Link>
+                  </div>
+              </div>
+          </div>
+        )}
       </main>
     </div>
   )
