@@ -22,6 +22,7 @@ interface HakoViewerLayoutProps {
 
 const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 320)
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
+const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful drag
 
 export function HakoViewerLayout({
   hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, children
@@ -32,6 +33,7 @@ export function HakoViewerLayout({
   const [isDragging, setIsDragging] = useState(false)
   
   const touchStartX = useRef<number | null>(null)
+  const touchX = useRef<number>(0)
   const lastProgress = useRef(0)
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -39,7 +41,10 @@ export function HakoViewerLayout({
     // Only start tracking if touching from left edge (open) or when sidebar is open (anywhere)
     if (x < 40 || isOpen) {
       touchStartX.current = x
+      touchX.current = x
       setIsDragging(true)
+      // Initialize lastProgress based on current state to prevent snap-jump on first move
+      lastProgress.current = isOpen ? 1 : 0
     }
   }, [isOpen])
 
@@ -47,6 +52,7 @@ export function HakoViewerLayout({
     if (touchStartX.current === null) return
     const x = e.touches[0].clientX
     const dx = x - touchStartX.current
+    touchX.current = x
 
     let progress: number
     if (isOpen) {
@@ -64,33 +70,51 @@ export function HakoViewerLayout({
 
   const handleTouchEnd = useCallback(() => {
     if (touchStartX.current === null) return
+    
+    const dx = touchX.current - touchStartX.current
+    const isMeaningfulDrag = Math.abs(dx) > DRAG_THRESHOLD
+
     touchStartX.current = null
     setIsDragging(false)
 
-    // Snap open or closed based on threshold
-    if (lastProgress.current > OPEN_THRESHOLD) {
-      setIsOpen(true)
-      setDragProgress(1)
+    // Only snap to a NEW state if we actually dragged significantly
+    if (isMeaningfulDrag) {
+      if (lastProgress.current > OPEN_THRESHOLD) {
+        setIsOpen(true)
+        setDragProgress(1)
+      } else {
+        setIsOpen(false)
+        setDragProgress(0)
+      }
     } else {
-      setIsOpen(false)
-      setDragProgress(0)
+      // If it was just a tap or minor movement, revert to current state
+      setDragProgress(isOpen ? 1 : 0)
     }
-  }, [])
+  }, [isOpen])
+
+  const handleTouchCancel = useCallback(() => {
+    touchStartX.current = null
+    setIsDragging(false)
+    setDragProgress(isOpen ? 1 : 0)
+  }, [isOpen])
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStart, { passive: true })
     document.addEventListener('touchmove', handleTouchMove, { passive: true })
     document.addEventListener('touchend', handleTouchEnd, { passive: true })
+    document.addEventListener('touchcancel', handleTouchCancel, { passive: true })
     return () => {
       document.removeEventListener('touchstart', handleTouchStart)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('touchcancel', handleTouchCancel)
     }
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd])
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
     setDragProgress(0)
+    lastProgress.current = 0
   }, [])
 
   // Computed values for animation
@@ -170,6 +194,7 @@ export function HakoViewerLayout({
         {/* Drawer panel */}
         <div
           className="fixed top-0 left-0 h-full z-[150]"
+          onClick={e => e.stopPropagation()} // Stop propagation to backdrop
           style={{
             width: `${DRAWER_WIDTH}px`,
             transform: `translateX(${drawerX}px)`,
@@ -186,7 +211,7 @@ export function HakoViewerLayout({
             isOwner={isOwner}
             memberCount={memberCount}
             displayName={displayName}
-            isOpen={true}
+            isOpen={isOpen}
             onClose={handleClose}
           />
         </div>
@@ -197,7 +222,7 @@ export function HakoViewerLayout({
         {/* Mobile Header */}
         <header className="md:hidden h-16 border-b border-white/5 flex items-center justify-between px-4 glass sticky top-0 z-50">
           <button
-            onClick={() => { setIsOpen(true); setDragProgress(1) }}
+            onClick={() => { setIsOpen(true); setDragProgress(1); lastProgress.current = 1 }}
             className="flex items-center gap-2 min-w-0 flex-1 h-full"
           >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
