@@ -1,9 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight } from 'lucide-react'
+import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight, AtSign } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
-
 import { getHakoGradient } from '@/lib/hako-utils'
 
 export const dynamic = 'force-dynamic'
@@ -72,19 +71,18 @@ export default async function OwnerDashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-12 relative z-10 animate-fade-in">
-import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight, AtSign } from 'lucide-react'
-
-// ... in OwnerDashboardPage ...
-                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12 border-b border-white/5 pb-8">
+            <div>
+                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
                      マイダッシュボード
                  </h1>
-                 <div className="flex items-center gap-2 mb-4">
+                 <div className="flex items-center gap-2 mb-3">
                     <AtSign className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm md:text-base font-medium text-gray-300">
+                    <span className="text-sm md:text-base font-medium text-gray-400">
                         {user.email}
                     </span>
                  </div>
-                 <p className="text-gray-400 text-sm md:text-base">作成した箱（Hako）の管理と新しい箱を作成できます。</p>
+                 <p className="text-gray-500 text-sm md:text-base">作成した箱（Hako）の管理と新しい箱を作成できます。</p>
             </div>
             <Link 
               href="/owner/hako/create" 
@@ -95,7 +93,7 @@ import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight, AtSign } from 'lucide
         </div>
 
         {hasHakos ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
               {ownedHakos.map((hako: any) => (
                   <div key={hako.id} className="glass p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden flex flex-col h-full">
                       {/* decorative background glow */}
