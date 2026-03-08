@@ -15,7 +15,7 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
         
         <h3 className="font-bold text-lg mb-2 text-white">アプリとして追加</h3>
         <p className="text-sm text-gray-300 leading-relaxed mb-6">
-          Safariの制限により、手動での追加が必要です。以下の手順でフルスクリーンアプリとして追加できます。
+          iOS（Apple）の制限により、アプリから直接インストール画面を出すことができません。以下の手順で手動で追加してください。
         </p>
         
         <div className="space-y-3">
