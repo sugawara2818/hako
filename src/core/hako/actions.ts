@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 // オーナーが箱作成
 export async function createHakoForOwner(userId: string, name: string, description: string = '') {
   const supabase = await createServerSupabaseClient()
@@ -76,5 +77,6 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
     .eq('user_id', user.id)
 
   if (error) throw error
+  revalidatePath(`/hako/${hakoId}`)
   return { success: true }
 }

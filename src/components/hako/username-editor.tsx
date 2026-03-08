@@ -1,20 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Pencil, Check, X } from 'lucide-react'
 import { updateDisplayName } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
 
 interface UsernameEditorProps {
   hakoId: string
-  currentName: string  // current display name or fallback
+  currentName: string
 }
 
 export function UsernameEditor({ hakoId, currentName }: UsernameEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState(currentName)
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+
+  // Scroll input into view when keyboard appears on mobile
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      // Small delay to let keyboard fully open
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        inputRef.current?.focus()
+      }, 150)
+    }
+  }, [isEditing])
 
   const handleSave = async () => {
     if (!value.trim()) return
@@ -39,27 +51,29 @@ export function UsernameEditor({ hakoId, currentName }: UsernameEditorProps) {
     return (
       <div className="flex items-center gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') handleCancel() }}
-          className="flex-1 min-w-0 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/60 focus:bg-white/15 transition-colors"
-          placeholder="ユーザー名"
+          // enterKeyHint shows the right button on mobile keyboards
+          enterKeyHint="done"
+          className="flex-1 min-w-0 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/60 focus:bg-white/15 transition-colors"
+          placeholder="ユーザー名（最大30文字）"
           maxLength={30}
-          autoFocus
           disabled={loading}
         />
         <button
           onClick={handleSave}
           disabled={loading}
-          className="p-1.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-colors shrink-0"
+          className="p-2 text-green-400 hover:bg-green-500/10 rounded-xl transition-colors shrink-0 active:scale-95"
         >
           <Check className="w-4 h-4" />
         </button>
         <button
           onClick={handleCancel}
           disabled={loading}
-          className="p-1.5 text-gray-500 hover:bg-white/10 rounded-lg transition-colors shrink-0"
+          className="p-2 text-gray-500 hover:bg-white/10 rounded-xl transition-colors shrink-0 active:scale-95"
         >
           <X className="w-4 h-4" />
         </button>

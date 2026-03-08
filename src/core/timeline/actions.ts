@@ -33,13 +33,16 @@ export async function getTimelinePosts(hakoId: string) {
     .select(`
       *,
       profiles:user_id (id, display_name, avatar_url),
+      hako_member:hako_members!inner (display_name),
       likes:hako_timeline_likes (user_id),
       comments:hako_timeline_comments (
         id, content, created_at, user_id,
-        profiles:user_id (id, display_name, avatar_url)
+        profiles:user_id (id, display_name, avatar_url),
+        hako_member:hako_members!inner (display_name)
       )
     `)
     .eq('hako_id', hakoId)
+    .eq('hako_member.hako_id', hakoId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -48,11 +51,24 @@ export async function getTimelinePosts(hakoId: string) {
   // Sort comments by created_at (oldest first)
   const posts = data.map(post => ({
     ...post,
+    // Prefer the per-Hako display_name in hako_members over the global profile name
+    profiles: {
+      ...post.profiles,
+      display_name: (post as any).hako_member?.display_name || post.profiles?.display_name || 'ユーザー'
+    },
     likes_count: post.likes.length,
     is_liked: post.likes.some((like: any) => like.user_id === user.id),
-    comments: post.comments.sort((a: any, b: any) => 
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
+    comments: post.comments
+      .sort((a: any, b: any) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+      .map((c: any) => ({
+        ...c,
+        profiles: {
+          ...c.profiles,
+          display_name: c.hako_member?.display_name || c.profiles?.display_name || 'ユーザー'
+        }
+      }))
   }))
 
   return posts
