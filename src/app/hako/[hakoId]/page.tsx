@@ -43,8 +43,38 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   if (!member) {
     return redirect(`/hako/${hakoId}/join`)
   }
-  
-  // 4. Fetch Timeline Posts
+  const features = hako.features || ['timeline']
+
+  // 4. Feature Routing Logic
+  if (!features.includes('timeline')) {
+    if (features.includes('diary')) {
+      return redirect(`/hako/${hakoId}/diary`)
+    }
+    // Fallback if no features are enabled
+    const { HakoViewerLayout } = await import('@/components/hako/hako-viewer-layout')
+    return (
+      <HakoViewerLayout
+        hakoId={hako.id}
+        hakoName={hako.name}
+        iconUrl={hako.icon_url || null}
+        iconColor={hako.icon_color || null}
+        email={user.email || ''}
+        isOwner={member.role === 'owner'}
+        memberCount={count || 1}
+        displayName={member.display_name}
+        features={features}
+      >
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500 animate-fade-in">
+           <p className="text-xl font-bold mb-2">利用可能な機能がありません</p>
+           {member.role === 'owner' && (
+             <p className="text-sm">管理ツールの「箱の設定」から機能を有効にしてください。</p>
+           )}
+        </div>
+      </HakoViewerLayout>
+    )
+  }
+
+  // 5. Fetch Timeline Posts (Timeline is enabled)
   let initialPosts: any[] = []
   try {
     const { getTimelinePosts } = await import('@/core/timeline/actions')
@@ -53,7 +83,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
     console.error('Failed to fetch initial posts:', err)
   }
 
-  // 5. Import components
+  // 6. Import components
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
   const { HakoViewerLayout } = await import('@/components/hako/hako-viewer-layout')
 
@@ -67,7 +97,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       isOwner={member.role === 'owner'}
       memberCount={count || 1}
       displayName={member.display_name}
-      features={hako.features || ['timeline']}
+      features={features}
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
