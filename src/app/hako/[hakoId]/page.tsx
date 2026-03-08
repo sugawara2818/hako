@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import { ShieldAlert, AtSign } from 'lucide-react'
 import { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -28,7 +27,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   // 1. Check if user is a member
   const { data: member, error: memberError } = await supabase
     .from('hako_members')
-    .select('role')
+    .select('role, display_name')
     .eq('hako_id', hakoId)
     .eq('user_id', user.id)
     .single()
@@ -69,18 +68,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       email={user.email!}
       isOwner={isOwner}
       memberCount={members?.length || 0}
+      displayName={member?.display_name || null}
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
           
           {/* Timeline Hero Header */}
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-              <div className="flex justify-end mb-3">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
-                      {isOwner ? <ShieldAlert className="w-3 h-3" /> : <AtSign className="w-3 h-3" />}
-                      {isOwner ? 'オーナー' : 'メンバー'}
-                  </div>
-              </div>
               <h1 className="text-4xl md:text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
                   タイムライン
               </h1>

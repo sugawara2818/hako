@@ -62,3 +62,19 @@ export async function leaveHako(hakoId: string) {
   if (error) throw error
   return { success: true }
 }
+
+// ディスプレイネーム更新
+export async function updateDisplayName(hakoId: string, displayName: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase
+    .from('hako_members')
+    .update({ display_name: displayName.trim() || null })
+    .eq('hako_id', hakoId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+  return { success: true }
+}

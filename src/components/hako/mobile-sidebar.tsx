@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Hash, LayoutDashboard, Settings, User, UserMinus, X } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
+import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
 
@@ -13,14 +13,17 @@ interface MobileSidebarProps {
   email: string
   isOwner: boolean
   memberCount: number
+  displayName: string | null
   isOpen: boolean
   onClose: () => void
 }
 
 export function MobileSidebar({
-  hakoId, hakoName, email, isOwner, memberCount, onClose
+  hakoId, hakoName, email, isOwner, memberCount, displayName, onClose
 }: MobileSidebarProps) {
   const router = useRouter()
+
+  const shownName = displayName || email.split('@')[0]
 
   const handleLeaveHako = async () => {
     if (confirm('この箱から退会しますか？（参加し直すには招待リンクが必要です）')) {
@@ -79,9 +82,9 @@ export function MobileSidebar({
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center shrink-0">
             <User className="w-5 h-5 text-gray-400" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">{email.split('@')[0]}</p>
-            <p className="text-xs text-gray-500 truncate">{email}</p>
+          <div className="min-w-0 flex-1">
+            <UsernameEditor hakoId={hakoId} currentName={shownName} />
+            <p className="text-xs text-gray-500 truncate mt-0.5">{email}</p>
           </div>
         </div>
 

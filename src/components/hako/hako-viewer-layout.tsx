@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -13,6 +13,7 @@ interface HakoViewerLayoutProps {
   email: string
   isOwner: boolean
   memberCount: number
+  displayName: string | null
   children: React.ReactNode
 }
 
@@ -20,7 +21,7 @@ const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerW
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 
 export function HakoViewerLayout({
-  hakoId, hakoName, email, isOwner, memberCount, children
+  hakoId, hakoName, email, isOwner, memberCount, displayName, children
 }: HakoViewerLayoutProps) {
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
@@ -103,9 +104,13 @@ export function HakoViewerLayout({
 
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-white/5 bg-black/50 backdrop-blur-xl h-screen sticky top-0 flex flex-col z-10 hidden md:flex">
-        <div className="h-16 flex items-center px-6 border-b border-white/5 gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20">H</div>
-          <span className="font-bold truncate">{hakoName}</span>
+        <div className="h-16 flex items-center px-4 border-b border-white/5 gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0">H</div>
+          <span className="font-bold truncate flex-1 text-sm">{hakoName}</span>
+          <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+            {isOwner ? <ShieldAlert className="w-3 h-3" /> : <AtSign className="w-3 h-3" />}
+            {isOwner ? 'Owner' : 'Member'}
+          </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
@@ -135,7 +140,7 @@ export function HakoViewerLayout({
         </nav>
 
         <div className="p-4 border-t border-white/5 bg-black/40">
-          <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} />
+          <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} />
         </div>
       </aside>
 
@@ -171,6 +176,7 @@ export function HakoViewerLayout({
             email={email}
             isOwner={isOwner}
             memberCount={memberCount}
+            displayName={displayName}
             isOpen={true}
             onClose={handleClose}
           />
@@ -183,12 +189,16 @@ export function HakoViewerLayout({
         <header className="md:hidden h-16 border-b border-white/5 flex items-center justify-between px-4 glass sticky top-0 z-50">
           <button
             onClick={() => { setIsOpen(true); setDragProgress(1) }}
-            className="flex items-center gap-3 min-w-0"
+            className="flex items-center gap-2 min-w-0 flex-1"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0">H</div>
-            <span className="font-bold truncate max-w-[140px] text-sm">{hakoName}</span>
+            <span className="font-bold truncate max-w-[100px] text-sm">{hakoName}</span>
+            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+              {isOwner ? <ShieldAlert className="w-2.5 h-2.5" /> : <AtSign className="w-2.5 h-2.5" />}
+              {isOwner ? 'Owner' : 'Member'}
+            </div>
           </button>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <InstallButton variant="icon" />
           </div>
         </header>

@@ -4,14 +4,16 @@ import { useState, useRef, useEffect } from 'react'
 import { MoreHorizontal, UserMinus, User } from 'lucide-react'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
+import { UsernameEditor } from '@/components/hako/username-editor'
 
 interface UserMenuProps {
   email: string
   hakoId: string
   isOwner: boolean
+  displayName: string | null
 }
 
-export function UserMenu({ email, hakoId, isOwner }: UserMenuProps) {
+export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -38,6 +40,8 @@ export function UserMenu({ email, hakoId, isOwner }: UserMenuProps) {
     }
   }
 
+  const shownName = displayName || email.split('@')[0]
+
   return (
     <div className="relative" ref={menuRef}>
       <button 
@@ -48,16 +52,16 @@ export function UserMenu({ email, hakoId, isOwner }: UserMenuProps) {
           <User className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
         </div>
         <div className="flex-1 min-w-0 text-left hidden md:block">
-          <p className="text-sm font-bold text-white truncate">{email.split('@')[0]}</p>
+          <p className="text-sm font-bold text-white truncate">{shownName}</p>
           <p className="text-xs text-gray-500 truncate">{email}</p>
         </div>
         <MoreHorizontal className="w-5 h-5 text-gray-500 hidden md:block" />
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-64 glass rounded-[24px] border border-white/10 bg-black/90 shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-bottom-2 duration-200 z-[100]">
-          <div className="px-4 py-3 border-b border-white/5 mb-1">
-            <p className="text-sm font-bold text-white truncate">{email.split('@')[0]}</p>
+        <div className="absolute bottom-full left-0 mb-2 w-72 glass rounded-[24px] border border-white/10 bg-black/90 shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-bottom-2 duration-200 z-[100]">
+          <div className="px-4 py-3 border-b border-white/5 mb-1 space-y-1">
+            <UsernameEditor hakoId={hakoId} currentName={shownName} />
             <p className="text-xs text-gray-500 truncate">{email}</p>
           </div>
 
