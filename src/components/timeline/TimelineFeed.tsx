@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useTransition } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
@@ -15,6 +15,7 @@ interface TimelineFeedProps {
 
 export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFeedProps) {
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,11 +44,8 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     const currentY = e.touches[0].pageY
     const diff = currentY - startY
     if (diff > 0 && window.scrollY === 0) {
-      // Damping effect
       setPullDistance(Math.min(diff * 0.4, PULL_THRESHOLD + 20))
-      if (diff > 10) {
-        if (e.cancelable) e.preventDefault()
-      }
+      if (diff > 10 && e.cancelable) e.preventDefault()
     }
   }
 
@@ -59,12 +57,41 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     setPullDistance(0)
   }
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (window.scrollY === 0) {
+      setStartY(e.pageY)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (startY === 0) return
+    const currentY = e.pageY
+    const diff = currentY - startY
+    if (diff > 0 && window.scrollY === 0) {
+      setPullDistance(Math.min(diff * 0.4, PULL_THRESHOLD + 20))
+    }
+  }
+
+  const handleMouseUp = () => {
+    if (pullDistance >= PULL_THRESHOLD) {
+      handleRefresh()
+    }
+    setStartY(0)
+    setPullDistance(0)
+  }
+
   const handleRefresh = async () => {
     if (isRefreshing) return
     setIsRefreshing(true)
-    router.refresh()
-    // Small delay to show the spinner
-    setTimeout(() => setIsRefreshing(false), 1000)
+    
+    startTransition(() => {
+      router.refresh()
+    })
+
+    // Shorter timeout to allow more continuous interaction
+    setTimeout(() => {
+      setIsRefreshing(false)
+    }, 600)
   }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,10 +191,14 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   return (
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col gap-6"
+      className="w-full max-w-2xl mx-auto flex flex-col gap-6 select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       {/* Pull down indicator */}
       <div 
@@ -190,7 +221,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="この箱のメンバーに共有しよう"
-            className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[80px]"
+            className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[80px] select-text"
             disabled={isSubmitting}
           />
 
@@ -299,18 +330,6 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
             </div>
           </div>
         </form>
-      </div>
-
-      {/* Manual Refresh Button for Desktop/Accessibility - Hidden on mobile as pull-to-refresh is available */}
-      <div className="hidden md:flex justify-center -mb-2">
-        <button 
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-xs font-bold text-gray-400 hover:text-white transition-all hover:border-purple-500/50 active:scale-95 group"
-        >
-          <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-          最新の投稿を確認
-        </button>
       </div>
 
       <div className="flex flex-col gap-4">
