@@ -58,19 +58,15 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">日付指定</span>
-            <div className="relative group min-w-[140px]">
-              <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
-              <input 
-                type="date" 
-                value={selectedFilterDate || ''}
-                onChange={(e) => setSelectedFilterDate(e.target.value || null)}
-                className="w-full bg-[#111] border border-white/5 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none"
-              />
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          {selectedFilterDate && (
+            <button 
+              onClick={() => setSelectedFilterDate(null)}
+              className="px-4 py-2 text-xs font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all"
+            >
+              {selectedFilterDate} のフィルターを解除
+            </button>
+          )}
 
           <Link
             href={`/hako/${hakoId}/diary/new${selectedFilterDate ? `?date=${selectedFilterDate}` : ''}`}

@@ -27,9 +27,14 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [content, setContent] = useState(initialData?.content || '')
   const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
-  const [diaryDate, setDiaryDate] = useState(initialData?.diary_date || format(new Date(), 'yyyy-MM-dd'))
+  
+  // Initialize with today if the provided date is in the future
+  const initialDate = initialData?.diary_date || format(new Date(), 'yyyy-MM-dd')
+  const clampedDate = isFuture(parseISO(initialDate)) && !isToday(parseISO(initialDate)) ? format(new Date(), 'yyyy-MM-dd') : initialDate
+  
+  const [diaryDate, setDiaryDate] = useState(clampedDate)
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(new Date())
+  const [calendarMonth, setCalendarMonth] = useState(parseISO(clampedDate))
 
   useEffect(() => {
     const loadDates = async () => {
@@ -82,16 +87,17 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
         {/* Date Selection */}
         <div className="relative">
           <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">日付</label>
-          <div className="relative group">
+          <div className="relative inline-block w-auto">
             <button 
               type="button"
               onClick={() => {
                 setCalendarMonth(parseISO(diaryDate))
                 setShowDatePicker(true)
               }}
-              className={`w-full bg-[#1a1a1a] hover:bg-[#222] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/20 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white text-left focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-lg cursor-pointer shadow-inner block`}
+              className={`flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 hover:border-white/20'} rounded-xl py-3 px-5 text-white/90 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-sm cursor-pointer shadow-sm`}
             >
-               {format(parseISO(diaryDate), 'yyyy年 MM月 dd日 (E)', { locale: ja })}
+               <Calendar className="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+               <span className="text-left w-36">{format(parseISO(diaryDate), 'yyyy年MM月dd日 (E)', { locale: ja })}</span>
             </button>
           </div>
           {isAlreadyExists && (
@@ -170,7 +176,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       {showDatePicker && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDatePicker(false)} />
-          <div className="relative w-full max-w-[340px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-[340px] bg-[#111] border border-white/5 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-lg text-white">
                 {format(calendarMonth, 'yyyy年 MM月', { locale: ja })}
@@ -213,13 +219,14 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                     }}
                     disabled={isFutureDay}
                     className={`
-                      relative aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all
-                      ${isFutureDay ? 'opacity-20 cursor-not-allowed text-gray-500' : 'hover:bg-white/10 text-gray-300'}
-                      ${isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-500/50' : ''}
-                      ${!isSelected && isToday(day) ? 'text-white font-black underline decoration-blue-500 underline-offset-4' : ''}
+                      relative aspect-square rounded-2xl flex items-center justify-center text-sm font-bold transition-all group
+                      ${isFutureDay ? 'opacity-20 cursor-not-allowed text-gray-500' : 'hover:bg-white/5 text-gray-400'}
+                      ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30 text-blue-400' : ''}
                     `}
                   >
-                    {format(day, 'd')}
+                    <span className={`${isSelected ? 'text-blue-400' : isToday(day) ? 'text-white underline decoration-blue-500 underline-offset-4' : 'text-gray-400'}`}>
+                      {format(day, 'd')}
+                    </span>
                   </button>
                 )
               })}
