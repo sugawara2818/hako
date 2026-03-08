@@ -5,6 +5,7 @@ import { MoreHorizontal, UserMinus, User } from 'lucide-react'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
 import { UsernameEditor } from '@/components/hako/username-editor'
+import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 
 interface UserMenuProps {
   email: string
@@ -15,6 +16,7 @@ interface UserMenuProps {
 
 export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -29,14 +31,12 @@ export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps)
   }, [])
 
   const handleLeaveHako = async () => {
-    if (confirm('この箱から退会しますか？（参加し直すには招待リンクが必要です）')) {
-      try {
-        await leaveHako(hakoId)
-        router.push('/')
-      } catch (error) {
-        alert('退会処理に失敗しました')
-        console.error(error)
-      }
+    try {
+      await leaveHako(hakoId)
+      router.push('/')
+    } catch (error) {
+      alert('退会処理に失敗しました')
+      console.error(error)
     }
   }
 
@@ -67,7 +67,10 @@ export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps)
 
           {!isOwner ? (
             <button
-              onClick={handleLeaveHako}
+              onClick={() => {
+                setIsOpen(false)
+                setShowLeaveModal(true)
+              }}
               className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left"
             >
               <UserMinus className="w-4 h-4" />
@@ -80,6 +83,13 @@ export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps)
           )}
         </div>
       )}
+
+      <LeaveHakoModal 
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveHako}
+      />
     </div>
   )
 }
+

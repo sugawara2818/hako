@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Hash, LayoutDashboard, Settings, User, UserMinus, X, BookOpen } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
@@ -7,6 +8,7 @@ import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
 import { usePathname, useRouter } from 'next/navigation'
 import { getHakoGradient } from '@/lib/hako-utils'
+import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 
 interface MobileSidebarProps {
   hakoId: string
@@ -33,14 +35,15 @@ export function MobileSidebar({
 
   const shownName = displayName || email.split('@')[0]
 
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
+
   const handleLeaveHako = async () => {
-    if (confirm('この箱から退会しますか？（参加し直すには招待リンクが必要です）')) {
-      try {
-        await leaveHako(hakoId)
-        router.push('/')
-      } catch (e) {
-        alert('退会処理に失敗しました')
-      }
+    try {
+      await leaveHako(hakoId)
+      router.push('/')
+    } catch (e) {
+      alert('退会処理に失敗しました')
+      console.error(e)
     }
   }
 
@@ -124,7 +127,7 @@ export function MobileSidebar({
 
         {!isOwner && (
           <button
-            onClick={handleLeaveHako}
+            onClick={() => setShowLeaveModal(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium text-left"
           >
             <UserMinus className="w-4 h-4" />
@@ -132,6 +135,12 @@ export function MobileSidebar({
           </button>
         )}
       </div>
+
+      <LeaveHakoModal 
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveHako}
+      />
     </div>
   )
 }
