@@ -65,26 +65,38 @@ export async function getTimelinePosts(hakoId: string) {
   const resolveName = (userId: string, profileName?: string | null) =>
     displayNameMap[userId] || profileName || 'ユーザー'
 
-  const posts = data.map(post => ({
-    ...post,
-    profiles: {
-      ...post.profiles,
-      display_name: resolveName(post.user_id, post.profiles?.display_name)
-    },
-    likes_count: post.likes.length,
-    is_liked: post.likes.some((like: any) => like.user_id === user.id),
-    comments: post.comments
-      .sort((a: any, b: any) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      )
-      .map((c: any) => ({
-        ...c,
-        profiles: {
-          ...c.profiles,
-          display_name: resolveName(c.user_id, c.profiles?.display_name)
-        }
-      }))
-  }))
+  // Defensive mapping
+  const posts = (data || []).map(post => {
+    const pProfiles = post.profiles || {}
+    const pLikes = post.likes || []
+    const pComments = post.comments || []
+    
+    return {
+      ...post,
+      profiles: {
+        ...pProfiles,
+        display_name: resolveName(post.user_id, pProfiles.display_name)
+      },
+      likes_count: pLikes.length,
+      is_liked: pLikes.some((like: any) => like.user_id === user.id),
+      comments: [...pComments]
+        .sort((a: any, b: any) => {
+          const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+          const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+          return timeA - timeB
+        })
+        .map((c: any) => {
+          const cProfiles = c.profiles || {}
+          return {
+            ...c,
+            profiles: {
+              ...cProfiles,
+              display_name: resolveName(c.user_id, cProfiles.display_name)
+            }
+          }
+        })
+    }
+  })
 
   return posts
 }
