@@ -1,10 +1,9 @@
-'use client'
-
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
-import { Send, Image as ImageIcon, Loader2, X } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, X, RefreshCcw, ArrowDown } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface TimelineFeedProps {
   hakoId: string
@@ -13,6 +12,7 @@ interface TimelineFeedProps {
 }
 
 export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFeedProps) {
+  const router = useRouter()
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +21,49 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Pull to refresh state
+  const [startY, setStartY] = useState(0)
+  const [pullDistance, setPullDistance] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const feedRef = useRef<HTMLDivElement>(null)
+
   const MAX_CHARS = 1000
+  const PULL_THRESHOLD = 80
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY === 0) {
+      setStartY(e.touches[0].pageY)
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY === 0) return
+    const currentY = e.touches[0].pageY
+    const diff = currentY - startY
+    if (diff > 0 && window.scrollY === 0) {
+      // Damping effect
+      setPullDistance(Math.min(diff * 0.4, PULL_THRESHOLD + 20))
+      if (diff > 10) {
+        if (e.cancelable) e.preventDefault()
+      }
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (pullDistance >= PULL_THRESHOLD) {
+      handleRefresh()
+    }
+    setStartY(0)
+    setPullDistance(0)
+  }
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    router.refresh()
+    // Small delay to show the spinner
+    setTimeout(() => setIsRefreshing(false), 1000)
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -118,7 +160,28 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const canSubmit = (content.trim() || selectedFiles.length > 0) && !isSubmitting && !isOverLimit
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
+    <div 
+      ref={feedRef}
+      className="w-full max-w-2xl mx-auto flex flex-col gap-6"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull down indicator */}
+      <div 
+        className="overflow-hidden transition-all duration-200 flex items-center justify-center text-purple-400"
+        style={{ height: pullDistance > 0 ? `${pullDistance}px` : (isRefreshing ? '50px' : '0px') }}
+      >
+        {isRefreshing ? (
+          <Loader2 className="w-6 h-6 animate-spin" />
+        ) : (
+          <ArrowDown 
+            className="w-6 h-6 transition-transform" 
+            style={{ transform: `rotate(${pullDistance >= PULL_THRESHOLD ? '180deg' : '0deg'})` }} 
+          />
+        )}
+      </div>
+
       <div className="glass p-6 rounded-3xl border border-white/10 shadow-xl shadow-black/20">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
@@ -234,6 +297,18 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
             </div>
           </div>
         </form>
+      </div>
+
+      {/* Manual Refresh Button for Desktop/Accessibility */}
+      <div className="flex justify-center -mb-2">
+        <button 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-xs font-bold text-gray-400 hover:text-white transition-all hover:border-purple-500/50 active:scale-95 group"
+        >
+          <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+          最新の投稿を確認
+        </button>
       </div>
 
       <div className="flex flex-col gap-4">

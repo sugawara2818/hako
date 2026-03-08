@@ -21,31 +21,28 @@ function ConfirmDialog({
   danger?: boolean
 }) {
   return (
-    <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
-      {/* Dialog */}
-      <div className="relative w-full max-w-sm mx-4 mb-6 md:mb-0 bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 duration-200">
-        <div className="flex items-start gap-3 mb-5">
-          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-200 leading-relaxed">{message}</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2.5 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors"
-          >
-            キャンセル
-          </button>
+    <div className="absolute inset-x-0 inset-y-0 z-[50] flex items-center justify-center p-4">
+      {/* Backdrop for the card only */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-2xl" onClick={onCancel} />
+      {/* Dialog card */}
+      <div className="relative w-full max-w-[280px] bg-[#1a1a1a] border border-white/10 rounded-2xl p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-sm text-gray-200 leading-relaxed mb-4 text-center">{message}</p>
+        <div className="flex flex-col gap-2">
           <button
             onClick={onConfirm}
-            className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-colors ${
+            className={`w-full py-2 rounded-xl text-sm font-bold transition-colors ${
               danger
-                ? 'bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30'
-                : 'bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30'
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : 'bg-purple-600 text-white hover:bg-purple-500'
             }`}
           >
             {confirmLabel}
+          </button>
+          <button
+            onClick={onCancel}
+            className="w-full py-2 rounded-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors"
+          >
+            キャンセル
           </button>
         </div>
       </div>
@@ -102,9 +99,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
   // Images to display
   const images = post.image_urls || (post.image_url ? [post.image_url] : [])
 
-  // Lightbox state
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-
   // Optimistic like state
   const [optimisticState, setOptimisticState] = useState<{ isLiked: boolean, likesCount: number } | null>(null)
   const isLiked = optimisticState ? optimisticState.isLiked : post.is_liked
@@ -147,7 +141,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
   }
 
   const handleDelete = () => {
-    showConfirm('この投稿を削除しますか？元に戻すことはできません。', async () => {
+    showConfirm('投稿を削除しますか？', async () => {
       setConfirmState(null)
       setIsDeleting(true)
       try {
@@ -193,42 +187,14 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
   }
 
   return (
-    <>
-      {/* Custom Confirm Dialog */}
+    <div className="relative group/post">
+      {/* Custom Confirm Dialog - Contextual overlay */}
       {confirmState && (
         <ConfirmDialog
           message={confirmState.message}
           onConfirm={confirmState.onConfirm}
           onCancel={() => setConfirmState(null)}
         />
-      )}
-
-      {/* Lightbox */}
-      {lightboxIndex !== null && (
-        <div className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center animate-in fade-in duration-200">
-           <button 
-             onClick={() => setLightboxIndex(null)}
-             className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center backdrop-blur-md transition-colors z-10"
-           >
-             <X className="w-6 h-6 text-white" />
-           </button>
-           <img 
-             src={images[lightboxIndex]} 
-             alt="Post Image" 
-             className="max-w-[95vw] max-h-[90vh] object-contain shadow-2xl animate-in zoom-in-95 duration-300" 
-           />
-           {images.length > 1 && (
-             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-               {images.map((_, i) => (
-                 <button 
-                  key={i}
-                  onClick={() => setLightboxIndex(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-purple-500 w-6' : 'bg-white/30'}`}
-                 />
-               ))}
-             </div>
-           )}
-        </div>
       )}
 
       <div className="glass p-6 rounded-2xl border border-white/5 transition-all hover:bg-white/[0.02]">
@@ -261,19 +227,17 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                 {images.map((url, i) => (
                   <div 
                     key={url} 
-                    className={`relative cursor-zoom-in group overflow-hidden ${
+                    className={`relative overflow-hidden ${
                       images.length === 3 && i === 0 ? 'row-span-2' : ''
                     }`}
-                    onClick={() => setLightboxIndex(i)}
                   >
                     <img 
                       src={url} 
                       alt={`Attachment ${i + 1}`} 
-                      className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                      className={`w-full h-full object-cover ${
                         images.length === 1 ? 'max-h-[512px]' : 'aspect-square md:aspect-video'
                       }`} 
                     />
-                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
                   </div>
                 ))}
               </div>
@@ -340,11 +304,11 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                     <p className="text-gray-500 text-xs text-center py-2">まだコメントはありません</p>
                   )}
                   {post.comments?.map(comment => (
-                    <div key={comment.id} className="flex gap-3 group">
+                    <div key={comment.id} className="relative flex gap-3 group/comment">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
                          {comment.profiles?.display_name?.charAt(0) || '?'}
                       </div>
-                      <div className="flex-1 min-w-0 bg-white/5 rounded-2xl rounded-tl-none p-3 relative">
+                      <div className="flex-1 min-w-0 bg-white/5 rounded-2xl rounded-tl-none p-3 pb-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                              <span className="font-bold text-white text-xs">{comment.profiles?.display_name}</span>
@@ -353,7 +317,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                           {currentUserId === comment.user_id && (
                             <button 
                               onClick={() => handleDeleteComment(comment.id)}
-                              className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="text-gray-500 hover:text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -369,6 +333,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
