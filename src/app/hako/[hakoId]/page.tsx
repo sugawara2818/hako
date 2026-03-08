@@ -47,8 +47,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
 
   // 4. Feature Routing Logic
   if (!features.includes('timeline')) {
-    if (features.includes('diary')) {
-      return redirect(`/hako/${hakoId}/diary`)
+    if (features.length > 0) {
+      // Future-proof routing: Redirect to the first available feature automatically.
+      // This assumes that future feature IDs match their sub-route path (e.g., 'diary' -> /diary, 'forum' -> /forum)
+      const firstFeature = features[0];
+      return redirect(`/hako/${hakoId}/${firstFeature}`)
     }
     // Fallback if no features are enabled
     const { HakoViewerLayout } = await import('@/components/hako/hako-viewer-layout')
