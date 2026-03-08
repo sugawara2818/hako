@@ -79,10 +79,7 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
 
   let query = supabase
     .from('hako_diaries')
-    .select(`
-      *,
-      profiles:user_id (display_name, avatar_url)
-    `)
+    .select('*')
     .eq('hako_id', hakoId)
     .order('diary_date', { ascending: false })
 
@@ -93,21 +90,40 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     query = query.eq('diary_date', date)
   }
 
-  const { data, error } = await query
+  const { data: diaryData, error: diaryError } = await query
 
-  if (error) {
-    console.error('fetchDiaryEntries Error:', error)
-    throw error
+  if (diaryError) {
+    console.error('fetchDiaryEntries Error:', diaryError)
+    throw diaryError
   }
 
-  // Separately fetch per-Hako display names from hako_members to avoid complex join crash
-  // Pattern borrowed from timeline actions
+  if (!diaryData || diaryData.length === 0) return []
+
+  const userIds = [...new Set(diaryData.map(d => d.user_id))]
+
+  // 1. Fetch profiles separately
+  const profileMap: Record<string, any> = {}
+  try {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url')
+      .in('id', userIds)
+    
+    if (profiles) {
+      profiles.forEach(p => { profileMap[p.id] = p })
+    }
+  } catch (e) {
+    console.error('fetchProfiles Error:', e)
+  }
+
+  // 2. Fetch hako_members separately
   const displayNameMap: Record<string, string> = {}
   try {
     const { data: hakoMemberNames } = await supabase
       .from('hako_members')
       .select('user_id, display_name')
       .eq('hako_id', hakoId)
+      .in('user_id', userIds)
 
     if (hakoMemberNames) {
       for (const m of hakoMemberNames) {
@@ -118,13 +134,12 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     console.error('fetchHakoMemberNames Error:', e)
   }
 
-  // Map display names into the data structure for the UI
-  const entriesWithNames = (data || []).map(entry => ({
+  // 3. Join in memory
+  return diaryData.map(entry => ({
     ...entry,
+    profiles: profileMap[entry.user_id] || null,
     hako_members: [{ display_name: displayNameMap[entry.user_id] || null }]
   }))
-  
-  return entriesWithNames
 }
 
 export async function fetchDiaryStats(hakoId: string, year: number, month: number) {

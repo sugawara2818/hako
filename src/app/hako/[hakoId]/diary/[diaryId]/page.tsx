@@ -17,10 +17,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
     supabase.from('hako_members').select('*').eq('hako_id', hakoId).eq('user_id', user.id).maybeSingle(),
     supabase.from('hako_members').select('*', { count: 'exact', head: true }).eq('hako_id', hakoId),
     supabase.from('hako_diaries')
-      .select(`
-        *,
-        profiles:user_id (avatar_url, display_name)
-      `)
+      .select('*')
       .eq('id', diaryId)
       .single()
   ])
@@ -31,7 +28,14 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
 
   if (!hako || !member || !diaryData) return notFound()
 
-  // Separately fetch author's hako-specific name
+  // 1. Fetch author profile separately
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name, avatar_url')
+    .eq('id', diaryData.user_id)
+    .single()
+
+  // 2. Fetch author's hako-specific name
   const { data: authorMember } = await supabase
     .from('hako_members')
     .select('display_name')
@@ -41,6 +45,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
 
   const diary = {
     ...diaryData,
+    profiles: profile || null,
     hako_members: [{ display_name: authorMember?.display_name || null }]
   }
 
