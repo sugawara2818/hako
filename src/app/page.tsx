@@ -26,7 +26,7 @@ export default async function Home() {
               hako
             </span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
             {!isLoggedIn ? (
               <>
                 <Link 
@@ -46,7 +46,7 @@ export default async function Home() {
               <>
                 <Link 
                   href="/owner/dashboard"
-                  className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                  className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
                 >
                   ダッシュボード
                 </Link>
