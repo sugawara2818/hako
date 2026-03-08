@@ -206,6 +206,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                 const dateStr = format(day, 'yyyy-MM-dd')
                 const isSelected = diaryDate === dateStr
                 const isFutureDay = isFuture(day) && !isToday(day)
+                const hasEntry = existingDates.includes(dateStr)
 
                 return (
                   <button
@@ -219,7 +220,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                     }}
                     disabled={isFutureDay}
                     className={`
-                      relative aspect-square rounded-2xl flex items-center justify-center text-sm font-bold transition-all group
+                      relative aspect-square rounded-2xl flex flex-col items-center justify-center text-sm font-bold transition-all group
                       ${isFutureDay ? 'opacity-20 cursor-not-allowed text-gray-500' : 'hover:bg-white/5 text-gray-400'}
                       ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30 text-blue-400' : ''}
                     `}
@@ -227,6 +228,12 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                     <span className={`${isSelected ? 'text-blue-400' : isToday(day) ? 'text-white underline decoration-blue-500 underline-offset-4' : 'text-gray-400'}`}>
                       {format(day, 'd')}
                     </span>
+                    
+                    {hasEntry && (
+                      <div className="absolute bottom-2 flex gap-0.5">
+                        <div className={`w-1 h-1 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)] ${isSelected ? 'bg-blue-400' : 'bg-blue-500/60'}`} />
+                      </div>
+                    )}
                   </button>
                 )
               })}
