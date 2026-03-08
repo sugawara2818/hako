@@ -19,12 +19,18 @@ export default function Home() {
               hako
             </span>
           </div>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/auth/login"
+              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+            >
+              ログイン
+            </Link>
             <Link 
               href="/auth/owner/signup"
-              className="px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-sm font-medium backdrop-blur-md border border-white/10"
+              className="px-6 py-2.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 hover:text-purple-300 transition-all text-sm font-bold backdrop-blur-md border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
             >
-              オーナー登録
+              オーナーになる
             </Link>
           </div>
         </nav>
