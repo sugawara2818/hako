@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { Blocks, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic'
 
 export default function OwnerSignUpPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const intent = searchParams.get('intent')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -43,8 +46,12 @@ export default function OwnerSignUpPage() {
           })
           if (signInError) throw new Error('既に登録されているメールアドレスです。正しいパスワードを入力するかログイン画面からお入りください。')
           
-          // Successful login of existing user - redirect to dashboard
-          router.push('/owner/dashboard')
+          // Successful login of existing user
+          if (intent === 'create') {
+            router.push('/owner/hako/create')
+          } else {
+            router.push('/owner/dashboard')
+          }
           return
         }
         throw signupError
@@ -56,8 +63,12 @@ export default function OwnerSignUpPage() {
       const { ensureProfile } = await import('@/core/timeline/actions')
       await ensureProfile(user.id, email)
 
-      // 新規登録直後の自動ログイン
-      router.push('/owner/hako/create')
+      // 新規登録直後の自動ログイン (意図に基づいて分岐)
+      if (intent === 'create') {
+        router.push('/owner/hako/create')
+      } else {
+        router.push('/owner/dashboard')
+      }
     } catch (e: any) {
       console.error(e)
       setErrorMsg(e.message || '登録中にエラーが発生しました')

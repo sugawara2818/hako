@@ -84,7 +84,7 @@ export default async function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Link 
-              href={isLoggedIn ? "/owner/hako/create" : "/auth/owner/signup"}
+              href={isLoggedIn ? "/owner/hako/create" : "/auth/owner/signup?intent=create"}
               className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-all flex items-center justify-center gap-2 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-pink-200 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -92,14 +92,6 @@ export default async function Home() {
                 無料で箱を作る <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
-            {!isLoggedIn && (
-              <Link 
-                href="/auth/login"
-                className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10 transition-all font-bold text-lg flex items-center justify-center text-white"
-              >
-                ログイン
-              </Link>
-            )}
           </div>
 
           {/* Abstract Platform Visual */}
