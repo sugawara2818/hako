@@ -75,17 +75,14 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
           
           {/* Timeline Hero Header */}
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium">
-                      Timeline Space
-                  </div>
+              <div className="flex justify-end mb-3">
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
                       {isOwner ? <ShieldAlert className="w-3 h-3" /> : <AtSign className="w-3 h-3" />}
                       {isOwner ? 'オーナー' : 'メンバー'}
                   </div>
               </div>
               <h1 className="text-4xl md:text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                  {hako.name}
+                  タイムライン
               </h1>
           </div>
 
