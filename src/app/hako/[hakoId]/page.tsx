@@ -3,8 +3,22 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Hash, Users, ShieldAlert, LogOut, Settings, AtSign, LayoutDashboard, Home } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
+import { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ hakoId: string }> }): Promise<Metadata> {
+  const { hakoId } = await params
+  const supabase = await createServerSupabaseClient()
+  const { data: hako } = await supabase.from('hako').select('name').eq('id', hakoId).single()
+  
+  const title = hako ? `${hako.name} - Hako` : 'Hako Space'
+  
+  return {
+    title,
+    manifest: `/api/manifest/${hakoId}`
+  }
+}
 
 export default async function HakoSpacePage({ params }: { params: Promise<{ hakoId: string }> }) {
   const { hakoId } = await params
