@@ -48,7 +48,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
 
   // 5. Import TimelineFeed and InstallPrompt
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
-  const { InstallPrompt } = await import('@/components/pwa/InstallPrompt')
+  const { InstallPrompt } = await import('@/components/hako/install-prompt')
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex font-sans">
