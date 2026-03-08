@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Settings, Users, ArrowUpRight, Copy, Share2, Globe, LayoutDashboard, ArrowLeft } from 'lucide-react'
+import { Settings, Users, ArrowUpRight, Copy, Share2, Globe, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
+import { signOut } from '@/core/auth/actions'
 
 export default async function OwnerDashboardPage({
   params,
@@ -63,6 +64,12 @@ export default async function OwnerDashboardPage({
             >
               箱を見る <ArrowUpRight className="w-4 h-4" />
             </Link>
+            <div className="h-4 w-[1px] bg-white/10 mx-1" />
+            <form action={signOut}>
+                <button type="submit" className="text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-2 transition-colors">
+                    <LogOut className="w-4 h-4" /> ログアウト
+                </button>
+            </form>
           </div>
         </div>
       </nav>
