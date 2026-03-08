@@ -45,16 +45,21 @@ export async function getTimelinePosts(hakoId: string) {
   if (error) throw error
 
   // Separately fetch per-Hako display names from hako_members
-  const { data: hakoMemberNames } = await supabase
-    .from('hako_members')
-    .select('user_id, display_name')
-    .eq('hako_id', hakoId)
-    .not('display_name', 'is', null)
-
-  // Build a lookup map: userId -> hako-specific display_name
+  // Wrapped in try/catch in case the display_name column hasn't been added yet
   const displayNameMap: Record<string, string> = {}
-  for (const m of hakoMemberNames || []) {
-    if (m.display_name) displayNameMap[m.user_id] = m.display_name
+  try {
+    const { data: hakoMemberNames, error: memberNameError } = await supabase
+      .from('hako_members')
+      .select('user_id, display_name')
+      .eq('hako_id', hakoId)
+
+    if (!memberNameError && hakoMemberNames) {
+      for (const m of hakoMemberNames) {
+        if (m.display_name) displayNameMap[m.user_id] = m.display_name
+      }
+    }
+  } catch {
+    // Silently fall back to profile names if hako_members.display_name doesn't exist
   }
 
   const resolveName = (userId: string, profileName?: string | null) =>
