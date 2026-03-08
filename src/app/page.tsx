@@ -56,6 +56,10 @@ export default async function Home() {
               </>
             ) : (
               <>
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mr-2">
+                  <AtSign className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="text-xs font-medium text-gray-400">{user.email}</span>
+                </div>
                 {isOwner && (
                   <Link 
                     href="/owner/dashboard"
