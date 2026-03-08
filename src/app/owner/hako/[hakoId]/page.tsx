@@ -44,22 +44,22 @@ export default async function OwnerDashboardPage({
     <div className="min-h-screen bg-[#050505] text-white font-sans">
       {/* Sidebar/Nav Mock */}
       <nav className="fixed top-0 w-full glass border-b border-white/5 z-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Link href="/owner/dashboard" className="flex items-center gap-1 md:gap-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors px-2 md:px-3 py-2 -ml-2 md:-ml-3 rounded-xl group shrink-0">
+        <div className="max-w-7xl mx-auto px-2 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 md:gap-3 min-w-0 flex-1">
+            <Link href="/owner/dashboard" className="flex items-center gap-1 md:gap-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors px-1.5 md:px-3 py-2 -ml-1.5 md:-ml-3 rounded-xl group shrink-0">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="font-medium hidden sm:inline">一覧に戻る</span>
             </Link>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm ml-1 md:ml-2 shrink-0">
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
               {hako.name?.charAt(0) || 'H'}
             </div>
-            <span className="font-bold text-base md:text-lg truncate">{hako.name}</span>
-            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 ml-1 md:ml-2 shrink-0">Owner</span>
+            <span className="font-bold text-sm md:text-lg truncate">{hako.name}</span>
+            <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 shrink-0 hidden sm:inline-block">Owner</span>
           </div>
-          <div className="flex items-center gap-3 md:gap-4 shrink-0">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0 pl-2">
             <Link 
               href={`/hako/${hako.id}`}
-              className="flex items-center gap-1 md:gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-400 hover:text-white transition-colors"
               target="_blank"
             >
               <span className="hidden sm:inline">箱を見る</span>
@@ -67,7 +67,7 @@ export default async function OwnerDashboardPage({
             </Link>
             <div className="h-4 w-[1px] bg-white/10 mx-0.5 md:mx-1" />
             <form action={signOut}>
-                <button type="submit" className="text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-1 md:gap-2 transition-colors" title="ログアウト">
+                <button type="submit" className="text-xs md:text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-1 md:gap-2 transition-colors" title="ログアウト">
                     <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">ログアウト</span>
                 </button>
             </form>
@@ -75,10 +75,10 @@ export default async function OwnerDashboardPage({
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 pt-24 pb-12">
-        <div className="mb-10 animate-fade-in">
-          <h1 className="text-3xl font-bold mb-2">ダッシュボード</h1>
-          <p className="text-gray-400">箱の運営状況と各種設定を管理します。</p>
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-24 pb-12">
+        <div className="mb-8 md:mb-10 animate-fade-in">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">ダッシュボード</h1>
+          <p className="text-sm md:text-base text-gray-400">箱の運営状況と各種設定を管理します。</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -178,23 +178,23 @@ export default async function OwnerDashboardPage({
             </div>
 
             {/* Quick Settings */}
-            <div className="glass p-6 rounded-2xl border border-white/5">
+            <div className="glass p-6 rounded-2xl border border-white/5 shadow-xl">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-gray-400" />
                 設定
               </h2>
               <div className="space-y-2">
                 <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  箱の基本情報
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                  <span className="truncate pr-2">箱の基本情報</span>
+                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
                 </button>
                 <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  デザインカスタマイズ
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                  <span className="truncate pr-2">デザインカスタマイズ</span>
+                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
                 </button>
                 <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm text-gray-300 font-medium flex items-center justify-between group">
-                  決済連携 (Coming Soon)
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                  <span className="truncate pr-2">決済連携 (Coming Soon)</span>
+                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors shrink-0" />
                 </button>
               </div>
             </div>
