@@ -5,14 +5,17 @@ import { X, Share, PlusSquare } from 'lucide-react'
 
 export function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false)
+  const [isAndroid, setIsAndroid] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Check if the user is on an iOS device
+    // Check if the user is on an iOS or Android device
     const userAgent = window.navigator.userAgent.toLowerCase()
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent)
+    const isAndroidDevice = /android/.test(userAgent)
     setIsIOS(isIosDevice)
+    setIsAndroid(isAndroidDevice)
 
     // Check if the app is already running in standalone mode (installed)
     const isInStandaloneMode = ('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches
@@ -21,10 +24,8 @@ export function InstallPrompt() {
     // Check if the user has dismissed the prompt recently
     const hasSeenPrompt = localStorage.getItem('hako_install_prompt_dismissed')
 
-    // Only show the prompt if it's iOS (Safari), not already installed, and hasn't been dismissed recently
-    // Native Android PWA prompts are usually handled automatically by Chrome, but we can show this to everyone if needed.
-    // For now, we target iOS since Safari doesn't have a reliable automatic prompt.
-    if (isIosDevice && !isInStandaloneMode && !hasSeenPrompt) {
+    // Only show the prompt if it's a mobile device, not already installed, and hasn't been dismissed recently.
+    if ((isIosDevice || isAndroidDevice) && !isInStandaloneMode && !hasSeenPrompt) {
       // Delay showing the prompt slightly so it's not too aggressive on load
       const timer = setTimeout(() => {
         setIsVisible(true)
@@ -72,6 +73,15 @@ export function InstallPrompt() {
             <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 p-2 rounded-lg">
               <Share className="w-3.5 h-3.5 text-blue-400" /> 
               <span>をタップして</span>
+              <PlusSquare className="w-3.5 h-3.5 text-gray-300" />
+              <span>ホーム画面に追加</span>
+            </div>
+          )}
+
+          {isAndroid && (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 p-2 rounded-lg">
+              <span className="font-bold text-gray-300">︙</span>
+              <span>メニューから</span>
               <PlusSquare className="w-3.5 h-3.5 text-gray-300" />
               <span>ホーム画面に追加</span>
             </div>

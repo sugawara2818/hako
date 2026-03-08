@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Hash, Users, ShieldAlert, LogOut, Settings, AtSign, LayoutDashboard } from 'lucide-react'
+import { Hash, Users, ShieldAlert, LogOut, Settings, AtSign, LayoutDashboard, Home } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 
 export const dynamic = 'force-dynamic'
@@ -79,8 +79,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-2">
-            {isOwner && (
+            {isOwner ? (
                <>
+                 <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors font-medium text-sm">
+                     <Home className="w-4 h-4" /> トップページへ
+                 </Link>
                  <Link href="/owner/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl text-blue-400 hover:bg-blue-500/10 transition-colors font-medium text-sm">
                      <LayoutDashboard className="w-4 h-4" /> 一覧へ戻る
                  </Link>
@@ -88,12 +91,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                      <Settings className="w-4 h-4" /> 管理画面へ
                  </Link>
                </>
+            ) : (
+                <form action={signOut} className="w-full">
+                    <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm text-left">
+                        <LogOut className="w-4 h-4" /> ログアウト
+                    </button>
+                </form>
             )}
-            <form action={signOut} className="w-full">
-                <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm text-left">
-                    <LogOut className="w-4 h-4" /> ログアウト
-                </button>
-            </form>
         </div>
       </aside>
 
@@ -106,8 +110,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                  <span className="font-bold truncate max-w-[150px]">{hako.name}</span>
              </div>
              <div className="flex items-center gap-2">
-                 {isOwner && (
+                 {isOwner ? (
                      <>
+                         <Link href="/" className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                             <Home className="w-5 h-5" />
+                         </Link>
                          <Link href="/owner/dashboard" className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-xl transition-colors">
                              <LayoutDashboard className="w-5 h-5" />
                          </Link>
@@ -115,12 +122,13 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                              <Settings className="w-5 h-5" />
                          </Link>
                      </>
+                 ) : (
+                     <form action={signOut}>
+                         <button type="submit" className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
+                             <LogOut className="w-5 h-5" />
+                         </button>
+                     </form>
                  )}
-                 <form action={signOut}>
-                     <button type="submit" className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
-                         <LogOut className="w-5 h-5" />
-                     </button>
-                 </form>
              </div>
          </header>
 
