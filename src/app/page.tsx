@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sparkles, Blocks, Users, ArrowRight, Zap, Shield, Globe } from 'lucide-react'
+import { Sparkles, Blocks, Users, ArrowRight, Zap, Shield, Globe, AtSign } from 'lucide-react'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { signOut } from '@/core/auth/actions'
