@@ -57,16 +57,28 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         setIsUploadingImage(true)
         const formData = new FormData()
         formData.append('file', selectedImage)
-        imageUrl = await uploadPostImage(formData)
+        const uploadResult = await uploadPostImage(formData)
         setIsUploadingImage(false)
+
+        if (!uploadResult.success) {
+          setError(uploadResult.error || '画像のアップロードに失敗しました')
+          return
+        }
+        imageUrl = uploadResult.url
       }
 
-      await createTimelinePost(hakoId, content, imageUrl)
+      const postResult = await createTimelinePost(hakoId, content, imageUrl)
+      
+      if (!postResult.success) {
+        setError(postResult.error || '投稿の保存に失敗しました')
+        return
+      }
+
       setContent('')
       removeImage()
     } catch (err: any) {
-      console.error(err)
-      setError(err.message || '投稿に失敗しました。もう一度お試しください。')
+      console.error('Submit Error:', err)
+      setError('予期せぬエラーが発生しました。時間を置いて再度お試しください。')
       setIsUploadingImage(false)
     } finally {
       setIsSubmitting(false)

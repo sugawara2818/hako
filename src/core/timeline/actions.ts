@@ -102,27 +102,33 @@ export async function getTimelinePosts(hakoId: string) {
 }
 
 // Create a new timeline post
-export async function createTimelinePost(hakoId: string, content: string, imageUrl?: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+export async function createTimelinePost(hakoId: string, content: string, imageUrl?: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
 
-  const { data, error } = await supabase
-    .from('hako_timeline_posts')
-    .insert({
-      hako_id: hakoId,
-      user_id: user.id,
-      content,
-      image_url: imageUrl || null
-    })
-    .select()
-    .single()
+    const { error } = await supabase
+      .from('hako_timeline_posts')
+      .insert({
+        hako_id: hakoId,
+        user_id: user.id,
+        content,
+        image_url: imageUrl || null
+      })
 
-  if (error) throw error
+    if (error) {
+      console.error('Post Creation Error:', error)
+      return { success: false, error: '投稿の保存に失敗しました' }
+    }
 
-  // Revalidate the hako page to show new post
-  revalidatePath(`/hako/${hakoId}`)
-  return data
+    // Revalidate the hako page to show new post
+    revalidatePath(`/hako/${hakoId}`)
+    return { success: true }
+  } catch (e: any) {
+    console.error('Unexpected Post Creation Error:', e)
+    return { success: false, error: '予期せぬエラーが発生しました' }
+  }
 }
 
 // Toggle like on a post
