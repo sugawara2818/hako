@@ -301,8 +301,8 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         </form>
       </div>
 
-      {/* Manual Refresh Button for Desktop/Accessibility */}
-      <div className="flex justify-center -mb-2">
+      {/* Manual Refresh Button for Desktop/Accessibility - Hidden on mobile as pull-to-refresh is available */}
+      <div className="hidden md:flex justify-center -mb-2">
         <button 
           onClick={handleRefresh}
           disabled={isRefreshing}
