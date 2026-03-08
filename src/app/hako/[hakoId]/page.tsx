@@ -46,14 +46,12 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
   const { getTimelinePosts } = await import('@/core/timeline/actions')
   const initialPosts = await getTimelinePosts(hakoId)
 
-  // 5. Import TimelineFeed and InstallPrompt
+  // 5. Import TimelineFeed and InstallButton
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
-  const { InstallPrompt } = await import('@/components/hako/install-prompt')
+  const { InstallButton } = await import('@/components/hako/install-button')
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex font-sans">
-      
-      <InstallPrompt />
 
       {/* Dynamic Background Pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -76,6 +74,10 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
             <Users className="w-5 h-5" />
             メンバー ({membersWithEmail?.length || 0})
           </Link>
+          
+          <div className="pt-2">
+             <InstallButton variant="sidebar" />
+          </div>
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-2">
@@ -110,6 +112,8 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
                  <span className="font-bold truncate max-w-[150px]">{hako.name}</span>
              </div>
              <div className="flex items-center gap-2">
+                 <InstallButton variant="icon" />
+                 
                  {isOwner ? (
                      <>
                          <Link href="/" className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
