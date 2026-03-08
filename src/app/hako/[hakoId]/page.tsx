@@ -67,6 +67,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       isOwner={member.role === 'owner'}
       memberCount={count || 1}
       displayName={member.display_name}
+      features={hako.features || ['timeline']}
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">

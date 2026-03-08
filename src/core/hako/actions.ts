@@ -3,11 +3,11 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 // オーナーが箱作成
-export async function createHakoForOwner(userId: string, name: string, description: string = '') {
+export async function createHakoForOwner(userId: string, name: string, description: string = '', features: string[] = ['timeline']) {
   const supabase = await createServerSupabaseClient()
   const { data: hako, error } = await supabase
     .from('hako')
-    .insert({ name, description, owner_id: userId })
+    .insert({ name, description, owner_id: userId, features })
     .select()
     .single()
 
@@ -82,7 +82,7 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
 }
 
 // 箱の情報更新 (オーナー向け)
-export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null, icon_color?: string | null }) {
+export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null, icon_color?: string | null, features?: string[] }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')

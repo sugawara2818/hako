@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle } from 'lucide-react'
+import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, Hash } from 'lucide-react'
 import { updateHako, deleteHako } from '@/core/hako/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { useRouter } from 'next/navigation'
@@ -11,7 +11,13 @@ interface HakoSettingsFormProps {
   initialName: string
   initialIconUrl: string | null
   initialIconColor: string | null
+  initialFeatures: string[]
 }
+
+const FEATURE_PIECES = [
+  { id: 'timeline', label: 'タイムライン', desc: 'Xのようなリアルタイムな投稿機能', icon: Hash }, 
+  { id: 'diary', label: '日記', desc: '日々の想いを綴るクローズドな日記帳', icon: BookOpen },
+]
 
 const PRESET_GRADIENTS = [
   { id: 'purple', class: 'from-purple-500 to-pink-500' },
@@ -23,11 +29,12 @@ const PRESET_GRADIENTS = [
   { id: 'black', class: 'from-gray-700 to-gray-900' },
 ]
 
-export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialIconColor }: HakoSettingsFormProps) {
+export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialIconColor, initialFeatures }: HakoSettingsFormProps) {
   const [name, setName] = useState(initialName)
   const [iconUrl, setIconUrl] = useState(initialIconUrl)
   const [iconColor, setIconColor] = useState(initialIconColor || 'purple')
   const [iconType, setIconType] = useState<'image' | 'template'>(initialIconUrl ? 'image' : 'template')
+  const [features, setFeatures] = useState<string[]>(initialFeatures || ['timeline'])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -81,7 +88,8 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialI
       const result = await updateHako(hakoId, { 
         name: name.trim(), 
         icon_url: iconType === 'image' ? iconUrl : null,
-        icon_color: iconType === 'template' ? iconColor : null
+        icon_color: iconType === 'template' ? iconColor : null,
+        features: features
       })
 
       if (result.success) {
@@ -210,6 +218,35 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialI
             maxLength={50}
             required
           />
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-sm font-bold text-gray-400 ml-1">機能ピースの管理</label>
+          <div className="grid grid-cols-1 gap-3">
+            {FEATURE_PIECES.map(piece => {
+              const isEnabled = features.includes(piece.id)
+              return (
+                <button
+                  key={piece.id}
+                  type="button"
+                  onClick={() => {
+                    setFeatures(prev => 
+                      prev.includes(piece.id) ? prev.filter(f => f !== piece.id) : [...prev, piece.id]
+                    )
+                  }}
+                  className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isEnabled ? 'bg-purple-500/10 border-purple-500/50 text-white' : 'bg-black/40 border-white/5 text-gray-500 hover:border-white/10'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <piece.icon className="w-5 h-5" />
+                    <span className="font-bold">{piece.label}</span>
+                  </div>
+                  <div className={`w-10 h-5 rounded-full relative transition-colors ${isEnabled ? 'bg-purple-500' : 'bg-gray-800'}`}>
+                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isEnabled ? 'right-1' : 'left-1'}`} />
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {error && (

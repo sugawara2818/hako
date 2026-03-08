@@ -1,0 +1,83 @@
+'use client'
+
+import React, { useState } from 'react'
+import { Plus, List, Calendar as CalendarIcon, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { DiaryFeed } from './DiaryFeed'
+import { DiaryCalendar } from './DiaryCalendar'
+import { deleteDiaryEntry } from '@/core/diary/actions'
+import { useRouter } from 'next/navigation'
+
+interface DiaryPortalProps {
+  hakoId: string
+  currentUserId: string
+  initialEntries: any[]
+}
+
+export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPortalProps) {
+  const [view, setView] = useState<'list' | 'calendar'>('list')
+  const [entries, setEntries] = useState(initialEntries)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDiaryEntry(id, hakoId)
+      setEntries(prev => prev.filter(e => e.id !== id))
+      router.refresh()
+    } catch (err) {
+      alert('削除に失敗しました')
+    }
+  }
+
+  const handleDateSelect = (date: string) => {
+    // Optionally filter list or redirect to a date-specific view
+    console.log('Selected date:', date)
+  }
+
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      {/* View Switcher & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-1 bg-[#111] border border-white/5 p-1 rounded-2xl self-start">
+          <button
+            onClick={() => setView('list')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'list' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+          >
+            <List className="w-4 h-4" /> 一覧
+          </button>
+          <button
+            onClick={() => setView('calendar')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'calendar' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+          >
+            <CalendarIcon className="w-4 h-4" /> カレンダー
+          </button>
+        </div>
+
+        <Link
+          href={`/hako/${hakoId}/diary/new`}
+          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm group"
+        >
+          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          日記を書く
+        </Link>
+      </div>
+
+      {/* Content */}
+      <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        {view === 'list' ? (
+          <DiaryFeed 
+            hakoId={hakoId} 
+            currentUserId={currentUserId} 
+            entries={entries} 
+            onDelete={handleDelete}
+          />
+        ) : (
+          <div className="max-w-md mx-auto">
+             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

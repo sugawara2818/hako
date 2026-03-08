@@ -3,7 +3,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -17,6 +17,7 @@ interface HakoViewerLayoutProps {
   isOwner: boolean
   memberCount: number
   displayName: string | null
+  features?: string[]
   children: React.ReactNode
 }
 
@@ -25,7 +26,7 @@ const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful drag
 
 export function HakoViewerLayout({
-  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, children
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, features = ['timeline'], children
 }: HakoViewerLayoutProps) {
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
@@ -147,10 +148,18 @@ export function HakoViewerLayout({
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
           <div className="space-y-1">
             <p className="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">メニュー</p>
-            <Link href={`/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold transition-all border border-white/5">
-              <Hash className="w-5 h-5 text-purple-400" />
-              タイムライン
-            </Link>
+            {features.includes('timeline') && (
+              <Link href={`/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold transition-all border border-white/5">
+                <Hash className="w-5 h-5 text-purple-400" />
+                タイムライン
+              </Link>
+            )}
+            {features.includes('diary') && (
+              <Link href={`/hako/${hakoId}/diary`} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all font-bold">
+                <BookOpen className="w-5 h-5 text-blue-400" />
+                日記
+              </Link>
+            )}
           </div>
 
           {isOwner && (
@@ -211,6 +220,7 @@ export function HakoViewerLayout({
             isOwner={isOwner}
             memberCount={memberCount}
             displayName={displayName}
+            features={features}
             isOpen={isOpen}
             onClose={handleClose}
           />

@@ -181,6 +181,7 @@ export default async function OwnerDashboardPage({
                 initialName={hako.name} 
                 initialIconUrl={hako.icon_url || null} 
                 initialIconColor={hako.icon_color || null}
+                initialFeatures={hako.features || ['timeline']}
               />
             </div>
 
