@@ -75,9 +75,9 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-          <Blocks className="w-5 h-5 text-blue-500" />
-          <span className="font-bold tracking-tight">トップへ戻る</span>
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group">
+          <Blocks className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform" />
+          <span className="font-bold tracking-tight text-sm">トップページに戻る</span>
         </Link>
 
         <div className="glass-card p-8 rounded-3xl border border-white/10">

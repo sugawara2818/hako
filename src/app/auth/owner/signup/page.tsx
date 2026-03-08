@@ -33,20 +33,30 @@ export default function OwnerSignUpPage() {
         email,
         password,
       })
-      if (signupError) throw signupError
+
+      if (signupError) {
+        // If user already exists, try to log them in
+        if (signupError.message.includes('already registered')) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+          if (signInError) throw new Error('既に登録されているメールアドレスです。正しいパスワードを入力するかログイン画面からお入りください。')
+          
+          // Successful login of existing user - redirect to dashboard
+          router.push('/owner/dashboard')
+          return
+        }
+        throw signupError
+      }
+
       if (!user) throw new Error('ユーザーが作成されませんでした')
 
       // Ensure profile exists for timeline display
       const { ensureProfile } = await import('@/core/timeline/actions')
       await ensureProfile(user.id, email)
 
-      // 自動ログインして箱作成画面へ
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (signInError) throw signInError
-
+      // 新規登録直後の自動ログイン
       router.push('/owner/hako/create')
     } catch (e: any) {
       console.error(e)
@@ -65,9 +75,9 @@ export default function OwnerSignUpPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-          <Blocks className="w-5 h-5 text-purple-500" />
-          <span className="font-bold tracking-tight">hakoを始める</span>
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group">
+          <Blocks className="w-5 h-5 text-purple-500 group-hover:scale-110 transition-transform" />
+          <span className="font-bold tracking-tight text-sm">トップページに戻る</span>
         </Link>
 
         <div className="glass-card p-8 rounded-3xl border border-white/10">
@@ -112,7 +122,7 @@ export default function OwnerSignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-white text-black py-3.5 rounded-xl font-bold hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:scale-100"
+              className="w-full mt-6 bg-black border-2 border-purple-500/50 hover:border-purple-500 text-white py-3.5 rounded-xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:scale-100 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
             >
               {loading ? (
                 <>
