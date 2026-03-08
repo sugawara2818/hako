@@ -86,7 +86,6 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
               type="date" 
               value={diaryDate}
               onChange={(e) => setDiaryDate(e.target.value)}
-              max={format(new Date(), 'yyyy-MM-dd')}
               className={`w-full bg-[#111] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium appearance-none`}
             />
           </div>

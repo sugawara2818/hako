@@ -14,6 +14,53 @@ interface DiaryDetailProps {
   entry: any
 }
 
+// ──────────────────────────────────────────────────
+// Custom confirm dialog component
+// ──────────────────────────────────────────────────
+function ConfirmDialog({
+  message,
+  onConfirm,
+  onCancel,
+  confirmLabel = '削除する',
+  danger = true,
+}: {
+  message: string
+  onConfirm: () => void
+  onCancel: () => void
+  confirmLabel?: string
+  danger?: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      {/* Dialog card */}
+      <div className="relative w-full max-w-[320px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-base text-gray-200 leading-relaxed mb-6 text-center font-medium">{message}</p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onConfirm}
+            className={`w-full py-4 rounded-2xl text-sm font-black transition-all active:scale-95 ${
+              danger
+                ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20'
+                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20'
+            }`}
+          >
+            {confirmLabel}
+          </button>
+          <button
+            onClick={onCancel}
+            className="w-full py-4 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-bold transition-all"
+          >
+            キャンセル
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+// ──────────────────────────────────────────────────
+
 export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) {
   const router = useRouter()
   const isAuthor = entry.user_id === currentUserId
@@ -24,9 +71,10 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
   const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
   
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const handleDelete = async () => {
-    if (!confirm('この日記を削除しますか？')) return
+    setShowConfirm(false)
     setIsDeleting(true)
     try {
       await deleteDiaryEntry(entry.id, hakoId)
@@ -39,7 +87,14 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
   }
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
+    <div className="max-w-2xl mx-auto animate-fade-in relative">
+      {showConfirm && (
+        <ConfirmDialog
+          message="この日記を削除しますか？"
+          onConfirm={handleDelete}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
       <div className="flex items-center justify-between mb-10">
         <Link href={`/hako/${hakoId}/diary`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors font-bold">
           <ChevronLeft className="w-4 h-4" /> 日記一覧
@@ -54,7 +109,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
               <Edit2 className="w-3.5 h-3.5" /> 編集
             </Link>
             <button 
-              onClick={handleDelete}
+              onClick={() => setShowConfirm(true)}
               disabled={isDeleting}
               className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-xs font-bold disabled:opacity-50"
             >

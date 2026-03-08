@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -31,7 +31,70 @@ interface DiaryFeedProps {
   onDelete: (id: string) => Promise<void>
 }
 
+// ──────────────────────────────────────────────────
+// Custom confirm dialog component
+// ──────────────────────────────────────────────────
+function ConfirmDialog({
+  message,
+  onConfirm,
+  onCancel,
+  confirmLabel = '削除する',
+  danger = true,
+}: {
+  message: string
+  onConfirm: () => void
+  onCancel: () => void
+  confirmLabel?: string
+  danger?: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      {/* Dialog card */}
+      <div className="relative w-full max-w-[320px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-base text-gray-200 leading-relaxed mb-6 text-center font-medium">{message}</p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onConfirm}
+            className={`w-full py-4 rounded-2xl text-sm font-black transition-all active:scale-95 ${
+              danger
+                ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20'
+                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20'
+            }`}
+          >
+            {confirmLabel}
+          </button>
+          <button
+            onClick={onCancel}
+            className="w-full py-4 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-bold transition-all"
+          >
+            キャンセル
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+// ──────────────────────────────────────────────────
+
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFeedProps) {
+  const [confirmState, setConfirmState] = useState<{
+    id: string
+    message: string
+  } | null>(null)
+
+  const showConfirm = (id: string, message: string) => {
+    setConfirmState({ id, message })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!confirmState) return
+    const id = confirmState.id
+    setConfirmState(null)
+    await onDelete(id)
+  }
+
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
