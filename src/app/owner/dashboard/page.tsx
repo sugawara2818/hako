@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 
+import { getHakoGradient } from '@/lib/hako-utils'
+
 export const dynamic = 'force-dynamic'
 
 export default async function OwnerDashboardPage() {
@@ -31,7 +33,7 @@ export default async function OwnerDashboardPage() {
     const hakoIds = memberships.map(m => m.hako_id)
     const { data, error: hakosError } = await supabase
       .from('hako')
-      .select('id, name, created_at')
+      .select('id, name, created_at, icon_url, icon_color')
       .in('id', hakoIds)
       .order('created_at', { ascending: false })
     
@@ -72,9 +74,14 @@ export default async function OwnerDashboardPage() {
       <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-12 relative z-10 animate-fade-in">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12">
             <div>
-                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 md:mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                     マイダッシュボード
-                 </h1>
+                 <div className="flex items-center gap-3 mb-2 md:mb-3">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+                        マイダッシュボード
+                    </h1>
+                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] md:text-xs font-bold text-gray-500 mt-1 md:mt-2">
+                        {user.email}
+                    </span>
+                 </div>
                  <p className="text-gray-400 text-sm md:text-base">作成した箱（Hako）の管理と新しい箱を作成できます。</p>
             </div>
             <Link 
@@ -93,8 +100,12 @@ export default async function OwnerDashboardPage() {
                       <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[30px] group-hover:bg-purple-500/20 transition-all" />
                       
                       <div className="flex items-center gap-3 mb-6 relative z-10">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center font-bold text-lg border border-white/5 shadow-inner">
-                              {hako.name.charAt(0)}
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg border border-white/5 shadow-inner shrink-0 overflow-hidden ${!hako.icon_url ? `bg-gradient-to-br ${getHakoGradient(hako.icon_color)}` : ''}`}>
+                              {hako.icon_url ? (
+                                <img src={hako.icon_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                hako.name.charAt(0).toUpperCase()
+                              )}
                           </div>
                           <div className="flex-1 overflow-hidden">
                               <h2 className="text-xl font-bold text-white truncate">{hako.name}</h2>
