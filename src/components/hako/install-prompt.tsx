@@ -8,6 +8,7 @@ export function InstallPrompt() {
   const [isAndroid, setIsAndroid] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
     // Check if the user is on an iOS or Android device
@@ -21,6 +22,17 @@ export function InstallPrompt() {
     const isInStandaloneMode = ('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches
     setIsStandalone(isInStandaloneMode)
 
+    // Listen for the beforeinstallprompt event (Chrome/Android/Desktop)
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault()
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e)
+      // Optionally, send analytics event that PWA install promo was shown.
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
     // Check if the user has dismissed the prompt recently
     const hasSeenPrompt = localStorage.getItem('hako_install_prompt_dismissed')
 
@@ -30,9 +42,34 @@ export function InstallPrompt() {
       const timer = setTimeout(() => {
         setIsVisible(true)
       }, 3000)
-      return () => clearTimeout(timer)
+      
+      return () => {
+        clearTimeout(timer)
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      }
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     }
   }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    // Show the install prompt
+    deferredPrompt.prompt()
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice
+    
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null)
+    
+    if (outcome === 'accepted') {
+      setIsVisible(false) // Hide our custom ui
+    }
+  }
 
   const handleDismiss = () => {
     setIsVisible(false)
@@ -69,23 +106,29 @@ export function InstallPrompt() {
             この箱をホーム画面に追加すると、フルスクリーンでアプリのように快適に使えます。
           </p>
           
-          {isIOS && (
+          {isIOS ? (
             <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 p-2 rounded-lg">
               <Share className="w-3.5 h-3.5 text-blue-400" /> 
               <span>をタップして</span>
               <PlusSquare className="w-3.5 h-3.5 text-gray-300" />
               <span>ホーム画面に追加</span>
             </div>
-          )}
-
-          {isAndroid && (
+          ) : deferredPrompt ? (
+            <button 
+              onClick={handleInstallClick}
+              className="mt-3 w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white text-xs font-bold rounded-lg transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+            >
+              <PlusSquare className="w-4 h-4" />
+              アプリをインストール
+            </button>
+          ) : isAndroid ? (
             <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 p-2 rounded-lg">
               <span className="font-bold text-gray-300">︙</span>
               <span>メニューから</span>
               <PlusSquare className="w-3.5 h-3.5 text-gray-300" />
               <span>ホーム画面に追加</span>
             </div>
-          )}
+          ) : null}
         </div>
 
         <button 
