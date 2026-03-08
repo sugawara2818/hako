@@ -43,6 +43,7 @@ export default async function NewDiaryPage({
       isOwner={member.role === 'owner'}
       memberCount={count || 1}
       displayName={member.display_name}
+      avatarUrl={member.avatar_url || null}
       features={hako.features || ['timeline']}
     >
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">

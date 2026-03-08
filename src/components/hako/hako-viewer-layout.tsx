@@ -17,6 +17,7 @@ interface HakoViewerLayoutProps {
   isOwner: boolean
   memberCount: number
   displayName: string | null
+  avatarUrl?: string | null
   features?: string[]
   children: React.ReactNode
 }

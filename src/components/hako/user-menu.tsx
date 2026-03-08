@@ -7,14 +7,17 @@ import { useRouter } from 'next/navigation'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 
+import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+
 interface UserMenuProps {
   email: string
   hakoId: string
   isOwner: boolean
   displayName: string | null
+  avatarUrl?: string | null
 }
 
-export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps) {
+export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -48,9 +51,11 @@ export function UserMenu({ email, hakoId, isOwner, displayName }: UserMenuProps)
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 transition-all group"
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-purple-500/50 transition-colors">
-          <User className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
-        </div>
+        <UserAvatarUpload 
+          hakoId={hakoId}
+          avatarUrl={avatarUrl || null}
+          size={40}
+        />
         <div className="flex-1 min-w-0 text-left hidden md:block">
           <p className="text-sm font-bold text-white truncate">{shownName}</p>
           <p className="text-xs text-gray-500 truncate">{email}</p>

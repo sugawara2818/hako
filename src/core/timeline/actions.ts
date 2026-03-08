@@ -44,26 +44,29 @@ export async function getTimelinePosts(hakoId: string) {
 
   if (error) throw error
 
-  // Separately fetch per-Hako display names from hako_members
-  // Wrapped in try/catch in case the display_name column hasn't been added yet
-  const displayNameMap: Record<string, string> = {}
+  // Separately fetch per-Hako display names & avatars from hako_members
+  // Wrapped in try/catch in case the columns haven't been added yet
+  const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
   try {
-    const { data: hakoMemberNames, error: memberNameError } = await supabase
+    const { data: hakoMembers, error: memberError } = await supabase
       .from('hako_members')
-      .select('user_id, display_name')
+      .select('user_id, display_name, avatar_url')
       .eq('hako_id', hakoId)
 
-    if (!memberNameError && hakoMemberNames) {
-      for (const m of hakoMemberNames) {
-        if (m.display_name) displayNameMap[m.user_id] = m.display_name
+    if (!memberError && hakoMembers) {
+      for (const m of hakoMembers) {
+        memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
       }
     }
   } catch {
-    // Silently fall back to profile names if hako_members.display_name doesn't exist
+    // Silently fall back to profile names if hako_members columns don't exist
   }
 
   const resolveName = (userId: string, profileName?: string | null) =>
-    displayNameMap[userId] || profileName || 'ユーザー'
+    memberDataMap[userId]?.display_name || profileName || 'ユーザー'
+    
+  const resolveAvatar = (userId: string, profileAvatar?: string | null) =>
+    memberDataMap[userId]?.avatar_url || profileAvatar || null
 
   // Defensive mapping
   const posts = (data || []).map(post => {
@@ -82,7 +85,8 @@ export async function getTimelinePosts(hakoId: string) {
       image_urls: allImages,
       profiles: {
         ...pProfiles,
-        display_name: resolveName(post.user_id, pProfiles.display_name)
+        display_name: resolveName(post.user_id, pProfiles.display_name),
+        avatar_url: resolveAvatar(post.user_id, pProfiles.avatar_url)
       },
       likes_count: pLikes.length,
       is_liked: pLikes.some((like: any) => like.user_id === user.id),
@@ -98,7 +102,8 @@ export async function getTimelinePosts(hakoId: string) {
             ...c,
             profiles: {
               ...cProfiles,
-              display_name: resolveName(c.user_id, cProfiles.display_name)
+              display_name: resolveName(c.user_id, cProfiles.display_name),
+              avatar_url: resolveAvatar(c.user_id, cProfiles.avatar_url)
             }
           }
         })

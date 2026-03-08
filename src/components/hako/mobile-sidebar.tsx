@@ -9,6 +9,7 @@ import { leaveHako } from '@/core/hako/actions'
 import { usePathname, useRouter } from 'next/navigation'
 import { getHakoGradient } from '@/lib/hako-utils'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
+import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
 
 interface MobileSidebarProps {
   hakoId: string
@@ -19,13 +20,14 @@ interface MobileSidebarProps {
   isOwner: boolean
   memberCount: number
   displayName: string | null
+  avatarUrl?: string | null
   features?: string[]
   isOpen: boolean
   onClose: () => void
 }
 
 export function MobileSidebar({
-  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, features = ['timeline'], onClose
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], onClose
 }: MobileSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -116,9 +118,11 @@ export function MobileSidebar({
       {/* User Profile Footer */}
       <div className="p-4 border-t border-white/5 bg-black/40 shrink-0">
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center shrink-0">
-            <User className="w-5 h-5 text-gray-400" />
-          </div>
+          <UserAvatarUpload 
+            hakoId={hakoId}
+            avatarUrl={avatarUrl || null}
+            size={40}
+          />
           <div className="min-w-0 flex-1">
             <UsernameEditor hakoId={hakoId} currentName={shownName} />
             <p className="text-xs text-gray-500 truncate mt-0.5">{email}</p>

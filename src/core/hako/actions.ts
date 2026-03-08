@@ -81,6 +81,23 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
   return { success: true }
 }
 
+// メンバーアバター更新
+export async function updateUserAvatar(hakoId: string, avatarUrl: string | null) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase
+    .from('hako_members')
+    .update({ avatar_url: avatarUrl })
+    .eq('hako_id', hakoId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+  revalidatePath(`/hako/${hakoId}`)
+  return { success: true }
+}
+
 // 箱の情報更新 (オーナー向け)
 export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null, icon_color?: string | null, features?: string[] }) {
   const supabase = await createServerSupabaseClient()

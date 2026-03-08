@@ -121,18 +121,18 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
     console.error('fetchProfiles Error:', e)
   }
 
-  // 2. Fetch hako_members separately
-  const displayNameMap: Record<string, string> = {}
+  // 2. Fetch hako_members separately for per-Hako profiles
+  const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
   try {
-    const { data: hakoMemberNames } = await supabase
+    const { data: hakoMembers } = await supabase
       .from('hako_members')
-      .select('user_id, display_name')
+      .select('user_id, display_name, avatar_url')
       .eq('hako_id', hakoId)
       .in('user_id', userIds)
 
-    if (hakoMemberNames) {
-      for (const m of hakoMemberNames) {
-        if (m.display_name) displayNameMap[m.user_id] = m.display_name
+    if (hakoMembers) {
+      for (const m of hakoMembers) {
+        memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
       }
     }
   } catch (e) {
@@ -140,11 +140,19 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
   }
 
   // 3. Join in memory
-  return diaryData.map(entry => ({
-    ...entry,
-    profiles: profileMap[entry.user_id] || null,
-    hako_members: [{ display_name: displayNameMap[entry.user_id] || null }]
-  }))
+  return diaryData.map(entry => {
+    const globalProfile = profileMap[entry.user_id] || {}
+    const memberProfile = memberDataMap[entry.user_id] || {}
+    
+    return {
+      ...entry,
+      profiles: {
+        ...globalProfile,
+        avatar_url: memberProfile.avatar_url || globalProfile.avatar_url || null
+      },
+      hako_members: [{ display_name: memberProfile.display_name || null }]
+    }
+  })
 }
 
 export async function fetchDiaryStats(hakoId: string, year: number, month: number) {

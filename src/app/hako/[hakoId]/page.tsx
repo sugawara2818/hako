@@ -65,6 +65,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
         isOwner={member.role === 'owner'}
         memberCount={count || 1}
         displayName={member.display_name}
+        avatarUrl={member.avatar_url || null}
         features={features}
       >
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500 animate-fade-in">
@@ -100,6 +101,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       isOwner={member.role === 'owner'}
       memberCount={count || 1}
       displayName={member.display_name}
+      avatarUrl={member.avatar_url || null}
       features={features}
     >
       {/* Content */}
