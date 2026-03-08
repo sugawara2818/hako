@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, User } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -16,34 +16,85 @@ interface HakoViewerLayoutProps {
   children: React.ReactNode
 }
 
+const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 320)
+const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
+
 export function HakoViewerLayout({
   hakoId, hakoName, email, isOwner, memberCount, children
 }: HakoViewerLayoutProps) {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  // dragOffset: 0 = closed, 1 = fully open
+  const [dragProgress, setDragProgress] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  
   const touchStartX = useRef<number | null>(null)
+  const lastProgress = useRef(0)
 
-  // Swipe from left edge to open sidebar
-  useEffect(() => {
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches[0].clientX < 32) {
-        touchStartX.current = e.touches[0].clientX
-      } else {
-        touchStartX.current = null
-      }
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    const x = e.touches[0].clientX
+    // Only start tracking if touching from left edge (open) or when sidebar is open (anywhere)
+    if (x < 40 || isOpen) {
+      touchStartX.current = x
+      setIsDragging(true)
     }
-    const onTouchEnd = (e: TouchEvent) => {
-      if (touchStartX.current === null) return
-      const dx = e.changedTouches[0].clientX - touchStartX.current
-      if (dx > 60) setIsMobileSidebarOpen(true)
-      touchStartX.current = null
+  }, [isOpen])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (touchStartX.current === null) return
+    const x = e.touches[0].clientX
+    const dx = x - touchStartX.current
+
+    let progress: number
+    if (isOpen) {
+      // If open, dragging left closes it
+      progress = 1 + (dx / DRAWER_WIDTH)
+    } else {
+      // If closed, dragging right opens it
+      progress = dx / DRAWER_WIDTH
     }
-    document.addEventListener('touchstart', onTouchStart, { passive: true })
-    document.addEventListener('touchend', onTouchEnd, { passive: true })
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart)
-      document.removeEventListener('touchend', onTouchEnd)
+    
+    progress = Math.max(0, Math.min(1, progress))
+    lastProgress.current = progress
+    setDragProgress(progress)
+  }, [isOpen])
+
+  const handleTouchEnd = useCallback(() => {
+    if (touchStartX.current === null) return
+    touchStartX.current = null
+    setIsDragging(false)
+
+    // Snap open or closed based on threshold
+    if (lastProgress.current > OPEN_THRESHOLD) {
+      setIsOpen(true)
+      setDragProgress(1)
+    } else {
+      setIsOpen(false)
+      setDragProgress(0)
     }
   }, [])
+
+  useEffect(() => {
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchmove', handleTouchMove, { passive: true })
+    document.addEventListener('touchend', handleTouchEnd, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd])
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false)
+    setDragProgress(0)
+  }, [])
+
+  // Computed values for animation
+  const activeProgress = isDragging ? dragProgress : (isOpen ? 1 : 0)
+  const drawerX = -(1 - activeProgress) * DRAWER_WIDTH
+  const backdropOpacity = activeProgress * 0.6
+  const backdropBlur = activeProgress * 4 // px
+  const showBackdrop = activeProgress > 0.01
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex font-sans overflow-hidden">
@@ -88,32 +139,57 @@ export function HakoViewerLayout({
         </div>
       </aside>
 
-      {/* Mobile Sidebar Drawer */}
-      <MobileSidebar
-        hakoId={hakoId}
-        hakoName={hakoName}
-        email={email}
-        isOwner={isOwner}
-        memberCount={memberCount}
-        isOpen={isMobileSidebarOpen}
-        onClose={() => setIsMobileSidebarOpen(false)}
-      />
+      {/* Mobile Sidebar Drawer (physics-based) */}
+      <div className="md:hidden">
+        {/* Blurred backdrop */}
+        {showBackdrop && (
+          <div
+            className="fixed inset-0 z-[140]"
+            style={{
+              backgroundColor: `rgba(0,0,0,${backdropOpacity})`,
+              backdropFilter: `blur(${backdropBlur}px)`,
+              WebkitBackdropFilter: `blur(${backdropBlur}px)`,
+              transition: isDragging ? 'none' : 'all 0.3s ease',
+            }}
+            onClick={handleClose}
+          />
+        )}
+
+        {/* Drawer panel */}
+        <div
+          className="fixed top-0 left-0 h-full z-[150]"
+          style={{
+            width: `${DRAWER_WIDTH}px`,
+            transform: `translateX(${drawerX}px)`,
+            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+            willChange: 'transform',
+          }}
+        >
+          <MobileSidebar
+            hakoId={hakoId}
+            hakoName={hakoName}
+            email={email}
+            isOwner={isOwner}
+            memberCount={memberCount}
+            isOpen={true}
+            onClose={handleClose}
+          />
+        </div>
+      </div>
 
       {/* Main Content */}
-      <main className={`flex-1 flex flex-col h-screen relative z-10 transition-all duration-200 ${isMobileSidebarOpen ? 'blur-sm pointer-events-none md:blur-none md:pointer-events-auto' : ''}`}>
+      <main className="flex-1 flex flex-col h-screen relative z-10">
         {/* Mobile Header */}
         <header className="md:hidden h-16 border-b border-white/5 flex items-center justify-between px-4 glass sticky top-0 z-50">
           <button
-            onClick={() => setIsMobileSidebarOpen(true)}
+            onClick={() => { setIsOpen(true); setDragProgress(1) }}
             className="flex items-center gap-3 min-w-0"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0">H</div>
-            <span className="font-bold truncate max-w-[120px] text-sm">{hakoName}</span>
+            <span className="font-bold truncate max-w-[140px] text-sm">{hakoName}</span>
           </button>
           <div className="flex items-center gap-1">
             <InstallButton variant="icon" />
-            <div className="w-[1px] h-4 bg-white/10 mx-1" />
-            <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} />
           </div>
         </header>
 
