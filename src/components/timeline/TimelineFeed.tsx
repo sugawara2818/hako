@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useRef, useEffect } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
