@@ -149,7 +149,6 @@ export async function toggleLike(postId: string, hakoId: string) {
     }
   }
 
-  revalidatePath(`/hako/${hakoId}`)
   return !existingLike
 }
 

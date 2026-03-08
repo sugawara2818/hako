@@ -228,7 +228,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             <div className="flex items-center gap-6 mt-4 text-gray-500 text-sm select-none">
               <button 
                 onClick={handleLike}
-                disabled={isPending}
                 className={`flex items-center gap-1.5 transition-colors group ${isLiked ? 'text-pink-500' : 'hover:text-pink-400'}`}
               >
                 <Heart className={`w-[18px] h-[18px] transition-transform group-active:scale-95 ${isLiked ? 'fill-current' : ''}`} />
