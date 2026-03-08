@@ -76,6 +76,7 @@ interface PostProps {
     user_id: string
     content: string
     image_url: string | null
+    image_urls?: string[]
     created_at: string
     likes_count: number
     is_liked: boolean
@@ -98,6 +99,12 @@ function formatRelativeTime(dateStr: string) {
 export function TimelinePost({ post, currentUserId }: PostProps) {
   const [isPending, startTransition] = useTransition()
   
+  // Images to display
+  const images = post.image_urls || (post.image_url ? [post.image_url] : [])
+
+  // Lightbox state
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
   // Optimistic like state
   const [optimisticState, setOptimisticState] = useState<{ isLiked: boolean, likesCount: number } | null>(null)
   const isLiked = optimisticState ? optimisticState.isLiked : post.is_liked
@@ -196,6 +203,34 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         />
       )}
 
+      {/* Lightbox */}
+      {lightboxIndex !== null && (
+        <div className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center animate-in fade-in duration-200">
+           <button 
+             onClick={() => setLightboxIndex(null)}
+             className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center backdrop-blur-md transition-colors z-10"
+           >
+             <X className="w-6 h-6 text-white" />
+           </button>
+           <img 
+             src={images[lightboxIndex]} 
+             alt="Post Image" 
+             className="max-w-[95vw] max-h-[90vh] object-contain shadow-2xl animate-in zoom-in-95 duration-300" 
+           />
+           {images.length > 1 && (
+             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+               {images.map((_, i) => (
+                 <button 
+                  key={i}
+                  onClick={() => setLightboxIndex(i)}
+                  className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-purple-500 w-6' : 'bg-white/30'}`}
+                 />
+               ))}
+             </div>
+           )}
+        </div>
+      )}
+
       <div className="glass p-6 rounded-2xl border border-white/5 transition-all hover:bg-white/[0.02]">
         {/* Header */}
         <div className="flex items-start gap-3">
@@ -218,9 +253,29 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
               {post.content}
             </div>
 
-            {post.image_url && (
-              <div className="mt-3 rounded-xl overflow-hidden border border-white/10">
-                <img src={post.image_url} alt="Post Attachment" className="w-full object-cover max-h-96" />
+            {/* X-style Adaptive Image Grid */}
+            {images.length > 0 && (
+              <div className={`mt-3 rounded-2xl overflow-hidden border border-white/10 grid gap-1 ${
+                images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+              }`}>
+                {images.map((url, i) => (
+                  <div 
+                    key={url} 
+                    className={`relative cursor-zoom-in group overflow-hidden ${
+                      images.length === 3 && i === 0 ? 'row-span-2' : ''
+                    }`}
+                    onClick={() => setLightboxIndex(i)}
+                  >
+                    <img 
+                      src={url} 
+                      alt={`Attachment ${i + 1}`} 
+                      className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                        images.length === 1 ? 'max-h-[512px]' : 'aspect-square md:aspect-video'
+                      }`} 
+                    />
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
+                  </div>
+                ))}
               </div>
             )}
 

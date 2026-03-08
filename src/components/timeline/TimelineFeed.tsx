@@ -16,58 +16,83 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const MAX_CHARS = 1000
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError('画像は10MB以下にしてください')
-      return
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const remainingSlots = 4 - selectedFiles.length
+    const limitedFiles = files.slice(0, remainingSlots)
+
+    const newFiles = [...selectedFiles]
+    const newPreviews = [...previews]
+
+    for (const file of limitedFiles) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError('各画像は10MB以下にしてください')
+        continue
+      }
+      newFiles.push(file)
+      newPreviews.push(URL.createObjectURL(file))
     }
 
-    setSelectedImage(file)
-    const url = URL.createObjectURL(file)
-    setImagePreview(url)
+    setSelectedFiles(newFiles)
+    setPreviews(newPreviews)
     setError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const removeImage = () => {
-    setSelectedImage(null)
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
-    setImagePreview(null)
+  const removeImage = (index: number) => {
+    const newFiles = [...selectedFiles]
+    const newPreviews = [...previews]
+    
+    URL.revokeObjectURL(newPreviews[index])
+    newFiles.splice(index, 1)
+    newPreviews.splice(index, 1)
+    
+    setSelectedFiles(newFiles)
+    setPreviews(newPreviews)
+  }
+
+  const clearAll = () => {
+    previews.forEach(url => URL.revokeObjectURL(url))
+    setSelectedFiles([])
+    setPreviews([])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ((!content.trim() && !selectedImage) || isSubmitting) return
+    if ((!content.trim() && selectedFiles.length === 0) || isSubmitting) return
 
     setIsSubmitting(true)
     setError(null)
     
     try {
-      let imageUrl: string | undefined
+      const imageUrls: string[] = []
 
-      if (selectedImage) {
+      if (selectedFiles.length > 0) {
         setIsUploadingImage(true)
-        const formData = new FormData()
-        formData.append('file', selectedImage)
-        const uploadResult = await uploadPostImage(formData)
-        setIsUploadingImage(false)
-
-        if (!uploadResult.success) {
-          setError(uploadResult.error || '画像のアップロードに失敗しました')
-          return
+        for (const file of selectedFiles) {
+          const formData = new FormData()
+          formData.append('file', file)
+          const uploadResult = await uploadPostImage(formData)
+          
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error || '画像のアップロードに失敗しました')
+          }
+          if (uploadResult.url) imageUrls.push(uploadResult.url)
         }
-        imageUrl = uploadResult.url
+        setIsUploadingImage(false)
       }
 
-      const postResult = await createTimelinePost(hakoId, content, imageUrl)
+      const postResult = await createTimelinePost(hakoId, content, imageUrls)
       
       if (!postResult.success) {
         setError(postResult.error || '投稿の保存に失敗しました')
@@ -75,21 +100,25 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
       }
 
       setContent('')
-      removeImage()
+      clearAll()
     } catch (err: any) {
       console.error('Submit Error:', err)
-      setError('予期せぬエラーが発生しました。時間を置いて再度お試しください。')
+      setError(err.message || '予期せぬエラーが発生しました。時間を置いて再度お試しください。')
       setIsUploadingImage(false)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const canSubmit = (content.trim() || selectedImage) && !isSubmitting
+  const charCount = content.length
+  const charPercentage = Math.min((charCount / MAX_CHARS) * 100, 100)
+  const isNearLimit = charCount >= MAX_CHARS * 0.9
+  const isOverLimit = charCount > MAX_CHARS
+
+  const canSubmit = (content.trim() || selectedFiles.length > 0) && !isSubmitting && !isOverLimit
 
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
-      {/* Create Post Box */}
       <div className="glass p-6 rounded-3xl border border-white/10 shadow-xl shadow-black/20">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
@@ -98,31 +127,29 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
             placeholder="この箱のメンバーに共有しよう"
             className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[80px]"
             disabled={isSubmitting}
-            maxLength={1000}
           />
 
-          {/* Image Preview */}
-          {imagePreview && (
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 group">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full max-h-80 object-cover"
-              />
-              {/* Remove button */}
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
+          {/* Previews Grid */}
+          {previews.length > 0 && (
+            <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
+              previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+            }`}>
+              {previews.map((url, i) => (
+                <div key={url} className="relative aspect-video group">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ))}
               {isUploadingImage && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                  <div className="flex items-center gap-2 text-white text-sm font-medium">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    アップロード中...
-                  </div>
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-2" />
+                  <p className="text-white text-sm font-medium">アップロード中...</p>
                 </div>
               )}
             </div>
@@ -131,46 +158,84 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
           {error && <p className="text-red-400 text-sm">{error}</p>}
           
           <div className="flex items-center justify-between border-t border-white/10 pt-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
                 onChange={handleImageSelect}
-                disabled={isSubmitting}
+                disabled={isSubmitting || selectedFiles.length >= 4}
               />
               <button 
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting || !!selectedImage}
+                disabled={isSubmitting || selectedFiles.length >= 4}
                 className={`p-2 rounded-full transition-colors ${
-                  selectedImage
-                    ? 'text-purple-400/40 cursor-not-allowed'
+                  selectedFiles.length >= 4
+                    ? 'text-gray-600 cursor-not-allowed'
                     : 'text-purple-400 hover:bg-purple-500/10 active:scale-95'
                 }`}
-                title="画像を追加"
               >
                 <ImageIcon className="w-5 h-5" />
               </button>
             </div>
             
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
-            >
-              {isSubmitting
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <Send className="w-4 h-4" />
-              }
-              投稿する
-            </button>
+            <div className="flex items-center gap-4">
+              {/* Character Count Circle */}
+              {charCount > 0 && (
+                <div className="flex items-center gap-2">
+                   <div className="relative w-7 h-7">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="14"
+                        cy="14"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="transparent"
+                        className="text-white/10"
+                      />
+                      <circle
+                        cx="14"
+                        cy="14"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="transparent"
+                        strokeDasharray={62.8}
+                        strokeDashoffset={62.8 - (62.8 * charPercentage) / 100}
+                        className={`transition-all duration-300 ${
+                          isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-purple-500'
+                        }`}
+                      />
+                    </svg>
+                    {isNearLimit && (
+                      <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                        {MAX_CHARS - charCount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
+              >
+                {isSubmitting
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <Send className="w-4 h-4" />
+                }
+                投稿する
+              </button>
+            </div>
           </div>
         </form>
       </div>
 
-      {/* Feed List */}
       <div className="flex flex-col gap-4">
         {initialPosts.length === 0 ? (
           <div className="text-center py-20 text-gray-400 glass rounded-3xl border border-white/5">

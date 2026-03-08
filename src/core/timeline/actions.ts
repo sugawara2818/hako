@@ -71,8 +71,15 @@ export async function getTimelinePosts(hakoId: string) {
     const pLikes = post.likes || []
     const pComments = post.comments || []
     
+    // Aggregate image_url and image_urls for compatibility
+    const allImages = [...(post.image_urls || [])]
+    if (post.image_url && !allImages.includes(post.image_url)) {
+      allImages.unshift(post.image_url)
+    }
+
     return {
       ...post,
+      image_urls: allImages,
       profiles: {
         ...pProfiles,
         display_name: resolveName(post.user_id, pProfiles.display_name)
@@ -102,7 +109,7 @@ export async function getTimelinePosts(hakoId: string) {
 }
 
 // Create a new timeline post
-export async function createTimelinePost(hakoId: string, content: string, imageUrl?: string): Promise<{ success: boolean; error?: string }> {
+export async function createTimelinePost(hakoId: string, content: string, imageUrls?: string[]): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -114,7 +121,8 @@ export async function createTimelinePost(hakoId: string, content: string, imageU
         hako_id: hakoId,
         user_id: user.id,
         content,
-        image_url: imageUrl || null
+        image_url: imageUrls?.[0] || null, // Fallback for legacy
+        image_urls: imageUrls || []
       })
 
     if (error) {
