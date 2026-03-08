@@ -28,7 +28,7 @@ interface DiaryFeedProps {
   hakoId: string
   currentUserId: string
   entries: DiaryEntry[]
-  onDelete: (id: string) => Promise<void>
+  onDelete: (id: string) => void | Promise<void>
 }
 
 // ──────────────────────────────────────────────────
@@ -108,21 +108,28 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
   }
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="space-y-4 max-w-2xl mx-auto relative">
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
       {entries.map((entry) => (
         <DiaryItem 
           key={entry.id} 
           entry={entry} 
           isAuthor={entry.user_id === currentUserId} 
           hakoId={hakoId}
-          onDelete={onDelete}
+          onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
         />
       ))}
     </div>
   )
 }
 
-function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => Promise<void> }) {
+function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void> }) {
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
   
@@ -174,7 +181,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    if (confirm('この日記を削除しますか？')) onDelete(entry.id)
+                    onDelete(entry.id)
                   }}
                   className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                 >
