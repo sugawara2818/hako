@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Calendar, Lock, Unlock, Loader2, Check, AlertCircle } from 'lucide-react'
+import { Calendar, Lock, Unlock, Loader2, Check, AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { createDiaryEntry, updateDiaryEntry, fetchUserDiaryDates } from '@/core/diary/actions'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isToday, isFuture, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
 
 interface DiaryFormProps {
@@ -28,6 +28,8 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
   const [content, setContent] = useState(initialData?.content || '')
   const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
   const [diaryDate, setDiaryDate] = useState(initialData?.diary_date || format(new Date(), 'yyyy-MM-dd'))
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [calendarMonth, setCalendarMonth] = useState(new Date())
 
   useEffect(() => {
     const loadDates = async () => {
@@ -81,13 +83,16 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
         <div className="relative">
           <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">日付</label>
           <div className="relative group">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
-            <input 
-              type="date" 
-              value={diaryDate}
-              onChange={(e) => setDiaryDate(e.target.value)}
-              className={`w-full bg-[#111] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium appearance-none`}
-            />
+            <button 
+              type="button"
+              onClick={() => {
+                setCalendarMonth(parseISO(diaryDate))
+                setShowDatePicker(true)
+              }}
+              className={`w-full bg-[#1a1a1a] hover:bg-[#222] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/20 focus:border-blue-500/50'} rounded-2xl py-4 pl-12 pr-4 text-white text-left focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-lg cursor-pointer shadow-inner block`}
+            >
+               {format(parseISO(diaryDate), 'yyyy年 MM月 dd日 (E)', { locale: ja })}
+            </button>
           </div>
           {isAlreadyExists && (
               <p className="mt-2 text-xs text-red-400 flex items-center gap-1 px-1">
@@ -160,6 +165,76 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
             </>
         )}
       </button>
+
+      {/* Custom Date Picker Modal */}
+      {showDatePicker && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDatePicker(false)} />
+          <div className="relative w-full max-w-[340px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-lg text-white">
+                {format(calendarMonth, 'yyyy年 MM月', { locale: ja })}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button type="button" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {['日', '月', '火', '水', '木', '金', '土'].map((d) => (
+                <div key={d} className="text-center text-[10px] font-black text-gray-500 uppercase pb-2">
+                  {d}
+                </div>
+              ))}
+              
+              {Array(startOfMonth(calendarMonth).getDay()).fill(null).map((_, i) => (
+                <div key={`blank-${i}`} className="aspect-square" />
+              ))}
+
+              {eachDayOfInterval({ start: startOfMonth(calendarMonth), end: endOfMonth(calendarMonth) }).map((day) => {
+                const dateStr = format(day, 'yyyy-MM-dd')
+                const isSelected = diaryDate === dateStr
+                const isFutureDay = isFuture(day) && !isToday(day)
+
+                return (
+                  <button
+                    key={dateStr}
+                    type="button"
+                    onClick={() => {
+                      if (!isFutureDay) {
+                        setDiaryDate(dateStr)
+                        setShowDatePicker(false)
+                      }
+                    }}
+                    disabled={isFutureDay}
+                    className={`
+                      relative aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all
+                      ${isFutureDay ? 'opacity-20 cursor-not-allowed text-gray-500' : 'hover:bg-white/10 text-gray-300'}
+                      ${isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-500/50' : ''}
+                      ${!isSelected && isToday(day) ? 'text-white font-black underline decoration-blue-500 underline-offset-4' : ''}
+                    `}
+                  >
+                    {format(day, 'd')}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowDatePicker(false)}
+              className="mt-6 w-full py-3.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <X className="w-4 h-4" /> 閉じる
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   )
 }
