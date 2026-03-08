@@ -21,6 +21,8 @@ export default async function Home() {
     isOwner = !!ownership
   }
 
+  const displayAsOwner = isLoggedIn && isOwner;
+
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden font-sans">
       {/* ... Dynamic Background ... */}
@@ -39,7 +41,7 @@ export default async function Home() {
             </span>
           </div>
           <div className="flex items-center gap-3">
-            {!isLoggedIn ? (
+            {!displayAsOwner ? (
               <>
                 <Link 
                   href="/auth/login"
@@ -60,14 +62,12 @@ export default async function Home() {
                   <AtSign className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs font-medium text-gray-400">{user.email}</span>
                 </div>
-                {isOwner && (
-                  <Link 
-                    href="/owner/dashboard"
-                    className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
-                  >
-                    ダッシュボード
-                  </Link>
-                )}
+                <Link 
+                  href="/owner/dashboard"
+                  className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
+                >
+                  ダッシュボード
+                </Link>
                 <form action={signOut}>
                   <button type="submit" className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10">
                     ログアウト
@@ -102,7 +102,7 @@ export default async function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Link 
-              href={isLoggedIn ? "/owner/hako/create" : "/auth/owner/signup?intent=create"}
+              href={displayAsOwner ? "/owner/hako/create" : "/auth/owner/signup?intent=create"}
               className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-all flex items-center justify-center gap-2 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-pink-200 opacity-0 group-hover:opacity-100 transition-opacity" />
