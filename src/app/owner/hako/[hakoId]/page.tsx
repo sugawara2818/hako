@@ -44,30 +44,31 @@ export default async function OwnerDashboardPage({
     <div className="min-h-screen bg-[#050505] text-white font-sans">
       {/* Sidebar/Nav Mock */}
       <nav className="fixed top-0 w-full glass border-b border-white/5 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/owner/dashboard" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors px-3 py-2 -ml-3 rounded-xl group">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Link href="/owner/dashboard" className="flex items-center gap-1 md:gap-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors px-2 md:px-3 py-2 -ml-2 md:-ml-3 rounded-xl group shrink-0">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="font-medium hidden sm:inline">一覧に戻る</span>
             </Link>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm ml-2">
-              H
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm ml-1 md:ml-2 shrink-0">
+              {hako.name?.charAt(0) || 'H'}
             </div>
-            <span className="font-bold text-lg">{hako.name}</span>
-            <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs font-medium text-gray-400 ml-2">Owner</span>
+            <span className="font-bold text-base md:text-lg truncate">{hako.name}</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-gray-400 ml-1 md:ml-2 shrink-0">Owner</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4 shrink-0">
             <Link 
               href={`/hako/${hako.id}`}
-              className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 md:gap-2 text-sm text-gray-400 hover:text-white transition-colors"
               target="_blank"
             >
-              箱を見る <ArrowUpRight className="w-4 h-4" />
+              <span className="hidden sm:inline">箱を見る</span>
+              <ArrowUpRight className="w-4 h-4" />
             </Link>
-            <div className="h-4 w-[1px] bg-white/10 mx-1" />
+            <div className="h-4 w-[1px] bg-white/10 mx-0.5 md:mx-1" />
             <form action={signOut}>
-                <button type="submit" className="text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-2 transition-colors">
-                    <LogOut className="w-4 h-4" /> ログアウト
+                <button type="submit" className="text-sm font-medium text-gray-400 hover:text-red-400 flex items-center gap-1 md:gap-2 transition-colors" title="ログアウト">
+                    <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">ログアウト</span>
                 </button>
             </form>
           </div>
@@ -85,7 +86,7 @@ export default async function OwnerDashboardPage({
           <div className="lg:col-span-2 space-y-6">
             
             {/* Stats Row */}
-            <div className="grid grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <div className="glass-card p-6 rounded-2xl border border-white/5">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-gray-400 font-medium text-sm">総メンバー数</span>
@@ -159,11 +160,13 @@ export default async function OwnerDashboardPage({
                 以下の専用リンクをSNS等でシェアして、あなたの箱にユーザーを招待しましょう。
               </p>
               
-              <div className="relative z-10">
-                <div className="bg-black/80 border border-white/10 rounded-xl p-3 flex items-center justify-between group">
-                  <span className="text-sm text-gray-300 truncate mr-2 font-mono">
-                    {joinLink}
-                  </span>
+              <div className="relative z-10 w-full">
+                <div className="bg-black/80 border border-white/10 rounded-xl p-3 flex items-center justify-between group w-full">
+                  <div className="flex-1 min-w-0 mr-3">
+                    <span className="text-sm text-gray-300 font-mono block truncate w-full">
+                      {joinLink}
+                    </span>
+                  </div>
                   <button 
                     className="p-2 bg-white/10 hover:bg-purple-500/50 hover:text-white rounded-lg transition-all text-gray-400 shrink-0"
                     title="URLをコピー"

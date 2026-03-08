@@ -55,11 +55,17 @@ export default async function OwnerDashboardPage() {
           <span className="font-bold tracking-tight">Hako Admin</span>
         </Link>
 
-        <form action={signOut}>
-           <button type="submit" className="text-sm font-medium text-gray-400 hover:text-white flex items-center gap-2 transition-colors">
-               <LogOut className="w-4 h-4" /> ログアウト
-           </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+            トップへ
+          </Link>
+          <div className="h-4 w-[1px] bg-white/10" />
+          <form action={signOut}>
+            <button type="submit" className="text-sm font-medium text-gray-400 hover:text-white flex items-center gap-2 transition-colors">
+                <LogOut className="w-4 h-4" /> ログアウト
+            </button>
+          </form>
+        </div>
       </header>
 
       {/* Main Content */}
