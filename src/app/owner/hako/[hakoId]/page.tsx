@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { Settings, Users, ArrowUpRight, Copy, Share2, Globe, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
+import { Settings, Users, ArrowUpRight, Copy, Share2, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 import { CopyInviteLink } from '@/components/hako/copy-invite-link'
 
@@ -120,35 +120,7 @@ export default async function OwnerDashboardPage({
               </div>
             </div>
 
-            {/* Active Features */}
-            <div className="glass p-6 rounded-2xl border border-white/5 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <LayoutDashboard className="w-5 h-5 text-gray-400" />
-                有効な機能ピース
-              </h2>
-              <div className="space-y-3">
-                {[
-                  { name: 'タイムライン', status: '有効', icon: Users },
-                  { name: 'ブログ機能', status: '停止中', icon: Globe }
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-black/50 hover:bg-white/5 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                        <feature.icon className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <span className="font-medium">{feature.name}</span>
-                    </div>
-                    {feature.status === '有効' ? (
-                      <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-semibold">稼働中</span>
-                    ) : (
-                      <button className="text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors">
-                        有効化する
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+
 
           </div>
 
