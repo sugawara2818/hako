@@ -9,9 +9,21 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser()
   const isLoggedIn = !!user
 
+  let isOwner = false
+  if (user) {
+    const { data: ownership } = await supabase
+      .from('hako_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('role', 'owner')
+      .limit(1)
+      .maybeSingle()
+    isOwner = !!ownership
+  }
+
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden font-sans">
-      {/* Dynamic Background */}
+      {/* ... Dynamic Background ... */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDelay: '2s' }} />
@@ -44,12 +56,14 @@ export default async function Home() {
               </>
             ) : (
               <>
-                <Link 
-                  href="/owner/dashboard"
-                  className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
-                >
-                  ダッシュボード
-                </Link>
+                {isOwner && (
+                  <Link 
+                    href="/owner/dashboard"
+                    className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
+                  >
+                    ダッシュボード
+                  </Link>
+                )}
                 <form action={signOut}>
                   <button type="submit" className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10">
                     ログアウト

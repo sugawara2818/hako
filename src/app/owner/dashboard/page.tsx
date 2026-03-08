@@ -146,10 +146,10 @@ export default async function OwnerDashboardPage() {
                       <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-xl shadow-purple-500/20">
                           <Blocks className="w-8 h-8 md:w-10 md:h-10 text-white" />
                       </div>
-                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 md:mb-4">オーナー登録が完了しました！</h2>
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 md:mb-4">ようこそ、hakoへ！</h2>
                       <p className="text-gray-400 text-sm sm:text-base md:text-lg mb-8 md:mb-10 leading-relaxed px-2">
-                          hakoへようこそ。まだ箱（あなた専用のSNS空間）がありません。<br className="hidden md:block" />
-                          最初の箱を作成して、あなたの世界を構築しましょう。
+                          あなたが所有している箱（Hako）はまだありません。<br className="hidden md:block" />
+                          最初の箱を作成して、あなただけの特別な空間を構築しましょう。
                       </p>
                       <Link 
                         href="/owner/hako/create" 
