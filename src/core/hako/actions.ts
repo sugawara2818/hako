@@ -1,0 +1,48 @@
+'use server'
+
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+// オーナーが箱作成
+export async function createHakoForOwner(userId: string, name: string, description: string = '') {
+  const supabase = await createServerSupabaseClient()
+  const { data: hako, error } = await supabase
+    .from('hako')
+    .insert({ name, description, owner_id: userId })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  await supabase.from('hako_members').insert({
+    hako_id: hako.id,
+    user_id: userId,
+    role: 'owner',
+  })
+
+  return hako
+}
+
+// メンバーが箱に参加
+export async function joinHako(userId: string, hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: member, error } = await supabase
+    .from('hako_members')
+    .insert({ hako_id: hakoId, user_id: userId, role: 'member' })
+    .select()
+    .maybeSingle()
+
+  if (error) throw error
+  return member
+}
+
+// メンバー一覧取得
+export async function fetchHakoMembers(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('hako_members')
+    .select('role, user_id, users(email)')
+    .eq('hako_id', hakoId)
+    .order('joined_at', { ascending: true })
+
+  if (error) throw error
+  return data
+}
