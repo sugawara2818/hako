@@ -31,54 +31,74 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const feedRef = useRef<HTMLDivElement>(null)
 
   const MAX_CHARS = 1000
-  const PULL_THRESHOLD = 80
+  const PULL_THRESHOLD = 50 // Decreased for easier triggering
+  const DAMPING = 0.6 // Increased for more direct feel
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.scrollY === 0) {
-      setStartY(e.touches[0].pageY)
+  useEffect(() => {
+    const getScrollParent = (node: HTMLElement | null): HTMLElement | null => {
+      if (!node) return null
+      if (node.scrollHeight > node.clientHeight && 
+          (getComputedStyle(node).overflowY === 'auto' || getComputedStyle(node).overflowY === 'scroll')) {
+        return node
+      }
+      return getScrollParent(node.parentElement)
     }
-  }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (startY === 0) return
-    const currentY = e.touches[0].pageY
-    const diff = currentY - startY
-    if (diff > 0 && window.scrollY === 0) {
-      setPullDistance(Math.min(diff * 0.4, PULL_THRESHOLD + 20))
-      if (diff > 10 && e.cancelable) e.preventDefault()
+    const onStart = (pageY: number) => {
+      const scrollParent = getScrollParent(feedRef.current)
+      const scrollTop = scrollParent ? scrollParent.scrollTop : window.scrollY
+      if (scrollTop <= 0) {
+        setStartY(pageY)
+      }
     }
-  }
 
-  const handleTouchEnd = () => {
-    if (pullDistance >= PULL_THRESHOLD) {
-      handleRefresh()
+    const onMove = (pageY: number, e: TouchEvent | MouseEvent) => {
+      if (startY === 0) return
+      const diff = pageY - startY
+      if (diff > 0) {
+        const dist = Math.min(diff * DAMPING, PULL_THRESHOLD + 20)
+        setPullDistance(dist)
+        // Only prevent default if we've actually started pulling to avoid blocking normal taps
+        if (dist > 5 && e.cancelable) {
+          e.preventDefault()
+        }
+      }
     }
-    setStartY(0)
-    setPullDistance(0)
-  }
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (window.scrollY === 0) {
-      setStartY(e.pageY)
+    const onEnd = () => {
+      if (pullDistance >= PULL_THRESHOLD) {
+        handleRefresh()
+      }
+      setStartY(0)
+      setPullDistance(0)
     }
-  }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (startY === 0) return
-    const currentY = e.pageY
-    const diff = currentY - startY
-    if (diff > 0 && window.scrollY === 0) {
-      setPullDistance(Math.min(diff * 0.4, PULL_THRESHOLD + 20))
-    }
-  }
+    // Touch Handlers
+    const handleTouchStart = (e: TouchEvent) => onStart(e.touches[0].pageY)
+    const handleTouchMove = (e: TouchEvent) => onMove(e.touches[0].pageY, e)
+    const handleTouchEnd = () => onEnd()
 
-  const handleMouseUp = () => {
-    if (pullDistance >= PULL_THRESHOLD) {
-      handleRefresh()
+    // Mouse Handlers
+    const handleMouseDown = (e: MouseEvent) => onStart(e.pageY)
+    const handleMouseMove = (e: MouseEvent) => onMove(e.pageY, e)
+    const handleMouseUp = () => onEnd()
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
+    window.addEventListener('touchend', handleTouchEnd)
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
     }
-    setStartY(0)
-    setPullDistance(0)
-  }
+  }, [startY, pullDistance, isRefreshing])
 
   const handleRefresh = async () => {
     if (isRefreshing) return
@@ -88,7 +108,6 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
       router.refresh()
     })
 
-    // Shorter timeout to allow more continuous interaction
     setTimeout(() => {
       setIsRefreshing(false)
     }, 600)
@@ -191,14 +210,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   return (
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col gap-6 select-none"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      className="w-full max-w-2xl mx-auto flex flex-col gap-6"
     >
       {/* Pull down indicator */}
       <div 
