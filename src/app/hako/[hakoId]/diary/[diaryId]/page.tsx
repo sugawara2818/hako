@@ -35,17 +35,20 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
     .eq('id', diaryData.user_id)
     .single()
 
-  // 2. Fetch author's hako-specific name
+  // 2. Fetch author's hako-specific name and avatar
   const { data: authorMember } = await supabase
     .from('hako_members')
-    .select('display_name')
+    .select('display_name, avatar_url')
     .eq('hako_id', hakoId)
     .eq('user_id', diaryData.user_id)
     .maybeSingle()
 
   const diary = {
     ...diaryData,
-    profiles: profile || null,
+    profiles: {
+      ...profile,
+      avatar_url: authorMember?.avatar_url || profile?.avatar_url || null
+    },
     hako_members: [{ display_name: authorMember?.display_name || null }]
   }
 

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sparkles, Blocks, Users, ArrowRight, Zap, Shield, Globe, AtSign } from 'lucide-react'
+import { Sparkles, Blocks, Users, ArrowRight, Zap, Shield, Globe, AtSign, BookOpen } from 'lucide-react'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { signOut } from '@/core/auth/actions'
@@ -120,11 +120,10 @@ export default async function Home() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-purple-500/30 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-pink-500/20 rounded-full animate-ping" style={{ animationDuration: '4s', animationDelay: '1s' }} />
                 
-                <div className="grid grid-cols-3 gap-6 p-8 relative z-10 w-full max-w-3xl">
+                <div className="grid grid-cols-2 gap-6 p-8 relative z-10 w-full max-w-xl mx-auto">
                   {[
                     { icon: Users, label: 'SNS機能', delay: '0s' },
-                    { icon: Globe, label: 'ブログ機能', delay: '0.2s' },
-                    { icon: Shield, label: '決済・会員管理', delay: '0.4s' }
+                    { icon: BookOpen, label: '日記機能', delay: '0.2s' },
                   ].map((item, i) => (
                     <div key={i} className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:-translate-y-2 transition-transform cursor-pointer" style={{ animationDelay: item.delay }}>
                       <item.icon className="w-10 h-10 text-purple-400" />
@@ -150,12 +149,12 @@ export default async function Home() {
               {[
                 {
                   title: '直感的なカスタマイズ',
-                  description: 'タイムライン、掲示板、ブログなど、必要なモジュールを組み合わせるだけでアプリが完成。',
+                  description: 'タイムラインや日記帳など、必要なモジュールを組み合わせるだけでアプリが完成。',
                   icon: Blocks
                 },
                 {
-                  title: '独自の経済圏',
-                  description: '月額課金設定や単品販売も可能。ユーザーは箱に入るために入場料を支払います。',
+                  title: '安心の会員管理',
+                  description: '完全招待制のコミュニティなど、目的に合わせた会員管理機能を構築可能。',
                   icon: Zap
                 },
                 {

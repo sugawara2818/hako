@@ -305,9 +305,13 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                   )}
                   {post.comments?.map(comment => (
                     <div key={comment.id} className="relative flex gap-3 group/comment">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
-                         {comment.profiles?.display_name?.charAt(0) || '?'}
-                      </div>
+                      {comment.profiles?.avatar_url ? (
+                        <img src={comment.profiles.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
+                           {comment.profiles?.display_name?.charAt(0) || '?'}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0 bg-white/5 rounded-2xl rounded-tl-none p-3 pb-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">

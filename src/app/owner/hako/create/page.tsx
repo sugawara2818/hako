@@ -10,8 +10,6 @@ import Link from 'next/link'
 const FEATURE_PIECES = [
   { id: 'timeline', label: 'タイムライン', desc: 'Xのようなリアルタイムな投稿機能', icon: Users },
   { id: 'diary', label: '日記', desc: '日々の想いを綴るクローズドな日記帳', icon: BookOpen },
-  { id: 'blog', label: 'ブログ記事', desc: 'noteのような長文記事の執筆・公開', icon: Globe },
-  { id: 'payment', label: '月額課金', desc: '入会するためのサブスク料金設定', icon: Shield },
 ]
 
 export default function CreateHakoPage() {
