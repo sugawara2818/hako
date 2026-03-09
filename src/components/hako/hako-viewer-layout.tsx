@@ -29,7 +29,7 @@ const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful drag
 
 export function HakoViewerLayout({
-  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, features = ['timeline'], children
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], children
 }: HakoViewerLayoutProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -202,7 +202,7 @@ export function HakoViewerLayout({
         </nav>
 
         <div className="p-4 border-t border-white/5 bg-black/40">
-          <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} />
+          <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
         </div>
       </aside>
 
@@ -242,6 +242,7 @@ export function HakoViewerLayout({
             isOwner={isOwner}
             memberCount={memberCount}
             displayName={displayName}
+            avatarUrl={avatarUrl}
             features={features}
             isOpen={isOpen}
             onClose={handleClose}
