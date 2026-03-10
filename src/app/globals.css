@@ -28,19 +28,19 @@
 
 /* ──── Light Theme ──── */
 [data-theme="light"] {
-  --bg: #f3f4f6;
+  --bg: #f8f7f5;
   --bg-surface: #ffffff;
-  --bg-elevated: #f9fafb;
-  --border: rgba(0,0,0,0.1);
-  --text: #111827;
-  --text-muted: #6b7280;
-  --sidebar-bg: rgba(255,255,255,0.85);
-  --sidebar-footer-bg: rgba(249,250,251,0.9);
-  --mobile-sidebar-bg: #ffffff;
+  --bg-elevated: #f1f0ee;
+  --border: rgba(0,0,0,0.09);
+  --text: #1a1a1a;
+  --text-muted: #737373;
+  --sidebar-bg: rgba(255,255,255,0.9);
+  --sidebar-footer-bg: rgba(248,247,245,0.95);
+  --mobile-sidebar-bg: #faf9f7;
 
   /* Legacy compat */
-  --background: #f3f4f6;
-  --foreground: #111827;
+  --background: #f8f7f5;
+  --foreground: #1a1a1a;
 }
 
 /* ──── Semantic utilities ──── */
@@ -80,28 +80,33 @@ body {
 }
 
 /* Light mode text contrast helpers */
-[data-theme="light"] .text-white { color: var(--text) !important; }
-[data-theme="light"] .text-gray-200 { color: #374151 !important; }
-[data-theme="light"] .text-gray-300 { color: #4b5563 !important; }
-[data-theme="light"] .text-gray-400 { color: #6b7280 !important; }
-[data-theme="light"] .text-gray-500 { color: #9ca3af !important; }
+[data-theme="light"] .text-white { color: #1a1a1a !important; }
+[data-theme="light"] .text-gray-200 { color: #2d2d2d !important; }
+[data-theme="light"] .text-gray-300 { color: #404040 !important; }
+[data-theme="light"] .text-gray-400 { color: #595959 !important; }
+[data-theme="light"] .text-gray-500 { color: #8a8a8a !important; }
+[data-theme="light"] .text-gray-600 { color: #a3a3a3 !important; }
 [data-theme="light"] .bg-\[\#111\] { background-color: #ffffff !important; }
-[data-theme="light"] .bg-\[\#0f0f0f\] { background-color: #f9fafb !important; }
-[data-theme="light"] .bg-\[\#050505\] { background-color: #f3f4f6 !important; }
-[data-theme="light"] .bg-\[\#0a0a0a\] { background-color: #ffffff !important; }
-[data-theme="light"] .bg-black\/50 { background-color: rgba(255,255,255,0.85) !important; }
-[data-theme="light"] .bg-black\/40 { background-color: rgba(249,250,251,0.9) !important; }
-[data-theme="light"] .bg-black\/30 { background-color: rgba(243,244,246,0.8) !important; }
-[data-theme="light"] .bg-black\/90 { background-color: rgba(255,255,255,0.95) !important; }
-[data-theme="light"] .bg-black\/95 { background-color: rgba(255,255,255,0.98) !important; }
+[data-theme="light"] .bg-\[\#0f0f0f\] { background-color: #f8f7f5 !important; }
+[data-theme="light"] .bg-\[\#050505\] { background-color: #f8f7f5 !important; }
+[data-theme="light"] .bg-\[\#0a0a0a\] { background-color: #faf9f7 !important; }
+[data-theme="light"] .bg-\[\#1a1a1a\] { background-color: #f1f0ee !important; }
+[data-theme="light"] .bg-black\/50 { background-color: rgba(255,255,255,0.9) !important; }
+[data-theme="light"] .bg-black\/40 { background-color: rgba(248,247,245,0.95) !important; }
+[data-theme="light"] .bg-black\/30 { background-color: rgba(241,240,238,0.8) !important; }
+[data-theme="light"] .bg-black\/70 { background-color: rgba(0,0,0,0.6) !important; }
+[data-theme="light"] .bg-black\/90 { background-color: rgba(255,255,255,0.97) !important; }
+[data-theme="light"] .bg-black\/95 { background-color: rgba(255,255,255,0.99) !important; }
 [data-theme="light"] .bg-white\/5  { background-color: rgba(0,0,0,0.04) !important; }
-[data-theme="light"] .bg-white\/10 { background-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .bg-white\/10 { background-color: rgba(0,0,0,0.06) !important; }
 [data-theme="light"] .bg-white\/\[0\.02\] { background-color: rgba(0,0,0,0.02) !important; }
-[data-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.1) !important; }
 [data-theme="light"] .hover\:bg-white\/5:hover  { background-color: rgba(0,0,0,0.04) !important; }
-[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.07) !important; }
-[data-theme="light"] .hover\:bg-white\/20:hover { background-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .hover\:bg-white\/20:hover { background-color: rgba(0,0,0,0.1) !important; }
+/* Keep timeline post hover subtle */
+[data-theme="light"] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(0,0,0,0.015) !important; }
 
 /* Animations hooks */
 @keyframes fade-in {

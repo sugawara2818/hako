@@ -4,15 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 type Theme = 'dark' | 'light'
 
-interface ThemeContextValue {
-  theme: Theme
-  toggleTheme: () => void
-}
-
-const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'dark',
-  toggleTheme: () => {}
-})
+const ThemeContext = createContext<{ theme: Theme }>({ theme: 'dark' })
 
 export function useTheme() {
   return useContext(ThemeContext)
@@ -22,26 +14,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
 
   useEffect(() => {
-    // Read saved preference, fall back to system preference
-    const saved = localStorage.getItem('hako-theme') as Theme | null
-    if (saved) {
-      apply(saved)
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      apply(prefersDark ? 'dark' : 'light')
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    
+    const apply = (dark: boolean) => {
+      const t: Theme = dark ? 'dark' : 'light'
+      setTheme(t)
+      document.documentElement.setAttribute('data-theme', t)
     }
+
+    apply(mq.matches)
+
+    const handler = (e: MediaQueryListEvent) => apply(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
 
-  const apply = (t: Theme) => {
-    setTheme(t)
-    document.documentElement.setAttribute('data-theme', t)
-    localStorage.setItem('hako-theme', t)
-  }
-
-  const toggleTheme = () => apply(theme === 'dark' ? 'light' : 'dark')
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme }}>
       {children}
     </ThemeContext.Provider>
   )
