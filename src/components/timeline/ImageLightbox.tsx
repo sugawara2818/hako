@@ -16,6 +16,10 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
   const dragStart = useRef({ x: 0, y: 0 })
   const hasMoved = useRef(false)
 
+  // Pinch-to-zoom refs
+  const touchStartDist = useRef<number | null>(null)
+  const initialScaleRef = useRef<number>(1)
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -54,6 +58,38 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
     setScale(newScale)
     if (newScale === 1) setPosition({ x: 0, y: 0 })
   }
+
+  // --- Pinch to Zoom Logic ---
+  const getDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
+    if (e.touches.length === 2) {
+      touchStartDist.current = getDistance(e.touches)
+      initialScaleRef.current = scale
+      isDragging.current = false // Disable drag while zooming
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
+    if (e.touches.length === 2 && touchStartDist.current !== null) {
+      const newDist = getDistance(e.touches)
+      const ratio = newDist / touchStartDist.current
+      const newScale = Math.min(Math.max(1, initialScaleRef.current * ratio), 4)
+      setScale(newScale)
+      if (newScale === 1) setPosition({ x: 0, y: 0 })
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLImageElement>) => {
+    if (e.touches.length < 2) {
+      touchStartDist.current = null
+    }
+  }
+  // ---------------------------
 
   const handleClick = (e: React.MouseEvent) => {
     if (hasMoved.current) return
@@ -131,6 +167,9 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
