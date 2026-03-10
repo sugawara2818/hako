@@ -199,7 +199,12 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         />
       )}
 
-      <div className="p-4 sm:p-5 border-b border-white/10 transition-colors hover:bg-white/[0.02]">
+      <div 
+        className="p-4 sm:p-5 border-b transition-colors"
+        style={{ borderBottomColor: 'var(--border)' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-elevated)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}        
+      >
         {/* Header */}
         <div className="flex items-start gap-3">
           {post.profiles?.avatar_url ? (
@@ -225,18 +230,18 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             {images.length > 0 && (
               <div className="mt-3 overflow-hidden rounded-2xl border border-white/10">
                 {images.length === 1 && (
-                  <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative aspect-auto max-h-[512px] bg-black w-full text-left cursor-pointer">
+                  <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative aspect-auto max-h-[512px] w-full text-left cursor-pointer" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                     <img src={images[0]} alt="Attachment" className="w-full h-full object-contain" />
                   </button>
                 )}
                 {images.length === 2 && (
-                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
+                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
                     <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
                     <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
                   </div>
                 )}
                 {images.length === 3 && (
-                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
+                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
                     <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer">
                       <img src={images[0]} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -247,7 +252,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                   </div>
                 )}
                 {images.length >= 4 && (
-                  <div className="grid grid-cols-2 grid-rows-2 gap-0.5 aspect-[16/9] bg-white/10">
+                  <div className="grid grid-cols-2 grid-rows-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
                     <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
                     <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
                     <button type="button" onClick={() => setSelectedImageIndex(2)} className="relative h-full cursor-pointer"><img src={images[2]} alt="" className="w-full h-full object-cover" /></button>

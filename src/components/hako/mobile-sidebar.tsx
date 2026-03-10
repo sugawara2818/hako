@@ -50,9 +50,9 @@ export function MobileSidebar({
   }
 
   return (
-    <div className="w-full h-full bg-[#0a0a0a] border-r border-white/5 flex flex-col shadow-2xl">
+    <div className="w-full h-full flex flex-col shadow-2xl" style={{ backgroundColor: 'var(--bg-surface)', borderRight: '1px solid var(--border)' }}>
       {/* Header */}
-      <div className="h-16 flex items-center justify-between px-5 border-b border-white/5 shrink-0">
+      <div className="h-16 flex items-center justify-between px-5 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-3 min-w-0">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${getHakoGradient(iconColor)}` : ''}`}>
             {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
@@ -116,8 +116,8 @@ export function MobileSidebar({
       </nav>
 
       {/* User Profile Footer */}
-      <div className="p-4 border-t border-white/5 bg-black/40 shrink-0">
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 mb-3">
+      <div className="p-4 shrink-0" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+        <div className="flex items-center gap-3 p-3 rounded-2xl mb-3" style={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
           <UserAvatarUpload 
             hakoId={hakoId}
             avatarUrl={avatarUrl || null}

@@ -278,8 +278,13 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     <>
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col border-x border-white/10 min-h-screen relative bg-black/20 animate-fade-in"
-      style={{ animationDelay: '0.1s' }}
+      className="w-full max-w-2xl mx-auto flex flex-col min-h-screen relative animate-fade-in"
+      style={{ 
+        animationDelay: '0.1s',
+        backgroundColor: 'var(--bg)',
+        borderLeft: '1px solid var(--border)',
+        borderRight: '1px solid var(--border)'
+      }}
     >
       {/* Pull down indicator */}
       <div 

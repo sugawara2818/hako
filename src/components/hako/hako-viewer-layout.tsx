@@ -136,13 +136,13 @@ export function HakoViewerLayout({
   const hakoGradient = getHakoGradient(iconColor)
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex font-sans overflow-hidden">
+    <div className="min-h-screen text-white flex font-sans overflow-hidden" style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
       {/* Dynamic Background Pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 border-r border-white/5 bg-black/50 backdrop-blur-xl h-screen sticky top-0 flex flex-col z-10 hidden md:flex">
-        <div className="h-16 flex items-center px-4 border-b border-white/5 gap-2">
+      <aside className="w-64 h-screen sticky top-0 flex flex-col z-10 hidden md:flex" style={{ backgroundColor: 'var(--bg-surface)', borderRight: '1px solid var(--border)' }}>
+        <div className="h-16 flex items-center px-4 gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
             {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
           </div>
@@ -201,7 +201,7 @@ export function HakoViewerLayout({
           </div>
         </nav>
 
-        <div className="p-4 border-t border-white/5 bg-black/40">
+        <div className="p-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
           <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
         </div>
       </aside>
@@ -253,7 +253,11 @@ export function HakoViewerLayout({
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen relative z-10">
         {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-white/5 flex items-center justify-between px-4 glass sticky top-0 z-50">
+        <header className="md:hidden h-16 flex items-center justify-between px-4 sticky top-0 z-50" style={{ 
+          borderBottom: '1px solid var(--border)', 
+          backgroundColor: 'var(--bg-surface)',
+          backdropFilter: 'blur(16px)'
+        }}>
           <button
             onClick={() => { setIsOpen(true); setDragProgress(1); lastProgress.current = 1 }}
             className="flex items-center gap-2 min-w-0 flex-1 h-full"
