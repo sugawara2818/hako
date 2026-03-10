@@ -23,10 +23,15 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
     startY: 0,
     isPanning: false,
     startDist: 0,
-    initialScale: 1
+    initialScale: 1,
+    pinchMidX: 0,   // midpoint of pinch gesture in screen coords
+    pinchMidY: 0,
+    xAtPinchStart: 0,  // x/y at start of pinch (for origin-based calc)
+    yAtPinchStart: 0
   })
 
   const lastTap = useRef(0)
+  const wrapperRef = useRef<HTMLDivElement>(null) // outer wrapper for dimensions
 
   // Direct DOM transform for 60fps smoothness
   const applyTransform = (smooth = false) => {
@@ -37,7 +42,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
   }
 
   useEffect(() => {
-    state.current = { scale: 1, x: 0, y: 0, startX: 0, startY: 0, isPanning: false, startDist: 0, initialScale: 1 }
+    state.current = { scale: 1, x: 0, y: 0, startX: 0, startY: 0, isPanning: false, startDist: 0, initialScale: 1, pinchMidX: 0, pinchMidY: 0, xAtPinchStart: 0, yAtPinchStart: 0 }
     applyTransform(false)
   }, [currentIndex])
 
@@ -56,26 +61,44 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
       state.current.isPanning = false
       state.current.startDist = getDistance(e.touches)
       state.current.initialScale = state.current.scale
+
+      // Calculate midpoint between fingers in container's local space
+      const rect = wrapperRef.current?.getBoundingClientRect()
+      if (rect) {
+        const midScreenX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+        const midScreenY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+        // Convert midpoint from screen to container-local coordinates
+        state.current.pinchMidX = midScreenX - rect.left - rect.width / 2
+        state.current.pinchMidY = midScreenY - rect.top - rect.height / 2
+        state.current.xAtPinchStart = state.current.x
+        state.current.yAtPinchStart = state.current.y
+      }
     }
   }
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 1 && state.current.isPanning) {
-      const currentX = e.touches[0].clientX
-      const currentY = e.touches[0].clientY
-      state.current.x = currentX - state.current.startX
-      
-      // Horizontal swipe navigation
+      const currX = e.touches[0].clientX
+      const currY = e.touches[0].clientY
+      state.current.x = currX - state.current.startX
+
       if (state.current.scale === 1) {
-        state.current.y = 0 // Lock vertical movement when not zoomed
+        // When not zoomed, allow vertical dragging for swipe-to-close
+        state.current.y = currY - state.current.startY
       } else {
-        state.current.y = currentY - state.current.startY
+        state.current.y = currY - state.current.startY
       }
       applyTransform(false)
     } else if (e.touches.length === 2) {
       const newDist = getDistance(e.touches)
       const ratio = newDist / state.current.startDist
-      state.current.scale = Math.min(Math.max(1, state.current.initialScale * ratio), 5)
+      const newScale = Math.min(Math.max(1, state.current.initialScale * ratio), 5)
+
+      // Zoom towards the pinch midpoint
+      const scaleDelta = newScale - state.current.initialScale
+      state.current.x = state.current.xAtPinchStart - scaleDelta * state.current.pinchMidX
+      state.current.y = state.current.yAtPinchStart - scaleDelta * state.current.pinchMidY
+      state.current.scale = newScale
       applyTransform(false)
     }
   }
@@ -87,12 +110,18 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
     if (e.changedTouches.length === 1 && state.current.startDist === 0) {
       // Double tap check
       if (now - lastTap.current < 300) {
+        const rect = wrapperRef.current?.getBoundingClientRect()
         if (state.current.scale > 1) {
           state.current.scale = 1
           state.current.x = 0
           state.current.y = 0
-        } else {
+        } else if (rect) {
+          // Zoom into the tapped position
+          const tapX = e.changedTouches[0].clientX - rect.left - rect.width / 2
+          const tapY = e.changedTouches[0].clientY - rect.top - rect.height / 2
           state.current.scale = 2.5
+          state.current.x = -tapX * (2.5 - 1)
+          state.current.y = -tapY * (2.5 - 1)
         }
         applyTransform(true)
         lastTap.current = 0
@@ -102,14 +131,20 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
     }
     state.current.startDist = 0
 
-    // Prevent navigation change if we are zoomed in
     if (state.current.scale === 1) {
+      // Swipe down to close
+      if (state.current.y > 100) {
+        onClose()
+        return
+      }
+      // Swipe left/right navigation
       if (state.current.x < -60 && currentIndex < images.length - 1) {
         setCurrentIndex(i => i + 1)
       } else if (state.current.x > 60 && currentIndex > 0) {
         setCurrentIndex(i => i - 1)
       } else {
         state.current.x = 0
+        state.current.y = 0
         applyTransform(true)
       }
     } else {
@@ -164,6 +199,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
       )}
 
       <div 
+        ref={wrapperRef}
         className="w-full h-full overflow-hidden flex items-center justify-center cursor-move"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
