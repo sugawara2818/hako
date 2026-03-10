@@ -45,7 +45,7 @@ function SignUpForm() {
             password,
           })
           if (signInError) throw new Error('既に登録されているメールアドレスです。正しいパスワードを入力するかログイン画面からお入りください。')
-          
+
           // Successful login of existing user
           if (intent === 'create') {
             router.push('/owner/hako/create')
@@ -131,7 +131,7 @@ function SignUpForm() {
 
 export default function OwnerSignUpPage() {
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden font-sans" data-theme="dark">
       {/* Background Effects */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen" />
@@ -145,7 +145,7 @@ export default function OwnerSignUpPage() {
         </Link>
 
         <div className="glass-card p-8 rounded-3xl border border-white/10">
-          <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+          <h1 className="text-3xl font-bold mb-2 heading-gradient">
             オーナー登録
           </h1>
           <p className="text-gray-400 text-sm mb-8">

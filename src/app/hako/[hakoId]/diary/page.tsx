@@ -41,17 +41,17 @@ export default async function DiaryPage({ params }: { params: Promise<{ hakoId: 
       features={hako.features || ['timeline']}
     >
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
-          <div className="max-w-2xl mx-auto mb-12 animate-fade-in">
-              <h1 className="text-4xl md:text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                  日記
-              </h1>
-          </div>
+        <div className="max-w-2xl mx-auto mb-12 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-black mb-3 heading-gradient">
+            日記
+          </h1>
+        </div>
 
-          <DiaryPortal 
-            hakoId={hakoId} 
-            currentUserId={user.id} 
-            initialEntries={initialEntries} 
-          />
+        <DiaryPortal
+          hakoId={hakoId}
+          currentUserId={user.id}
+          initialEntries={initialEntries}
+        />
       </div>
     </HakoViewerLayout>
   )

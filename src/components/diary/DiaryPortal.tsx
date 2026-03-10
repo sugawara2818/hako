@@ -35,7 +35,7 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
     setView('list')
   }
 
-  const filteredEntries = selectedFilterDate 
+  const filteredEntries = selectedFilterDate
     ? entries.filter(e => e.diary_date === selectedFilterDate)
     : entries
 
@@ -60,7 +60,7 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
 
         <div className="flex items-center gap-3">
           {selectedFilterDate && (
-            <button 
+            <button
               onClick={() => setSelectedFilterDate(null)}
               className="px-4 py-2 text-xs font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all"
             >
@@ -70,7 +70,8 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
 
           <Link
             href={`/hako/${hakoId}/diary/new${selectedFilterDate ? `?date=${selectedFilterDate}` : ''}`}
-            className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm group"
+            className="flex items-center justify-center gap-2 px-6 py-3.5 text-white font-black rounded-2xl transition-all shadow-lg text-sm group"
+            style={{ backgroundColor: 'var(--brand-blue)' }}
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             {selectedFilterDate ? `${selectedFilterDate} の日記を書く` : '日記を書く'}
@@ -81,15 +82,15 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
       {/* Content */}
       <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
         {view === 'list' ? (
-          <DiaryFeed 
-            hakoId={hakoId} 
-            currentUserId={currentUserId} 
-            entries={filteredEntries} 
+          <DiaryFeed
+            hakoId={hakoId}
+            currentUserId={currentUserId}
+            entries={filteredEntries}
             onDelete={handleDelete}
           />
         ) : (
           <div className="max-w-md mx-auto">
-             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} selectedDate={selectedFilterDate} />
+            <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} selectedDate={selectedFilterDate} />
           </div>
         )}
       </div>

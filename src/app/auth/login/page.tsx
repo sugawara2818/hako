@@ -30,7 +30,7 @@ export default function LoginPage() {
         email,
         password,
       })
-      
+
       if (signInError) throw signInError
       if (!user) throw new Error('ユーザーが見つかりませんでした')
 
@@ -57,9 +57,9 @@ export default function LoginPage() {
     } catch (e: any) {
       console.error(e)
       if (e.message.includes('Invalid login credentials')) {
-          setErrorMsg('メールアドレスまたはパスワードが間違っています')
+        setErrorMsg('メールアドレスまたはパスワードが間違っています')
       } else {
-          setErrorMsg(e.message || 'ログイン中にエラーが発生しました')
+        setErrorMsg(e.message || 'ログイン中にエラーが発生しました')
       }
     } finally {
       setLoading(false)
@@ -67,7 +67,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden font-sans" data-theme="dark">
       {/* Background Effects */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen" />
@@ -81,9 +81,9 @@ export default function LoginPage() {
         </Link>
 
         <div className="glass-card p-8 rounded-3xl border border-white/10">
-          <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 flex items-center gap-3">
-             <LogIn className="w-8 h-8 text-blue-400" />
-             ログイン
+          <h1 className="text-3xl font-bold mb-2 heading-gradient flex items-center gap-3">
+            <LogIn className="w-8 h-8 text-blue-400" />
+            ログイン
           </h1>
           <p className="text-gray-400 text-sm mb-8">
             作成した箱の管理や、参加している箱のタイムラインへアクセスします。
@@ -139,9 +139,9 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-3">
-             <Link href="/auth/owner/signup" className="block text-purple-400 hover:text-purple-300 text-sm transition-colors font-medium">
-                 箱のオーナー登録はこちら
-             </Link>
+            <Link href="/auth/owner/signup" className="block text-purple-400 hover:text-purple-300 text-sm transition-colors font-medium">
+              箱のオーナー登録はこちら
+            </Link>
           </div>
         </div>
       </div>

@@ -8,9 +8,9 @@ export async function generateMetadata({ params }: { params: Promise<{ hakoId: s
   const { hakoId } = await params
   const supabase = await createServerSupabaseClient()
   const { data: hako } = await supabase.from('hako').select('name').eq('id', hakoId).single()
-  
+
   const title = hako ? `${hako.name} - Hako` : 'Hako Space'
-  
+
   return {
     title,
     manifest: `/api/manifest/${hakoId}`
@@ -69,10 +69,10 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
         features={features}
       >
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500 animate-fade-in">
-           <p className="text-xl font-bold mb-2">利用可能な機能がありません</p>
-           {member.role === 'owner' && (
-             <p className="text-sm">管理ツールの「箱の設定」から機能を有効にしてください。</p>
-           )}
+          <p className="text-xl font-bold mb-2">利用可能な機能がありません</p>
+          {member.role === 'owner' && (
+            <p className="text-sm">管理ツールの「箱の設定」から機能を有効にしてください。</p>
+          )}
         </div>
       </HakoViewerLayout>
     )
@@ -106,19 +106,19 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
-          
-          {/* Timeline Header */}
-          <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b border-white/10 bg-black/20">
-              <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                  タイムライン
-              </h1>
-          </div>
 
-          <TimelineFeed 
-            hakoId={hakoId} 
-            currentUserId={user.id} 
-            initialPosts={initialPosts} 
-          />
+        {/* Timeline Header */}
+        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b theme-border theme-surface">
+          <h1 className="text-xl md:text-2xl font-black heading-gradient">
+            タイムライン
+          </h1>
+        </div>
+
+        <TimelineFeed
+          hakoId={hakoId}
+          currentUserId={user.id}
+          initialPosts={initialPosts}
+        />
       </div>
     </HakoViewerLayout>
   )

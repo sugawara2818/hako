@@ -24,7 +24,7 @@ export default async function Home() {
   const displayAsOwner = isLoggedIn && isOwner;
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden font-sans">
+    <div className="min-h-screen bg-black text-white overflow-hidden font-sans" data-theme="dark">
       {/* ... Dynamic Background ... */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
@@ -43,13 +43,13 @@ export default async function Home() {
           <div className="flex items-center gap-3">
             {!displayAsOwner ? (
               <>
-                <Link 
+                <Link
                   href="/auth/login"
                   className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
                 >
                   ログイン
                 </Link>
-                <Link 
+                <Link
                   href="/auth/owner/signup"
                   className="px-6 py-2.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 hover:text-purple-300 transition-all text-sm font-bold backdrop-blur-md border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
                 >
@@ -62,7 +62,7 @@ export default async function Home() {
                   <AtSign className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs font-medium text-gray-400">{user.email}</span>
                 </div>
-                <Link 
+                <Link
                   href="/owner/dashboard"
                   className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 transition-all text-sm font-bold backdrop-blur-md border border-white/10 flex items-center gap-2"
                 >
@@ -84,7 +84,7 @@ export default async function Home() {
             <Sparkles className="w-4 h-4" />
             <span>新しいSNSのカタチ</span>
           </div>
-          
+
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
               あなたの世界を
@@ -101,7 +101,7 @@ export default async function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <Link 
+            <Link
               href={displayAsOwner ? "/owner/hako/create" : "/auth/owner/signup?intent=create"}
               className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-all flex items-center justify-center gap-2 overflow-hidden"
             >
@@ -114,24 +114,24 @@ export default async function Home() {
 
           {/* Abstract Platform Visual */}
           <div className="mt-24 relative w-full max-w-5xl aspect-video rounded-2xl glass-card overflow-hidden animate-fade-in p-1 border border-white/10" style={{ animationDelay: '0.4s' }}>
-             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
-             <div className="h-full w-full rounded-xl bg-black/50 backdrop-blur-3xl border border-white/5 flex items-center justify-center relative overflow-hidden">
-                {/* Visual Elements representing standard app pieces */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-purple-500/30 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-pink-500/20 rounded-full animate-ping" style={{ animationDuration: '4s', animationDelay: '1s' }} />
-                
-                <div className="grid grid-cols-2 gap-6 p-8 relative z-10 w-full max-w-xl mx-auto">
-                  {[
-                    { icon: Users, label: 'SNS機能', delay: '0s' },
-                    { icon: BookOpen, label: '日記機能', delay: '0.2s' },
-                  ].map((item, i) => (
-                    <div key={i} className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:-translate-y-2 transition-transform cursor-pointer" style={{ animationDelay: item.delay }}>
-                      <item.icon className="w-10 h-10 text-purple-400" />
-                      <span className="font-medium text-gray-300">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-             </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+            <div className="h-full w-full rounded-xl bg-black/50 backdrop-blur-3xl border border-white/5 flex items-center justify-center relative overflow-hidden">
+              {/* Visual Elements representing standard app pieces */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-purple-500/30 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-pink-500/20 rounded-full animate-ping" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+
+              <div className="grid grid-cols-2 gap-6 p-8 relative z-10 w-full max-w-xl mx-auto">
+                {[
+                  { icon: Users, label: 'SNS機能', delay: '0s' },
+                  { icon: BookOpen, label: '日記機能', delay: '0.2s' },
+                ].map((item, i) => (
+                  <div key={i} className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:-translate-y-2 transition-transform cursor-pointer" style={{ animationDelay: item.delay }}>
+                    <item.icon className="w-10 h-10 text-purple-400" />
+                    <span className="font-medium text-gray-300">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
 
