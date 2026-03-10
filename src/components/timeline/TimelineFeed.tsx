@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useTransition, useCallback } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
-import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface TimelineFeedProps {
@@ -19,6 +19,11 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
   const [isComposerOpen, setIsComposerOpen] = useState(false)
+  
+  type Draft = { id: string; content: string; date: number }
+  const [drafts, setDrafts] = useState<Draft[]>([])
+  const [viewingDrafts, setViewingDrafts] = useState(false)
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null)
   const [hasDraft, setHasDraft] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -116,31 +121,58 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     }
   }, [startY, pullDistance, isRefreshing, handleRefresh])
 
-  // Draft Management - Load
+  // Draft Management
   useEffect(() => {
-    if (isComposerOpen) {
-      const savedDraft = localStorage.getItem(`hako_timeline_draft_${hakoId}`)
-      if (savedDraft) {
-        setContent(savedDraft)
-        setHasDraft(true)
-      } else {
-        setHasDraft(false)
-      }
+    const saved = localStorage.getItem(`hako_timeline_drafts_${hakoId}`)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        setDrafts(parsed)
+      } catch (e) {}
     }
-  }, [isComposerOpen, hakoId])
+  }, [hakoId])
 
-  // Draft Management - Save
   useEffect(() => {
-    if (isComposerOpen) {
-      if (content.trim()) {
-        localStorage.setItem(`hako_timeline_draft_${hakoId}`, content)
-        setHasDraft(true)
-      } else {
-        localStorage.removeItem(`hako_timeline_draft_${hakoId}`)
-        setHasDraft(false)
-      }
+    setHasDraft(drafts.length > 0)
+  }, [drafts])
+
+  const saveDraft = () => {
+    if (!content.trim()) return
+    const newDraft = { id: editingDraftId || Date.now().toString(), content, date: Date.now() }
+    const newDrafts = [newDraft, ...drafts.filter(d => d.id !== newDraft.id)]
+    
+    setDrafts(newDrafts)
+    localStorage.setItem(`hako_timeline_drafts_${hakoId}`, JSON.stringify(newDrafts))
+    
+    setContent('')
+    setEditingDraftId(null)
+    setPreviews([])
+    setSelectedFiles([])
+    setIsComposerOpen(false)
+  }
+
+  const deleteDraft = (id: string) => {
+    const newDrafts = drafts.filter(d => d.id !== id)
+    setDrafts(newDrafts)
+    localStorage.setItem(`hako_timeline_drafts_${hakoId}`, JSON.stringify(newDrafts))
+  }
+
+  const loadDraft = (draft: Draft) => {
+    setContent(draft.content)
+    setEditingDraftId(draft.id)
+    setViewingDrafts(false)
+  }
+
+  const handleModalClose = () => {
+    if (isSubmitting) return
+    if (content.trim()) {
+      saveDraft()
+    } else {
+      setIsComposerOpen(false)
+      setViewingDrafts(false)
+      setEditingDraftId(null)
     }
-  }, [content, isComposerOpen, hakoId])
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -185,8 +217,10 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     setPreviews([])
     if (fileInputRef.current) fileInputRef.current.value = ''
     setContent('')
-    localStorage.removeItem(`hako_timeline_draft_${hakoId}`)
-    setHasDraft(false)
+    if (editingDraftId) {
+       deleteDraft(editingDraftId)
+       setEditingDraftId(null)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -282,7 +316,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     {/* Floating Action Button */}
     <button
       onClick={() => setIsComposerOpen(true)}
-      className="fixed bottom-20 md:bottom-8 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group relative"
+      className="fixed bottom-20 md:bottom-8 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group"
     >
       <Plus className="w-6 h-6" />
       {hasDraft && !isComposerOpen && (
@@ -293,131 +327,161 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     {/* Composer Modal */}
     {isComposerOpen && (
       <div className="fixed inset-0 z-[200] flex items-start md:items-center justify-center p-4 pt-20 md:pt-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmitting && setIsComposerOpen(false)} />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleModalClose} />
         <div className="relative w-full max-w-xl bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-white flex items-center gap-2">
-              ポストする
-              {hasDraft && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">下書きあり</span>}
-            </h3>
-            <button onClick={() => !isSubmitting && setIsComposerOpen(false)} className="p-2 -mr-2 text-gray-400 hover:text-white rounded-full transition-colors">
+            <div className="flex items-center gap-3">
+              <h3 className="font-bold text-lg text-white">ポストする</h3>
+              {!viewingDrafts && drafts.length > 0 && (
+                <button type="button" onClick={() => setViewingDrafts(true)} className="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/30 transition-colors font-bold">
+                  下書き ({drafts.length})
+                </button>
+              )}
+            </div>
+            <button type="button" onClick={handleModalClose} className="p-2 -mr-2 text-gray-400 hover:text-white rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="いまどうしてる？"
-              className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[120px] select-text"
-              disabled={isSubmitting}
-            />
 
-            {/* Previews Grid */}
-            {previews.length > 0 && (
-              <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
-                previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-              }`}>
-                {previews.map((url, i) => (
-                  <div key={url} className="relative aspect-video group">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
-                  </div>
-                ))}
-                {isUploadingImage && (
-                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-2" />
-                    <p className="text-white text-sm font-medium">アップロード中...</p>
-                  </div>
-                )}
+          {viewingDrafts ? (
+            <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto hide-scrollbar">
+              <div className="flex items-center gap-2 mb-2">
+                 <button type="button" onClick={() => setViewingDrafts(false)} className="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+                    ← 戻る
+                 </button>
+                 <span className="text-gray-500 text-sm">|</span>
+                 <span className="text-white text-sm font-bold">下書き一覧</span>
               </div>
-            )}
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            
-            <div className="flex items-center justify-between border-t border-white/10 pt-4">
-              <div className="flex items-center gap-1">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleImageSelect}
-                  disabled={isSubmitting || selectedFiles.length >= 4}
-                />
-                <button 
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isSubmitting || selectedFiles.length >= 4}
-                  className={`p-2 rounded-full transition-colors ${
-                    selectedFiles.length >= 4
-                      ? 'text-gray-600 cursor-not-allowed'
-                      : 'text-purple-400 hover:bg-purple-500/10 active:scale-95'
-                  }`}
-                >
-                  <ImageIcon className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                {/* Character Count Circle */}
-                {charCount > 0 && (
-                  <div className="flex items-center gap-2">
-                     <div className="relative w-7 h-7">
-                      <svg className="w-full h-full transform -rotate-90">
-                        <circle
-                          cx="14"
-                          cy="14"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          fill="transparent"
-                          className="text-white/10"
-                        />
-                        <circle
-                          cx="14"
-                          cy="14"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          fill="transparent"
-                          strokeDasharray={62.8}
-                          strokeDashoffset={62.8 - (62.8 * charPercentage) / 100}
-                          className={`transition-all duration-300 ${
-                            isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-purple-500'
-                          }`}
-                        />
-                      </svg>
-                      {isNearLimit && (
-                        <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
-                          {MAX_CHARS - charCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
-                >
-                  {isSubmitting
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : <Send className="w-4 h-4" />
-                  }
-                  ポストする
-                </button>
-              </div>
+              {drafts.length === 0 && <p className="text-gray-500 text-center py-8">下書きはありません</p>}
+              {drafts.map(draft => (
+                 <div key={draft.id} className="bg-white/5 p-4 rounded-2xl border border-white/10 flex flex-col gap-2">
+                     <p className="text-gray-300 text-sm line-clamp-3 whitespace-pre-wrap">{draft.content}</p>
+                     <div className="flex items-center justify-between mt-2">
+                         <span className="text-gray-500 text-xs">{new Date(draft.date).toLocaleString()}</span>
+                         <div className="flex gap-2">
+                             <button type="button" onClick={() => deleteDraft(draft.id)} className="p-2 text-gray-500 hover:text-red-400 transition-colors bg-black/30 rounded-full"><Trash2 className="w-4 h-4"/></button>
+                             <button type="button" onClick={() => loadDraft(draft)} className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold transition-colors">編集する</button>
+                         </div>
+                     </div>
+                 </div>
+              ))}
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="いまどうしてる？"
+                className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[120px] select-text"
+                disabled={isSubmitting}
+              />
+
+              {/* Previews Grid */}
+              {previews.length > 0 && (
+                <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
+                  previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                }`}>
+                  {previews.map((url, i) => (
+                    <div key={url} className="relative aspect-video group">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  {isUploadingImage && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-2" />
+                      <p className="text-white text-sm font-medium">アップロード中...</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+              
+              <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                <div className="flex items-center gap-1">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                    disabled={isSubmitting || selectedFiles.length >= 4}
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isSubmitting || selectedFiles.length >= 4}
+                    className={`p-2 rounded-full transition-colors ${
+                      selectedFiles.length >= 4
+                        ? 'text-gray-600 cursor-not-allowed'
+                        : 'text-purple-400 hover:bg-purple-500/10 active:scale-95'
+                    }`}
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  {/* Character Count Circle */}
+                  {charCount > 0 && (
+                    <div className="flex items-center gap-2">
+                       <div className="relative w-7 h-7">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle
+                            cx="14"
+                            cy="14"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="transparent"
+                            className="text-white/10"
+                          />
+                          <circle
+                            cx="14"
+                            cy="14"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="transparent"
+                            strokeDasharray={62.8}
+                            strokeDashoffset={62.8 - (62.8 * charPercentage) / 100}
+                            className={`transition-all duration-300 ${
+                              isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-purple-500'
+                            }`}
+                          />
+                        </svg>
+                        {isNearLimit && (
+                          <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                            {MAX_CHARS - charCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
+                  >
+                    {isSubmitting
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Send className="w-4 h-4" />
+                    }
+                    ポストする
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     )}
