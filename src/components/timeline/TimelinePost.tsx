@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment } from '@/core/timeline/actions'
 
@@ -352,7 +353,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
       </div>
       
       {/* Lightbox / Fullscreen Image Viewer Modal */}
-      {selectedImage && (
+      {selectedImage && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95">
           <button 
             type="button"
@@ -370,7 +371,8 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
               onClick={(e) => e.stopPropagation()} 
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
