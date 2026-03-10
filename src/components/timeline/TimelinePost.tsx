@@ -115,6 +115,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
   const [commentText, setCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   // Custom confirm dialog state
   const [confirmState, setConfirmState] = useState<{
@@ -223,33 +224,33 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             {images.length > 0 && (
               <div className="mt-3 overflow-hidden rounded-2xl border border-white/10">
                 {images.length === 1 && (
-                  <div className="relative aspect-auto max-h-[512px] bg-black">
+                  <button type="button" onClick={() => setSelectedImage(images[0])} className="relative aspect-auto max-h-[512px] bg-black w-full text-left cursor-pointer">
                     <img src={images[0]} alt="Attachment" className="w-full h-full object-contain" />
-                  </div>
+                  </button>
                 )}
                 {images.length === 2 && (
                   <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
-                    <div className="relative h-full"><img src={images[0]} alt="" className="w-full h-full object-cover" /></div>
-                    <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
+                    <button type="button" onClick={() => setSelectedImage(images[0])} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImage(images[1])} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
                   </div>
                 )}
                 {images.length === 3 && (
                   <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
-                    <div className="relative h-full">
+                    <button type="button" onClick={() => setSelectedImage(images[0])} className="relative h-full cursor-pointer">
                       <img src={images[0]} alt="" className="w-full h-full object-cover" />
-                    </div>
+                    </button>
                     <div className="grid grid-rows-2 gap-0.5 h-full">
-                      <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
-                      <div className="relative h-full"><img src={images[2]} alt="" className="w-full h-full object-cover" /></div>
+                      <button type="button" onClick={() => setSelectedImage(images[1])} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
+                      <button type="button" onClick={() => setSelectedImage(images[2])} className="relative h-full cursor-pointer"><img src={images[2]} alt="" className="w-full h-full object-cover" /></button>
                     </div>
                   </div>
                 )}
                 {images.length >= 4 && (
                   <div className="grid grid-cols-2 grid-rows-2 gap-0.5 aspect-[16/9] bg-white/10">
-                    <div className="relative h-full"><img src={images[0]} alt="" className="w-full h-full object-cover" /></div>
-                    <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
-                    <div className="relative h-full"><img src={images[2]} alt="" className="w-full h-full object-cover" /></div>
-                    <div className="relative h-full"><img src={images[3]} alt="" className="w-full h-full object-cover" /></div>
+                    <button type="button" onClick={() => setSelectedImage(images[0])} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImage(images[1])} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImage(images[2])} className="relative h-full cursor-pointer"><img src={images[2]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImage(images[3])} className="relative h-full cursor-pointer"><img src={images[3]} alt="" className="w-full h-full object-cover" /></button>
                   </div>
                 )}
               </div>
@@ -349,6 +350,28 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
           </div>
         </div>
       </div>
+      
+      {/* Lightbox / Fullscreen Image Viewer Modal */}
+      {selectedImage && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95">
+          <button 
+            type="button"
+            className="absolute top-4 left-4 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors z-[310]"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          
+          <div className="w-full h-full p-4 flex items-center justify-center" onClick={() => setSelectedImage(null)}>
+            <img 
+              src={selectedImage} 
+              alt="Enlarged view" 
+              className="max-w-full max-h-full object-contain cursor-default"
+              onClick={(e) => e.stopPropagation()} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
