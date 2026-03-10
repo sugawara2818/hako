@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -79,6 +79,7 @@ function ConfirmDialog({
 // ──────────────────────────────────────────────────
 
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFeedProps) {
+  const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [confirmState, setConfirmState] = useState<{
     id: string
     message: string
@@ -95,6 +96,26 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
     await onDelete(id)
   }
 
+  const sortedEntries = useMemo(() => {
+    return [...entries].sort((a, b) => {
+      if (sortMode === 'date_desc') {
+        const diff = new Date(b.diary_date).getTime() - new Date(a.diary_date).getTime()
+        return diff !== 0 ? diff : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+      if (sortMode === 'date_asc') {
+        const diff = new Date(a.diary_date).getTime() - new Date(b.diary_date).getTime()
+        return diff !== 0 ? diff : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      }
+      if (sortMode === 'created_desc') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+      if (sortMode === 'created_asc') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      }
+      return 0
+    })
+  }, [entries, sortMode])
+
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -109,6 +130,22 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto relative">
+      <div className="flex items-center justify-end mb-4 animate-fade-in">
+        <div className="relative">
+          <select 
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
+            className="appearance-none bg-[#111] border border-white/10 text-gray-300 text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-purple-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
+          >
+            <option value="date_desc">新しい順 (日付)</option>
+            <option value="date_asc">古い順 (日付)</option>
+            <option value="created_desc">新しい順 (投稿日)</option>
+            <option value="created_asc">古い順 (投稿日)</option>
+          </select>
+          <ArrowUpDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+      </div>
+
       {confirmState && (
         <ConfirmDialog
           message={confirmState.message}
@@ -116,7 +153,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
           onCancel={() => setConfirmState(null)}
         />
       )}
-      {entries.map((entry) => (
+      {sortedEntries.map((entry) => (
         <DiaryItem 
           key={entry.id} 
           entry={entry} 
@@ -167,12 +204,12 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             {isAuthor && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Link 
                   href={`/hako/${hakoId}/diary/edit/${entry.id}`}
-                  className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+                  className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:text-white hover:bg-white/10 rounded-full transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Edit2 className="w-4 h-4" />
@@ -183,13 +220,15 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
                     e.stopPropagation()
                     onDelete(entry.id)
                   }}
-                  className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                  className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             )}
-            <ChevronRight className="w-5 h-5 text-gray-700 group-hover:text-gray-500 transition-colors" />
+            <div className="flex items-center justify-center p-2">
+              <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400 transition-colors" />
+            </div>
           </div>
         </div>
 
