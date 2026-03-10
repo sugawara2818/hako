@@ -221,25 +221,37 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
 
             {/* X-style Adaptive Image Grid */}
             {images.length > 0 && (
-              <div className={`mt-3 rounded-2xl overflow-hidden border border-white/10 grid gap-1 ${
-                images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-              }`}>
-                {images.map((url, i) => (
-                  <div 
-                    key={url} 
-                    className={`relative overflow-hidden ${
-                      images.length === 3 && i === 0 ? 'row-span-2' : ''
-                    }`}
-                  >
-                    <img 
-                      src={url} 
-                      alt={`Attachment ${i + 1}`} 
-                      className={`w-full h-full object-cover ${
-                        images.length === 1 ? 'max-h-[512px]' : 'aspect-square md:aspect-video'
-                      }`} 
-                    />
+              <div className="mt-3 overflow-hidden rounded-2xl border border-white/10">
+                {images.length === 1 && (
+                  <div className="relative aspect-auto max-h-[512px] bg-black">
+                    <img src={images[0]} alt="Attachment" className="w-full h-full object-contain" />
                   </div>
-                ))}
+                )}
+                {images.length === 2 && (
+                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
+                    <div className="relative h-full"><img src={images[0]} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
+                  </div>
+                )}
+                {images.length === 3 && (
+                  <div className="grid grid-cols-2 gap-0.5 aspect-[16/9] bg-white/10">
+                    <div className="relative h-full">
+                      <img src={images[0]} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="grid grid-rows-2 gap-0.5 h-full">
+                      <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
+                      <div className="relative h-full"><img src={images[2]} alt="" className="w-full h-full object-cover" /></div>
+                    </div>
+                  </div>
+                )}
+                {images.length >= 4 && (
+                  <div className="grid grid-cols-2 grid-rows-2 gap-0.5 aspect-[16/9] bg-white/10">
+                    <div className="relative h-full"><img src={images[0]} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="relative h-full"><img src={images[1]} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="relative h-full"><img src={images[2]} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="relative h-full"><img src={images[3]} alt="" className="w-full h-full object-cover" /></div>
+                  </div>
+                )}
               </div>
             )}
 

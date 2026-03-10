@@ -316,7 +316,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     {/* Floating Action Button */}
     <button
       onClick={() => setIsComposerOpen(true)}
-      className="fixed bottom-20 md:bottom-8 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group"
+      className="fixed bottom-24 md:bottom-6 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group"
     >
       <Plus className="w-6 h-6" />
       {hasDraft && !isComposerOpen && (
