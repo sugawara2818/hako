@@ -19,6 +19,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
   const [isComposerOpen, setIsComposerOpen] = useState(false)
+  const [hasDraft, setHasDraft] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -115,6 +116,32 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     }
   }, [startY, pullDistance, isRefreshing, handleRefresh])
 
+  // Draft Management - Load
+  useEffect(() => {
+    if (isComposerOpen) {
+      const savedDraft = localStorage.getItem(`hako_timeline_draft_${hakoId}`)
+      if (savedDraft) {
+        setContent(savedDraft)
+        setHasDraft(true)
+      } else {
+        setHasDraft(false)
+      }
+    }
+  }, [isComposerOpen, hakoId])
+
+  // Draft Management - Save
+  useEffect(() => {
+    if (isComposerOpen) {
+      if (content.trim()) {
+        localStorage.setItem(`hako_timeline_draft_${hakoId}`, content)
+        setHasDraft(true)
+      } else {
+        localStorage.removeItem(`hako_timeline_draft_${hakoId}`)
+        setHasDraft(false)
+      }
+    }
+  }, [content, isComposerOpen, hakoId])
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
@@ -157,6 +184,9 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     setSelectedFiles([])
     setPreviews([])
     if (fileInputRef.current) fileInputRef.current.value = ''
+    setContent('')
+    localStorage.removeItem(`hako_timeline_draft_${hakoId}`)
+    setHasDraft(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -191,7 +221,6 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         return
       }
 
-      setContent('')
       clearAll()
       setIsComposerOpen(false)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -253,9 +282,12 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     {/* Floating Action Button */}
     <button
       onClick={() => setIsComposerOpen(true)}
-      className="fixed bottom-20 right-6 md:bottom-10 md:right-10 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40"
+      className="fixed bottom-20 md:bottom-8 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group relative"
     >
       <Plus className="w-6 h-6" />
+      {hasDraft && !isComposerOpen && (
+        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-yellow-400 border-2 border-[#050505] rounded-full"></span>
+      )}
     </button>
 
     {/* Composer Modal */}
@@ -264,7 +296,10 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmitting && setIsComposerOpen(false)} />
         <div className="relative w-full max-w-xl bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-white">ポストする</h3>
+            <h3 className="font-bold text-lg text-white flex items-center gap-2">
+              ポストする
+              {hasDraft && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">下書きあり</span>}
+            </h3>
             <button onClick={() => !isSubmitting && setIsComposerOpen(false)} className="p-2 -mr-2 text-gray-400 hover:text-white rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
