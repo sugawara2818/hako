@@ -215,7 +215,8 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
     <>
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col border-x border-white/10 min-h-screen relative bg-black/20"
+      className="w-full max-w-2xl mx-auto flex flex-col border-x border-white/10 min-h-screen relative bg-black/20 animate-fade-in"
+      style={{ animationDelay: '0.1s' }}
     >
       {/* Pull down indicator */}
       <div 
@@ -259,7 +260,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
 
     {/* Composer Modal */}
     {isComposerOpen && (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[200] flex items-start md:items-center justify-center p-4 pt-20 md:pt-4">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmitting && setIsComposerOpen(false)} />
         <div className="relative w-full max-w-xl bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
           <div className="flex justify-between items-center mb-4">

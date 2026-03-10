@@ -114,13 +114,11 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
               </h1>
           </div>
 
-          <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-             <TimelineFeed 
-               hakoId={hakoId} 
-               currentUserId={user.id} 
-               initialPosts={initialPosts} 
-             />
-          </div>
+          <TimelineFeed 
+            hakoId={hakoId} 
+            currentUserId={user.id} 
+            initialPosts={initialPosts} 
+          />
       </div>
     </HakoViewerLayout>
   )
