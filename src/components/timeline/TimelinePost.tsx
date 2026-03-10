@@ -197,7 +197,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         />
       )}
 
-      <div className="glass p-6 rounded-2xl border border-white/5 transition-all hover:bg-white/[0.02]">
+      <div className="p-4 sm:p-5 border-b border-white/10 transition-colors hover:bg-white/[0.02]">
         {/* Header */}
         <div className="flex items-start gap-3">
           {post.profiles?.avatar_url ? (

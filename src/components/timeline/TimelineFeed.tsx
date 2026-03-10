@@ -1,22 +1,24 @@
 'use client'
 
-import { useState, useRef, useEffect, useTransition } from 'react'
+import { useState, useRef, useEffect, useTransition, useCallback } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
-import { Send, Image as ImageIcon, Loader2, X, RefreshCcw, ArrowDown } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface TimelineFeedProps {
   hakoId: string
   currentUserId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPosts: any[]
 }
 
 export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFeedProps) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
+  const [isComposerOpen, setIsComposerOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -33,6 +35,19 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const MAX_CHARS = 1000
   const PULL_THRESHOLD = 50 // Decreased for easier triggering
   const DAMPING = 0.6 // Increased for more direct feel
+
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    
+    startTransition(() => {
+      router.refresh()
+    })
+
+    setTimeout(() => {
+      setIsRefreshing(false)
+    }, 600)
+  }, [isRefreshing, router])
 
   useEffect(() => {
     const getScrollParent = (node: HTMLElement | null): HTMLElement | null => {
@@ -98,20 +113,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [startY, pullDistance, isRefreshing])
-
-  const handleRefresh = async () => {
-    if (isRefreshing) return
-    setIsRefreshing(true)
-    
-    startTransition(() => {
-      router.refresh()
-    })
-
-    setTimeout(() => {
-      setIsRefreshing(false)
-    }, 600)
-  }
+  }, [startY, pullDistance, isRefreshing, handleRefresh])
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -191,6 +193,8 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
 
       setContent('')
       clearAll()
+      setIsComposerOpen(false)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Submit Error:', err)
       setError(err.message || '予期せぬエラーが発生しました。時間を置いて再度お試しください。')
@@ -208,9 +212,10 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const canSubmit = (content.trim() || selectedFiles.length > 0) && !isSubmitting && !isOverLimit
 
   return (
+    <>
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col gap-6"
+      className="w-full max-w-2xl mx-auto flex flex-col border-x border-white/10 min-h-screen relative bg-black/20"
     >
       {/* Pull down indicator */}
       <div 
@@ -227,126 +232,9 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         )}
       </div>
 
-      <div className="glass p-6 rounded-3xl border border-white/10 shadow-xl shadow-black/20">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="この箱のメンバーに共有しよう"
-            className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[80px] select-text"
-            disabled={isSubmitting}
-          />
-
-          {/* Previews Grid */}
-          {previews.length > 0 && (
-            <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
-              previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-            }`}>
-              {previews.map((url, i) => (
-                <div key={url} className="relative aspect-video group">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i)}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
-                  >
-                    <X className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-              ))}
-              {isUploadingImage && (
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-2" />
-                  <p className="text-white text-sm font-medium">アップロード中...</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          
-          <div className="flex items-center justify-between border-t border-white/10 pt-4">
-            <div className="flex items-center gap-1">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleImageSelect}
-                disabled={isSubmitting || selectedFiles.length >= 4}
-              />
-              <button 
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting || selectedFiles.length >= 4}
-                className={`p-2 rounded-full transition-colors ${
-                  selectedFiles.length >= 4
-                    ? 'text-gray-600 cursor-not-allowed'
-                    : 'text-purple-400 hover:bg-purple-500/10 active:scale-95'
-                }`}
-              >
-                <ImageIcon className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {/* Character Count Circle */}
-              {charCount > 0 && (
-                <div className="flex items-center gap-2">
-                   <div className="relative w-7 h-7">
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle
-                        cx="14"
-                        cy="14"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="transparent"
-                        className="text-white/10"
-                      />
-                      <circle
-                        cx="14"
-                        cy="14"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="transparent"
-                        strokeDasharray={62.8}
-                        strokeDashoffset={62.8 - (62.8 * charPercentage) / 100}
-                        className={`transition-all duration-300 ${
-                          isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-purple-500'
-                        }`}
-                      />
-                    </svg>
-                    {isNearLimit && (
-                      <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
-                        {MAX_CHARS - charCount}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
-              >
-                {isSubmitting
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <Send className="w-4 h-4" />
-                }
-                投稿する
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         {initialPosts.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 glass rounded-3xl border border-white/5">
+          <div className="text-center py-20 text-gray-400">
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
@@ -360,5 +248,143 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         )}
       </div>
     </div>
+
+    {/* Floating Action Button */}
+    <button
+      onClick={() => setIsComposerOpen(true)}
+      className="fixed bottom-20 right-6 md:bottom-10 md:right-10 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40"
+    >
+      <Plus className="w-6 h-6" />
+    </button>
+
+    {/* Composer Modal */}
+    {isComposerOpen && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmitting && setIsComposerOpen(false)} />
+        <div className="relative w-full max-w-xl bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg text-white">ポストする</h3>
+            <button onClick={() => !isSubmitting && setIsComposerOpen(false)} className="p-2 -mr-2 text-gray-400 hover:text-white rounded-full transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="いまどうしてる？"
+              className="w-full bg-transparent text-white placeholder-gray-500 text-lg resize-none outline-none min-h-[120px] select-text"
+              disabled={isSubmitting}
+            />
+
+            {/* Previews Grid */}
+            {previews.length > 0 && (
+              <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
+                previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+              }`}>
+                {previews.map((url, i) => (
+                  <div key={url} className="relative aspect-video group">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ))}
+                {isUploadingImage && (
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-2" />
+                    <p className="text-white text-sm font-medium">アップロード中...</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            
+            <div className="flex items-center justify-between border-t border-white/10 pt-4">
+              <div className="flex items-center gap-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleImageSelect}
+                  disabled={isSubmitting || selectedFiles.length >= 4}
+                />
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSubmitting || selectedFiles.length >= 4}
+                  className={`p-2 rounded-full transition-colors ${
+                    selectedFiles.length >= 4
+                      ? 'text-gray-600 cursor-not-allowed'
+                      : 'text-purple-400 hover:bg-purple-500/10 active:scale-95'
+                  }`}
+                >
+                  <ImageIcon className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {/* Character Count Circle */}
+                {charCount > 0 && (
+                  <div className="flex items-center gap-2">
+                     <div className="relative w-7 h-7">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="14"
+                          cy="14"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          fill="transparent"
+                          className="text-white/10"
+                        />
+                        <circle
+                          cx="14"
+                          cy="14"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          fill="transparent"
+                          strokeDasharray={62.8}
+                          strokeDashoffset={62.8 - (62.8 * charPercentage) / 100}
+                          className={`transition-all duration-300 ${
+                            isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-purple-500'
+                          }`}
+                        />
+                      </svg>
+                      {isNearLimit && (
+                        <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                          {MAX_CHARS - charCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-bold shadow-lg shadow-purple-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
+                >
+                  {isSubmitting
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <Send className="w-4 h-4" />
+                  }
+                  ポストする
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
