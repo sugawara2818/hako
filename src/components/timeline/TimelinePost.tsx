@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { createPortal } from 'react-dom'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment } from '@/core/timeline/actions'
+import { ImageLightbox } from './ImageLightbox'
 
 // ──────────────────────────────────────────────────
 // Custom confirm dialog component
@@ -353,26 +353,8 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
       </div>
       
       {/* Lightbox / Fullscreen Image Viewer Modal */}
-      {selectedImage && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95">
-          <button 
-            type="button"
-            className="absolute top-4 left-4 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors z-[310]"
-            onClick={() => setSelectedImage(null)}
-          >
-            <X className="w-6 h-6" />
-          </button>
-          
-          <div className="w-full h-full p-4 flex items-center justify-center" onClick={() => setSelectedImage(null)}>
-            <img 
-              src={selectedImage} 
-              alt="Enlarged view" 
-              className="max-w-full max-h-full object-contain cursor-default"
-              onClick={(e) => e.stopPropagation()} 
-            />
-          </div>
-        </div>,
-        document.body
+      {selectedImage && (
+        <ImageLightbox url={selectedImage} onClose={() => setSelectedImage(null)} />
       )}
     </div>
   )
