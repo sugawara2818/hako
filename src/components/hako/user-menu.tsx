@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MoreHorizontal, UserMinus, User } from 'lucide-react'
+import { MoreHorizontal, UserMinus, Sun, Moon } from 'lucide-react'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
-
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+import { useTheme } from '@/components/theme-provider'
 
 interface UserMenuProps {
   email: string
@@ -22,6 +22,7 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -70,22 +71,33 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
             <p className="text-xs text-gray-500 truncate">{email}</p>
           </div>
 
-          {!isOwner ? (
-            <button
-              onClick={() => {
-                setIsOpen(false)
-                setShowLeaveModal(true)
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left"
-            >
-              <UserMinus className="w-4 h-4" />
-              この箱から退会する
-            </button>
-          ) : (
-            <div className="px-4 py-3 text-xs text-gray-600">
-              オーナーは退会できません
-            </div>
-          )}
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors text-left text-gray-300"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-purple-400" />}
+            {theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
+          </button>
+
+          <div className="border-t border-white/5 mt-1">
+            {!isOwner ? (
+              <button
+                onClick={() => {
+                  setIsOpen(false)
+                  setShowLeaveModal(true)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left"
+              >
+                <UserMinus className="w-4 h-4" />
+                この箱から退会する
+              </button>
+            ) : (
+              <div className="px-4 py-3 text-xs text-gray-600">
+                オーナーは退会できません
+              </div>
+            )}
+          </div>
         </div>
       )}
 

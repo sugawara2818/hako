@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, User, UserMinus, X, BookOpen } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Sun, Moon } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
@@ -10,6 +10,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { getHakoGradient } from '@/lib/hako-utils'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+import { useTheme } from '@/components/theme-provider'
 
 interface MobileSidebarProps {
   hakoId: string
@@ -38,6 +39,7 @@ export function MobileSidebar({
   const shownName = displayName || email.split('@')[0]
 
   const [showLeaveModal, setShowLeaveModal] = useState(false)
+  const { theme, toggleTheme } = useTheme()
 
   const handleLeaveHako = async () => {
     try {
@@ -112,6 +114,19 @@ export function MobileSidebar({
 
         <div className="pt-4 px-2">
           <InstallButton variant="sidebar" />
+        </div>
+
+        {/* Theme Toggle */}
+        <div className="pt-2 px-2">
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm hover:bg-white/5 transition-colors text-left font-medium text-gray-400"
+          >
+            {theme === 'dark' 
+              ? <Sun className="w-5 h-5 text-yellow-400" /> 
+              : <Moon className="w-5 h-5 text-purple-400" />}
+            {theme === 'dark' ? 'ライトモード' : 'ダークモード'}
+          </button>
         </div>
       </nav>
 

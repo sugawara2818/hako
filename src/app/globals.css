@@ -9,37 +9,99 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* ──── Dark Theme (default) ──── */
 :root {
+  --bg: #050505;
+  --bg-surface: #0f0f0f;
+  --bg-elevated: #1a1a1a;
+  --border: rgba(255,255,255,0.07);
+  --text: #ffffff;
+  --text-muted: #6b7280;
+  --sidebar-bg: rgba(0,0,0,0.5);
+  --sidebar-footer-bg: rgba(0,0,0,0.4);
+  --mobile-sidebar-bg: #0a0a0a;
+
+  /* Legacy compat */
   --background: #000000;
   --foreground: #ffffff;
 }
 
-/* Base styles for dark theme */
+/* ──── Light Theme ──── */
+[data-theme="light"] {
+  --bg: #f3f4f6;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f9fafb;
+  --border: rgba(0,0,0,0.1);
+  --text: #111827;
+  --text-muted: #6b7280;
+  --sidebar-bg: rgba(255,255,255,0.85);
+  --sidebar-footer-bg: rgba(249,250,251,0.9);
+  --mobile-sidebar-bg: #ffffff;
+
+  /* Legacy compat */
+  --background: #f3f4f6;
+  --foreground: #111827;
+}
+
+/* ──── Semantic utilities ──── */
+.theme-bg       { background-color: var(--bg) !important; }
+.theme-surface  { background-color: var(--bg-surface) !important; }
+.theme-elevated { background-color: var(--bg-elevated) !important; }
+.theme-border   { border-color: var(--border) !important; }
+.theme-text     { color: var(--text) !important; }
+.theme-muted    { color: var(--text-muted) !important; }
+
+/* Base styles */
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   width: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
 }
+
+/* Light mode text contrast helpers */
+[data-theme="light"] .text-white { color: var(--text) !important; }
+[data-theme="light"] .text-gray-200 { color: #374151 !important; }
+[data-theme="light"] .text-gray-300 { color: #4b5563 !important; }
+[data-theme="light"] .text-gray-400 { color: #6b7280 !important; }
+[data-theme="light"] .text-gray-500 { color: #9ca3af !important; }
+[data-theme="light"] .bg-\[\#111\] { background-color: #ffffff !important; }
+[data-theme="light"] .bg-\[\#0f0f0f\] { background-color: #f9fafb !important; }
+[data-theme="light"] .bg-\[\#050505\] { background-color: #f3f4f6 !important; }
+[data-theme="light"] .bg-\[\#0a0a0a\] { background-color: #ffffff !important; }
+[data-theme="light"] .bg-black\/50 { background-color: rgba(255,255,255,0.85) !important; }
+[data-theme="light"] .bg-black\/40 { background-color: rgba(249,250,251,0.9) !important; }
+[data-theme="light"] .bg-black\/30 { background-color: rgba(243,244,246,0.8) !important; }
+[data-theme="light"] .bg-black\/90 { background-color: rgba(255,255,255,0.95) !important; }
+[data-theme="light"] .bg-black\/95 { background-color: rgba(255,255,255,0.98) !important; }
+[data-theme="light"] .bg-white\/5  { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .bg-white\/10 { background-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .bg-white\/\[0\.02\] { background-color: rgba(0,0,0,0.02) !important; }
+[data-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .hover\:bg-white\/5:hover  { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .hover\:bg-white\/20:hover { background-color: rgba(0,0,0,0.12) !important; }
 
 /* Animations hooks */
 @keyframes fade-in {
@@ -61,10 +123,10 @@ body {
 }
 
 /* Hide scrollbar for clean look */
-.no-scrollbar::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar, .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.no-scrollbar {
+.no-scrollbar, .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
