@@ -15,6 +15,8 @@ interface UserMenuProps {
   avatarUrl?: string | null
 }
 
+import Link from 'next/link'
+
 export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
@@ -45,29 +47,35 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
 
   return (
     <div className="relative" ref={menuRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 transition-all group"
-      >
-        <UserAvatarUpload 
-          hakoId={hakoId}
-          avatarUrl={avatarUrl || null}
-          size={40}
-        />
-        <div className="flex-1 min-w-0 text-left hidden md:block">
-          <p className="text-sm font-bold text-white truncate">{shownName}</p>
-          <p className="text-xs text-gray-500 truncate">{email}</p>
-        </div>
-        <MoreHorizontal className="w-5 h-5 text-gray-500 hidden md:block" />
-      </button>
+      <div className="flex items-center gap-1">
+        <Link 
+          href={`/hako/${hakoId}/profile`}
+          className="flex-1 flex items-center gap-3 p-3 rounded-2xl hover:theme-elevated transition-all group min-w-0"
+        >
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border theme-border">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
+                <UserMinus className="w-5 h-5 opacity-20" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0 text-left hidden md:block">
+            <p className="text-sm font-bold theme-text truncate">{shownName}</p>
+            <p className="text-xs theme-muted truncate">{email}</p>
+          </div>
+        </Link>
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-3 theme-muted hover:theme-text hover:bg-white/10 rounded-xl md:block hidden"
+        >
+          <MoreHorizontal className="w-5 h-5" />
+        </button>
+      </div>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 glass rounded-[24px] border border-white/10 bg-black/90 shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-bottom-2 duration-200 z-[100]">
-          <div className="px-4 py-3 border-b border-white/5 mb-1 space-y-1">
-            <UsernameEditor hakoId={hakoId} currentName={shownName} />
-            <p className="text-xs text-gray-500 truncate">{email}</p>
-          </div>
-
+        <div className="absolute bottom-full right-0 mb-2 w-48 glass rounded-2xl border theme-border bg-black/90 shadow-2xl overflow-hidden py-1 animate-in fade-in slide-in-from-bottom-2 duration-200 z-[100]">
           {!isOwner ? (
             <button
               onClick={() => {
@@ -80,7 +88,7 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
               この箱から退会する
             </button>
           ) : (
-            <div className="px-4 py-3 text-xs text-gray-600">
+            <div className="px-4 py-3 text-xs theme-muted">
               オーナーは退会できません
             </div>
           )}

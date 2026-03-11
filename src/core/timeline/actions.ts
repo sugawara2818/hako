@@ -21,14 +21,14 @@ export async function getProfile(userId: string) {
 }
 
 // Fetch posts for a specific hako
-export async function getTimelinePosts(hakoId: string) {
+export async function getTimelinePosts(hakoId: string, options?: { userId?: string }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
   // We need to fetch basic profile info and likes for each post
   // Fetch posts with profiles and likes/comments
-  const { data, error } = await supabase
+  let query = supabase
     .from('hako_timeline_posts')
     .select(`
       *,
@@ -40,7 +40,12 @@ export async function getTimelinePosts(hakoId: string) {
       )
     `)
     .eq('hako_id', hakoId)
-    .order('created_at', { ascending: false })
+
+  if (options?.userId) {
+    query = query.eq('user_id', options.userId)
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false })
 
   if (error) throw error
 

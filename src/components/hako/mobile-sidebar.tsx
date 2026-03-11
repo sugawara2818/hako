@@ -119,17 +119,25 @@ export function MobileSidebar({
       {/* User Profile Footer */}
       <div className="p-4 shrink-0 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
         <ThemeToggle />
-        <div className="flex items-center gap-3 p-3 rounded-2xl mb-3" style={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-          <UserAvatarUpload 
-            hakoId={hakoId}
-            avatarUrl={avatarUrl || null}
-            size={40}
-          />
-          <div className="min-w-0 flex-1">
-            <UsernameEditor hakoId={hakoId} currentName={shownName} />
-            <p className="text-xs text-gray-500 truncate mt-0.5">{email}</p>
+        <Link 
+          href={`/hako/${hakoId}/profile`}
+          onClick={onClose}
+          className="flex items-center gap-3 p-3 rounded-2xl mb-3 theme-elevated border theme-border hover:theme-surface transition-all group"
+        >
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border theme-border">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
+                <X className="w-5 h-5 opacity-20" />
+              </div>
+            )}
           </div>
-        </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold theme-text truncate">{shownName}</p>
+            <p className="text-xs theme-muted truncate mt-0.5">{email}</p>
+          </div>
+        </Link>
 
         {!isOwner && (
           <button
