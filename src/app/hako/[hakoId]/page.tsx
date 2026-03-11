@@ -67,6 +67,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
         displayName={member.display_name}
         avatarUrl={member.avatar_url || null}
         features={features}
+        userId={user.id}
       >
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500 animate-fade-in">
           <p className="text-xl font-bold mb-2">利用可能な機能がありません</p>
@@ -103,6 +104,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       displayName={member.display_name}
       avatarUrl={member.avatar_url || null}
       features={features}
+      userId={user.id}
     >
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">

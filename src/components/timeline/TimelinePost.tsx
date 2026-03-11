@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X } from 'lucide-react'
+import Link from 'next/link'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment } from '@/core/timeline/actions'
 import { ImageLightbox } from './ImageLightbox'
 
@@ -80,6 +81,9 @@ interface PostProps {
     is_liked: boolean
     profiles: Profile
     comments: Comment[]
+    hako_members?: {
+      display_name: string | null
+    }[]
   }
   currentUserId: string
 }
@@ -206,20 +210,23 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}        
       >
         {/* Header */}
-        <div className="flex items-start gap-3">
-          {post.profiles?.avatar_url ? (
-            <img src={post.profiles.avatar_url} alt="avatar" className="w-10 h-10 rounded-full object-cover shrink-0" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center shrink-0 font-bold border border-white/5">
-              {post.profiles?.display_name?.charAt(0) || '?'}
-            </div>
-          )}
+        <div className="flex items-start gap-4">
+          <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="shrink-0 group/avatar">
+            {post.profiles?.avatar_url ? (
+              <img src={post.profiles.avatar_url} alt="avatar" className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover transition-transform group-hover/avatar:scale-105 border theme-border" />
+            ) : (
+              <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center font-bold border theme-border transition-transform group-hover/avatar:scale-105">
+                {post.profiles?.display_name?.charAt(0) || '?'}
+              </div>
+            )}
+          </Link>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-white text-sm">{post.profiles?.display_name}</span>
-              <span className="text-gray-500 text-xs text-mono">@{post.user_id?.split('-')[0]}</span>
-              <span className="text-gray-500 text-xs">· {formatRelativeTime(post.created_at)}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="font-bold text-white text-sm hover:underline truncate max-w-[120px] sm:max-w-none">
+                {post.hako_members?.[0]?.display_name || post.profiles?.display_name || 'ユーザー'}
+              </Link>
+              <span className="text-gray-500 text-[10px] md:text-xs">· {formatRelativeTime(post.created_at)}</span>
             </div>
             
             <div className="mt-2 text-gray-200 text-sm md:text-base leading-relaxed whitespace-pre-line">

@@ -20,6 +20,7 @@ interface HakoViewerLayoutProps {
   displayName: string | null
   avatarUrl?: string | null
   features?: string[]
+  userId: string
   children: React.ReactNode
 }
 
@@ -30,7 +31,7 @@ const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
 const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful drag
 
 export function HakoViewerLayout({
-  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], children
+  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], userId, children
 }: HakoViewerLayoutProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -202,7 +203,7 @@ export function HakoViewerLayout({
 
         <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
           <ThemeToggle />
-          <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
+          <UserMenu userId={userId} email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
         </div>
       </aside>
 
@@ -234,6 +235,7 @@ export function HakoViewerLayout({
           }}
         >
           <MobileSidebar
+            userId={userId}
             hakoId={hakoId}
             hakoName={hakoName}
             iconUrl={iconUrl}

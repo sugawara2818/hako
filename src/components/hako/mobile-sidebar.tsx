@@ -13,6 +13,7 @@ import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
 
 interface MobileSidebarProps {
+  userId: string
   hakoId: string
   hakoName: string
   iconUrl: string | null
@@ -28,7 +29,7 @@ interface MobileSidebarProps {
 }
 
 export function MobileSidebar({
-  hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], onClose
+  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose
 }: MobileSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -120,7 +121,7 @@ export function MobileSidebar({
       <div className="p-4 shrink-0 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
         <ThemeToggle />
         <Link 
-          href={`/hako/${hakoId}/profile`}
+          href={`/hako/${hakoId}/user/${userId}`}
           onClick={onClose}
           className="flex items-center gap-3 p-3 rounded-2xl mb-3 theme-elevated border theme-border hover:theme-surface transition-all group"
         >

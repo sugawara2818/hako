@@ -178,15 +178,19 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
       <Link href={`/hako/${hakoId}/diary/${entry.id}`} className="block p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-gray-950 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-               {entry.profiles?.avatar_url ? (
-                 <img src={entry.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
-               ) : (
-                 <User className="w-5 h-5 text-gray-500" />
-               )}
-            </div>
+            <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="group/avatar shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-gray-950 border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover/avatar:scale-105">
+                 {entry.profiles?.avatar_url ? (
+                   <img src={entry.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                 ) : (
+                   <User className="w-5 h-5 text-gray-500" />
+                 )}
+              </div>
+            </Link>
             <div>
-              <p className="font-bold text-sm text-white/90">{displayName}</p>
+              <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="font-bold text-sm text-white/90 hover:underline">
+                {displayName}
+              </Link>
               <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium mt-0.5">
                 <Calendar className="w-3.5 h-3.5" />
                 {formattedDate}

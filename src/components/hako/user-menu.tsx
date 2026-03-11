@@ -8,6 +8,7 @@ import { UsernameEditor } from '@/components/hako/username-editor'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
 interface UserMenuProps {
+  userId: string
   email: string
   hakoId: string
   isOwner: boolean
@@ -17,7 +18,7 @@ interface UserMenuProps {
 
 import Link from 'next/link'
 
-export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: UserMenuProps) {
+export function UserMenu({ userId, email, hakoId, isOwner, displayName, avatarUrl }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -49,7 +50,7 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
     <div className="relative" ref={menuRef}>
       <div className="flex items-center gap-1">
         <Link 
-          href={`/hako/${hakoId}/profile`}
+          href={`/hako/${hakoId}/user/${userId}`}
           className="flex-1 flex items-center gap-3 p-3 rounded-2xl hover:theme-elevated transition-all group min-w-0"
         >
           <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border theme-border">
