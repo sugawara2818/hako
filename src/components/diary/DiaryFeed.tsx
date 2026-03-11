@@ -5,6 +5,7 @@ import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User, Ar
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
+import Image from 'next/image'
 
 interface DiaryEntry {
   id: string
@@ -183,7 +184,13 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
             <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="group/avatar shrink-0">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-gray-950 border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover/avatar:scale-105">
                  {entry.profiles?.avatar_url ? (
-                   <img src={entry.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                   <Image 
+                     src={entry.profiles.avatar_url} 
+                     alt="" 
+                     width={40} 
+                     height={40} 
+                     className="w-full h-full object-cover" 
+                   />
                  ) : (
                    <User className="w-5 h-5 text-gray-500" />
                  )}

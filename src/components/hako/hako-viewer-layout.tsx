@@ -8,6 +8,7 @@ import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
+import Image from 'next/image'
 
 interface HakoViewerLayoutProps {
   hakoId: string
@@ -146,7 +147,16 @@ export function HakoViewerLayout({
       <aside className="w-64 h-screen sticky top-0 flex flex-col z-10 hidden md:flex" style={{ backgroundColor: 'var(--bg-surface)', borderRight: '1px solid var(--border)' }}>
         <div className="h-16 flex items-center px-4 gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
-            {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
+            {iconUrl ? (
+              <Image 
+                src={iconUrl} 
+                alt="" 
+                width={32} 
+                height={32} 
+                className="w-full h-full object-cover"
+                unoptimized={iconUrl.startsWith('data:')}
+              />
+            ) : hakoName.charAt(0).toUpperCase()}
           </div>
           <span className="font-bold truncate flex-1 text-sm">{hakoName}</span>
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
@@ -258,14 +268,24 @@ export function HakoViewerLayout({
         <header className="md:hidden h-16 flex items-center justify-between px-4 sticky top-0 z-50" style={{
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--bg-surface)',
-          backdropFilter: 'blur(16px)'
+          backdropFilter: 'blur(12px)'
         }}>
           <button
             onClick={() => { setIsOpen(true); setDragProgress(1); lastProgress.current = 1 }}
-            className="flex items-center gap-2 min-w-0 flex-1 h-full"
+            className="flex items-center gap-2 min-w-0 flex-1 h-full active:opacity-70 transition-opacity"
+            style={{ willChange: 'transform, opacity' }}
           >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${hakoGradient}` : ''}`}>
-              {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
+              {iconUrl ? (
+                <Image 
+                  src={iconUrl} 
+                  alt="" 
+                  width={32} 
+                  height={32} 
+                  className="w-full h-full object-cover"
+                  unoptimized={iconUrl.startsWith('data:')}
+                />
+              ) : hakoName.charAt(0).toUpperCase()}
             </div>
             <span className="font-bold truncate max-w-[120px] text-sm">{hakoName}</span>
             <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold shrink-0 ${isOwner ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>

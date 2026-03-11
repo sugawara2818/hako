@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+import Image from 'next/image'
 interface UserMenuProps {
   userId: string
   email: string
@@ -55,7 +56,13 @@ export function UserMenu({ userId, email, hakoId, isOwner, displayName, avatarUr
         >
           <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border theme-border">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              <Image 
+                src={avatarUrl} 
+                alt="" 
+                width={40} 
+                height={40} 
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
                 <UserMinus className="w-5 h-5 opacity-20" />

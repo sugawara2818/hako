@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment } from '@/core/timeline/actions'
 import { ImageLightbox } from './ImageLightbox'
+import Image from 'next/image'
 
 // ──────────────────────────────────────────────────
 // Custom confirm dialog component
@@ -213,7 +214,13 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         <div className="flex items-start gap-4">
           <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="shrink-0 group/avatar">
             {post.profiles?.avatar_url ? (
-              <img src={post.profiles.avatar_url} alt="avatar" className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover transition-transform group-hover/avatar:scale-105 border theme-border" />
+              <Image 
+                src={post.profiles.avatar_url} 
+                alt="avatar" 
+                width={44} 
+                height={44} 
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover transition-transform group-hover/avatar:scale-105 border theme-border" 
+              />
             ) : (
               <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 flex items-center justify-center font-bold border theme-border transition-transform group-hover/avatar:scale-105">
                 {post.profiles?.display_name?.charAt(0) || '?'}
@@ -238,32 +245,47 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
               <div className="mt-3 overflow-hidden rounded-2xl border border-white/10">
                 {images.length === 1 && (
                   <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative aspect-auto max-h-[512px] w-full text-left cursor-pointer" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-                    <img src={images[0]} alt="Attachment" className="w-full h-full object-contain" />
+                    <Image 
+                      src={images[0]} 
+                      alt="Attachment" 
+                      width={800} 
+                      height={600} 
+                      className="w-full h-full object-contain" 
+                      priority={false}
+                    />
                   </button>
                 )}
                 {images.length === 2 && (
                   <div className="grid grid-cols-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
-                    <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
-                    <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer">
+                      <Image src={images[0]} alt="" fill className="object-cover" />
+                    </button>
+                    <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer">
+                      <Image src={images[1]} alt="" fill className="object-cover" />
+                    </button>
                   </div>
                 )}
                 {images.length === 3 && (
                   <div className="grid grid-cols-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
                     <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer">
-                      <img src={images[0]} alt="" className="w-full h-full object-cover" />
+                      <Image src={images[0]} alt="" fill className="object-cover" />
                     </button>
                     <div className="grid grid-rows-2 gap-0.5 h-full">
-                      <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
-                      <button type="button" onClick={() => setSelectedImageIndex(2)} className="relative h-full cursor-pointer"><img src={images[2]} alt="" className="w-full h-full object-cover" /></button>
+                      <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer">
+                        <Image src={images[1]} alt="" fill className="object-cover" />
+                      </button>
+                      <button type="button" onClick={() => setSelectedImageIndex(2)} className="relative h-full cursor-pointer">
+                        <Image src={images[2]} alt="" fill className="object-cover" />
+                      </button>
                     </div>
                   </div>
                 )}
                 {images.length >= 4 && (
                   <div className="grid grid-cols-2 grid-rows-2 gap-0.5 aspect-[16/9]" style={{ backgroundColor: 'var(--border)' }}>
-                    <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer"><img src={images[0]} alt="" className="w-full h-full object-cover" /></button>
-                    <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><img src={images[1]} alt="" className="w-full h-full object-cover" /></button>
-                    <button type="button" onClick={() => setSelectedImageIndex(2)} className="relative h-full cursor-pointer"><img src={images[2]} alt="" className="w-full h-full object-cover" /></button>
-                    <button type="button" onClick={() => setSelectedImageIndex(3)} className="relative h-full cursor-pointer"><img src={images[3]} alt="" className="w-full h-full object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImageIndex(0)} className="relative h-full cursor-pointer"><Image src={images[0]} alt="" fill className="object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImageIndex(1)} className="relative h-full cursor-pointer"><Image src={images[1]} alt="" fill className="object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImageIndex(2)} className="relative h-full cursor-pointer"><Image src={images[2]} alt="" fill className="object-cover" /></button>
+                    <button type="button" onClick={() => setSelectedImageIndex(3)} className="relative h-full cursor-pointer"><Image src={images[3]} alt="" fill className="object-cover" /></button>
                   </div>
                 )}
               </div>
@@ -331,13 +353,13 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                   )}
                   {post.comments?.map(comment => (
                     <div key={comment.id} className="relative flex gap-3 group/comment">
-                      {comment.profiles?.avatar_url ? (
-                        <img src={comment.profiles.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
-                           {comment.profiles?.display_name?.charAt(0) || '?'}
-                        </div>
-                      )}
+                  {comment.profiles?.avatar_url ? (
+                    <Image src={comment.profiles.avatar_url} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
+                       {comment.profiles?.display_name?.charAt(0) || '?'}
+                    </div>
+                  )}
                       <div className="flex-1 min-w-0 bg-white/5 rounded-2xl rounded-tl-none p-3 pb-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">

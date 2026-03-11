@@ -6,6 +6,7 @@ import { UsernameEditor } from '@/components/hako/username-editor'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
 import { Hash, BookOpen, User as UserIcon } from 'lucide-react'
 import { TimelineFeed } from '@/components/timeline/TimelineFeed'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,7 +85,13 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             ) : (
               <div className="w-[120px] h-[120px] rounded-full overflow-hidden ring-4 ring-purple-500/10 shrink-0 border theme-border bg-gradient-to-br from-gray-800 to-gray-950 flex items-center justify-center">
                 {targetMember.avatar_url ? (
-                  <img src={targetMember.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <Image 
+                    src={targetMember.avatar_url} 
+                    alt="" 
+                    width={120} 
+                    height={120} 
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
                   <UserIcon className="w-12 h-12 text-gray-500" />
                 )}
