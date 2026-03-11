@@ -28,7 +28,7 @@ interface DiaryFeedProps {
   hakoId: string
   currentUserId: string
   entries: DiaryEntry[]
-  onDelete: (id: string) => void | Promise<void>
+  onDelete?: (id: string) => void | Promise<void>
 }
 
 // ──────────────────────────────────────────────────
@@ -93,7 +93,9 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
     if (!confirmState) return
     const id = confirmState.id
     setConfirmState(null)
-    await onDelete(id)
+    if (onDelete) {
+      await onDelete(id)
+    }
   }
 
   const sortedEntries = useMemo(() => {

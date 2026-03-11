@@ -160,7 +160,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                       'use server'
                       const { deleteDiaryEntry } = await import('@/core/diary/actions')
                       await deleteDiaryEntry(id, hakoId)
-                    } : () => {}}
+                    } : undefined}
                   />
                 ) : (
                   <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
