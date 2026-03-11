@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MoreHorizontal, UserMinus } from 'lucide-react'
+import { MoreHorizontal, UserMinus, Sun, Moon } from 'lucide-react'
 import { leaveHako } from '@/core/hako/actions'
 import { useRouter } from 'next/navigation'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+import { useTheme } from '@/components/theme-provider'
 
 interface UserMenuProps {
   email: string
@@ -21,6 +22,7 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -67,6 +69,33 @@ export function UserMenu({ email, hakoId, isOwner, displayName, avatarUrl }: Use
           <div className="px-4 py-3 border-b border-white/5 mb-1 space-y-1">
             <UsernameEditor hakoId={hakoId} currentName={shownName} />
             <p className="text-xs text-gray-500 truncate">{email}</p>
+          </div>
+
+          <div className="px-2 py-1 border-b border-white/5 mb-1">
+            <div className="flex p-1 bg-white/5 rounded-xl gap-1">
+              <button
+                onClick={() => setTheme('light')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm transition-all ${
+                  theme === 'light' 
+                    ? 'bg-white text-black font-bold shadow-sm' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                Light
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-white/20 text-white font-bold' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                Dark
+              </button>
+            </div>
           </div>
 
           {!isOwner ? (
