@@ -22,11 +22,12 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
       .single()
   ])
 
-  const { data: hako } = hakoResponse
+  const { data: hako, error: hakoError } = hakoResponse
   const { data: member } = memberResponse
+  const { count } = countResponse
   const { data: diaryData } = diaryResponse
 
-  if (!hako || !member || !diaryData) return notFound()
+  if (hakoError || !hako || !member || !diaryData) return notFound()
 
   // 1. Fetch author profile separately
   const { data: profile } = await supabase
@@ -49,7 +50,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
       display_name: profile?.display_name || 'ユーザー',
       avatar_url: authorMember?.avatar_url || profile?.avatar_url || null
     },
-    hako_members: [{ display_name: authorMember?.display_name || null }]
+    hako_members: authorMember ? [{ display_name: authorMember.display_name }] : []
   }
 
   // Privacy check: If not public and not author, deny access
@@ -65,7 +66,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
       iconColor={hako.icon_color || null}
       email={user.email || ''}
       isOwner={member.role === 'owner'}
-      memberCount={countResponse.count || 1}
+      memberCount={count || 1}
       displayName={member.display_name}
       avatarUrl={member.avatar_url || null}
       features={hako.features || ['timeline']}

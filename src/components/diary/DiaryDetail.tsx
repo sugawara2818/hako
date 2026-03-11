@@ -64,8 +64,20 @@ function ConfirmDialog({
 export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) {
   const router = useRouter()
   const isAuthor = entry.user_id === currentUserId
-  const date = new Date(entry.diary_date)
-  const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
+  
+  const formatDateSafe = (dateStr: string, formatStr: string) => {
+    try {
+      if (!dateStr) return '---'
+      const d = new Date(dateStr)
+      if (isNaN(d.getTime())) return '---'
+      return format(d, formatStr, { locale: ja })
+    } catch {
+      return '---'
+    }
+  }
+
+  const formattedDate = formatDateSafe(entry.diary_date, 'yyyy年MM月dd日 (E)')
+  const formattedCreatedAt = formatDateSafe(entry.created_at, 'yyyy/MM/dd HH:mm')
   
   // Robust display name resolution: Hako-specific name > Profile global name > Default
   const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
@@ -165,7 +177,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
 
       <footer className="mt-20 pt-10 border-t border-white/5">
          <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center">
-            記入日: {format(new Date(entry.created_at), 'yyyy/MM/dd HH:mm', { locale: ja })}
+            記入日: {formattedCreatedAt}
          </p>
       </footer>
     </div>
