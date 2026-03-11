@@ -77,7 +77,7 @@ export async function deleteDiaryEntry(diaryId: string, hakoId: string) {
   return { success: true }
 }
 
-export async function fetchDiaryEntries(hakoId: string, date?: string) {
+export async function fetchDiaryEntries(hakoId: string, options?: { userId?: string, date?: string }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -91,8 +91,12 @@ export async function fetchDiaryEntries(hakoId: string, date?: string) {
   // Filtering: Users can see their own private ones and public ones of others
   query = query.or(`user_id.eq.${user.id},is_public.eq.true`)
 
-  if (date) {
-    query = query.eq('diary_date', date)
+  if (options?.userId) {
+    query = query.eq('user_id', options.userId)
+  }
+
+  if (options?.date) {
+    query = query.eq('diary_date', options.date)
   }
 
   const { data: diaryData, error: diaryError } = await query
