@@ -14,7 +14,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
 
   // 2. Fetch essential Hako and current user membership data
   const [hakoResponse, memberResponse, countResponse] = await Promise.all([
-    supabase.from('hako').select('*').eq('id', hakoId).single(),
+    supabase.from('hako').select('*').eq('id', hakoId).maybeSingle(),
     supabase.from('hako_members').select('*').eq('hako_id', hakoId).eq('user_id', user.id).maybeSingle(),
     supabase.from('hako_members').select('*', { count: 'exact', head: true }).eq('hako_id', hakoId)
   ])
@@ -23,23 +23,44 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
   const member = memberResponse.data
   const memberCount = countResponse.count || 1
 
-  if (!hako || !member) return notFound()
+  // Handle missing hako or membership gracefully without 500ing
+  if (!hako || !member) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 bg-black">
+        <p>この箱のメンバーではないか、箱が見つかりません。</p>
+      </div>
+    )
+  }
 
   // 3. Fetch the specific diary entry
-  const { data: diaryData } = await supabase
+  const { data: diaryData, error: diaryError } = await supabase
     .from('hako_diaries')
     .select('*')
     .eq('id', diaryId)
-    .single()
+    .maybeSingle()
 
-  if (!diaryData) return notFound()
-
-  // 4. Privacy Check
-  if (!diaryData.is_public && diaryData.user_id !== user.id) {
-    return notFound()
+  // Handle missing diary entry or database error gracefully
+  if (diaryError || !diaryData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 bg-black">
+        <p>日記が見つからないか、エラーが発生しました。</p>
+      </div>
+    )
   }
 
-  // 5. Fetch Author Profile and Author Hako-specific Identity
+  // 4. Privacy Check - Strictly compare to avoid null issues
+  const isAuthor = diaryData.user_id === user.id
+  const isPublic = diaryData.is_public === true
+
+  if (!isPublic && !isAuthor) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 bg-black">
+        <p>この日記は非公開です。</p>
+      </div>
+    )
+  }
+
+  // 5. Fetch Author Identity
   const [profileResponse, authorMemberResponse] = await Promise.all([
     supabase.from('profiles').select('display_name, avatar_url').eq('id', diaryData.user_id).maybeSingle(),
     supabase.from('hako_members').select('display_name, avatar_url').eq('hako_id', hakoId).eq('user_id', diaryData.user_id).maybeSingle()
@@ -48,15 +69,14 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
   const profile = profileResponse.data
   const authorMember = authorMemberResponse.data
 
-  // 6. Construct the entry object for DiaryDetail
-  // This structure matches exactly what DiaryDetail expects and is very robust
+  // 6. Final Data Assembly
   const diary = {
     ...diaryData,
     profiles: {
       display_name: profile?.display_name || 'ユーザー',
       avatar_url: authorMember?.avatar_url || profile?.avatar_url || null
     },
-    hako_members: authorMember ? [{ display_name: authorMember.display_name, avatar_url: authorMember.avatar_url }] : []
+    hako_members: authorMember ? [{ display_name: authorMember.display_name }] : []
   }
 
   return (
@@ -74,11 +94,11 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
       userId={user.id}
     >
       <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
-          <DiaryDetail 
-            hakoId={hakoId} 
-            currentUserId={user.id} 
-            entry={diary} 
-          />
+        <DiaryDetail 
+          hakoId={hakoId} 
+          currentUserId={user.id} 
+          entry={diary} 
+        />
       </div>
     </HakoViewerLayout>
   )
