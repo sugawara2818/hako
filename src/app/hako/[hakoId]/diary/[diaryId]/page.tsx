@@ -33,7 +33,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
     .from('profiles')
     .select('display_name, avatar_url')
     .eq('id', diaryData.user_id)
-    .single()
+    .maybeSingle()
 
   // 2. Fetch author's hako-specific name and avatar
   const { data: authorMember } = await supabase
@@ -46,7 +46,7 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
   const diary = {
     ...diaryData,
     profiles: {
-      ...profile,
+      display_name: profile?.display_name || 'ユーザー',
       avatar_url: authorMember?.avatar_url || profile?.avatar_url || null
     },
     hako_members: [{ display_name: authorMember?.display_name || null }]
