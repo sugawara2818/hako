@@ -5,6 +5,7 @@ import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, H
 import { updateHako, deleteHako } from '@/core/hako/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface HakoSettingsFormProps {
   hakoId: string
@@ -133,7 +134,14 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialI
           <div className="relative group">
             <div className={`w-28 h-28 rounded-[2rem] flex items-center justify-center font-bold text-4xl overflow-hidden shadow-2xl border-4 border-white/10 group-hover:border-purple-500/50 transition-all duration-300 ${iconType === 'template' ? `bg-gradient-to-br ${currentGradient}` : 'bg-black'}`}>
               {iconType === 'image' && iconUrl ? (
-                <img src={iconUrl} alt="Hako Icon" className="w-full h-full object-cover" />
+                <Image 
+                  src={iconUrl} 
+                  alt="Hako Icon" 
+                  width={112} 
+                  height={112} 
+                  className="w-full h-full object-cover" 
+                  unoptimized={iconUrl.startsWith('data:') || iconUrl.startsWith('blob:')}
+                />
               ) : (
                 <span className="text-white drop-shadow-md">{name.charAt(0).toUpperCase()}</span>
               )}

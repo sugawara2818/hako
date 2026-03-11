@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { Settings, Users, ArrowUpRight, Copy, Share2, LayoutDashboard, ArrowLeft, LogOut } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 import { CopyInviteLink } from '@/components/hako/copy-invite-link'
+import Image from 'next/image'
 
 export default async function OwnerDashboardPage({
   params,
@@ -57,7 +58,15 @@ export default async function OwnerDashboardPage({
               <span className="font-medium hidden sm:inline">一覧に戻る</span>
             </Link>
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0 overflow-hidden">
-              {hako.icon_url ? <img src={hako.icon_url} alt="" className="w-full h-full object-cover" /> : (hako.name?.charAt(0) || 'H')}
+              {hako.icon_url ? (
+                <Image 
+                  src={hako.icon_url} 
+                  alt="" 
+                  width={32} 
+                  height={32} 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (hako.name?.charAt(0) || 'H')}
             </div>
             <span className="font-bold text-sm md:text-lg truncate flex-1 min-w-0">{hako.name}</span>
             <span className="px-1.5 md:px-2 py-0.5 rounded-full theme-elevated border theme-border text-[10px] md:text-xs font-medium theme-muted shrink-0 hidden sm:inline-block whitespace-nowrap">Owner</span>

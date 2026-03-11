@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useTransition, useCallback } from 'react'
 import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
+import Image from 'next/image' // Added this import
 import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -383,20 +384,25 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
 
               {/* Previews Grid */}
               {previews.length > 0 && (
-                <div className={`grid gap-2 rounded-2xl overflow-hidden border border-white/10 relative ${
-                  previews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-                }`}>
+                <div className={`flex flex-wrap gap-2 rounded-2xl overflow-hidden border border-white/10 relative`}>
                   {previews.map((url, i) => (
-                    <div key={url} className="relative aspect-video group">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(i)}
-                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center backdrop-blur-sm transition-colors border border-white/20 z-10"
-                      >
-                        <X className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
+                    <div key={i} className="relative group/img w-20 h-20 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                    <Image 
+                      src={url} 
+                      alt="" 
+                      width={80} 
+                      height={80} 
+                      className="w-full h-full object-cover" 
+                      unoptimized={url.startsWith('blob:') || url.startsWith('data:')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                   ))}
                   {isUploadingImage && (
                     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm z-20">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { User, Loader2, Camera } from 'lucide-react'
 import { uploadAndUpdateUserAvatar } from '@/core/hako/actions'
 import { ImageCropperModal } from './image-cropper-modal'
+import Image from 'next/image'
 
 interface UserAvatarUploadProps {
   hakoId: string
@@ -93,7 +94,14 @@ export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' 
           ) : null}
           
           {localAvatar ? (
-            <img src={localAvatar} alt="User Avatar" className="w-full h-full object-cover" />
+            <Image 
+              src={localAvatar} 
+              alt="User Avatar" 
+              width={size} 
+              height={size} 
+              className="w-full h-full object-cover" 
+              unoptimized={localAvatar.startsWith('data:')}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <User className="w-1/2 h-1/2 text-gray-400 group-hover:text-purple-400 transition-colors" />

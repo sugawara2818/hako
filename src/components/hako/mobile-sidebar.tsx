@@ -11,6 +11,7 @@ import { getHakoGradient } from '@/lib/hako-utils'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
+import Image from 'next/image'
 
 interface MobileSidebarProps {
   userId: string
@@ -57,7 +58,15 @@ export function MobileSidebar({
       <div className="h-16 flex items-center justify-between px-5 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-3 min-w-0">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-purple-500/20 shrink-0 overflow-hidden ${!iconUrl ? `bg-gradient-to-br ${getHakoGradient(iconColor)}` : ''}`}>
-            {iconUrl ? <img src={iconUrl} alt="" className="w-full h-full object-cover" /> : hakoName.charAt(0).toUpperCase()}
+            {iconUrl ? (
+              <Image 
+                src={iconUrl} 
+                alt="" 
+                width={32} 
+                height={32} 
+                className="w-full h-full object-cover" 
+              />
+            ) : hakoName.charAt(0).toUpperCase()}
           </div>
           <span className="font-bold truncate text-sm">{hakoName}</span>
         </div>
@@ -127,7 +136,13 @@ export function MobileSidebar({
         >
           <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border theme-border">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              <Image 
+                src={avatarUrl} 
+                alt="" 
+                width={40} 
+                height={40} 
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
                 <X className="w-5 h-5 opacity-20" />

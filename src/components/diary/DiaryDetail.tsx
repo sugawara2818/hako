@@ -5,6 +5,7 @@ import { ChevronLeft, Calendar, Unlock, Lock, Trash2, Edit2, User, Loader2 } fro
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
+import Image from 'next/image'
 import { deleteDiaryEntry } from '@/core/diary/actions'
 import { useRouter } from 'next/navigation'
 
@@ -136,7 +137,13 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
         <div className="flex items-center gap-4 mb-8">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-800 to-gray-950 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
                {entry.profiles?.avatar_url ? (
-                 <img src={entry.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                 <Image 
+                   src={entry.profiles.avatar_url} 
+                   alt="" 
+                   width={56} 
+                   height={56} 
+                   className="w-full h-full object-cover" 
+                 />
                ) : (
                  <User className="w-6 h-6 text-gray-500" />
                )}

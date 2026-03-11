@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Blocks, Plus, Settings, Hash, LogOut, ArrowRight, AtSign } from 'lucide-react'
 import { signOut } from '@/core/auth/actions'
 import { getHakoGradient } from '@/lib/hako-utils'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,7 +103,13 @@ export default async function OwnerDashboardPage() {
                 <div className="flex items-center gap-3 mb-6 relative z-10">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg border border-white/5 shadow-inner shrink-0 overflow-hidden ${!hako.icon_url ? `bg-gradient-to-br ${getHakoGradient(hako.icon_color)}` : ''}`}>
                     {hako.icon_url ? (
-                      <img src={hako.icon_url} alt="" className="w-full h-full object-cover" />
+                      <Image 
+                        src={hako.icon_url} 
+                        alt="" 
+                        width={48} 
+                        height={48} 
+                        className="w-full h-full object-cover" 
+                      />
                     ) : (
                       hako.name.charAt(0).toUpperCase()
                     )}
