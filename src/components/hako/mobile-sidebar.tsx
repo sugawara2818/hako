@@ -10,6 +10,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { getHakoGradient } from '@/lib/hako-utils'
 import { LeaveHakoModal } from '@/components/hako/leave-hako-modal'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
+import { ThemeToggle } from '@/components/hako/theme-toggle'
 
 interface MobileSidebarProps {
   hakoId: string
@@ -116,7 +117,8 @@ export function MobileSidebar({
       </nav>
 
       {/* User Profile Footer */}
-      <div className="p-4 shrink-0" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+      <div className="p-4 shrink-0 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+        <ThemeToggle />
         <div className="flex items-center gap-3 p-3 rounded-2xl mb-3" style={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
           <UserAvatarUpload 
             hakoId={hakoId}

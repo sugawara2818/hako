@@ -7,6 +7,7 @@ import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen } from '
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
+import { ThemeToggle } from '@/components/hako/theme-toggle'
 
 interface HakoViewerLayoutProps {
   hakoId: string
@@ -199,7 +200,8 @@ export function HakoViewerLayout({
           </div>
         </nav>
 
-        <div className="p-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+        <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+          <ThemeToggle />
           <UserMenu email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
         </div>
       </aside>
