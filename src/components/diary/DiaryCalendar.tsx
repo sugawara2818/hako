@@ -45,17 +45,17 @@ export function DiaryCalendar({ hakoId, onDateSelect, selectedDate }: DiaryCalen
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
 
   return (
-    <div className="bg-[#111] border border-white/5 rounded-3xl p-6 shadow-xl">
+    <div className="theme-surface border theme-border rounded-3xl p-6 shadow-xl">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold text-white/90 flex items-center gap-2">
+        <h2 className="text-xl font-bold theme-text flex items-center gap-2">
           {format(currentMonth, 'yyyy年 MM月', { locale: ja })}
           {loading && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
         </h2>
         <div className="flex items-center gap-1">
-          <button onClick={handlePrevMonth} className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
+          <button onClick={handlePrevMonth} className="p-2 theme-muted hover:theme-text hover:bg-white/5 rounded-full transition-all">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <button onClick={handleNextMonth} className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
+          <button onClick={handleNextMonth} className="p-2 theme-muted hover:theme-text hover:bg-white/5 rounded-full transition-all">
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
@@ -63,7 +63,7 @@ export function DiaryCalendar({ hakoId, onDateSelect, selectedDate }: DiaryCalen
 
       <div className="grid grid-cols-7 gap-1">
         {['日', '月', '火', '水', '木', '金', '土'].map((d) => (
-          <div key={d} className="text-center text-[10px] font-black text-gray-600 uppercase tracking-widest pb-4">
+          <div key={d} className="text-center text-[10px] font-black theme-muted uppercase tracking-widest pb-4">
             {d}
           </div>
         ))}
@@ -89,7 +89,7 @@ export function DiaryCalendar({ hakoId, onDateSelect, selectedDate }: DiaryCalen
                 ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30' : ''}
               `}
             >
-              <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : isToday(day) ? 'text-white underline decoration-blue-500 underline-offset-4' : 'text-gray-400'}`}>
+              <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : isToday(day) ? 'theme-text underline decoration-blue-500 underline-offset-4' : 'theme-muted hover:theme-text'}`}>
                 {format(day, 'd')}
               </span>
               

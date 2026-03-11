@@ -86,7 +86,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       <div className="space-y-4">
         {/* Date Selection */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">日付</label>
+          <label className="block text-[10px] font-black theme-muted uppercase tracking-widest mb-2 px-1">日付</label>
           <div className="relative inline-block w-auto">
             <button 
               type="button"
@@ -94,7 +94,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                 setCalendarMonth(parseISO(diaryDate))
                 setShowDatePicker(true)
               }}
-              className={`flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 hover:border-white/20'} rounded-xl py-3 px-5 text-white/90 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-sm cursor-pointer shadow-sm`}
+              className={`flex items-center gap-2 theme-elevated hover:theme-surface border ${isAlreadyExists ? 'border-red-500/50 focus:border-red-500' : 'theme-border hover:border-white/20'} rounded-xl py-3 px-5 theme-text focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-sm cursor-pointer shadow-sm`}
             >
                <Calendar className="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
                <span className="text-left w-36">{format(parseISO(diaryDate), 'yyyy年MM月dd日 (E)', { locale: ja })}</span>
@@ -109,25 +109,25 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
 
         {/* Title */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">タイトル (任意)</label>
+          <label className="block text-[10px] font-black theme-muted uppercase tracking-widest mb-2 px-1">タイトル (任意)</label>
           <input 
             type="text" 
             placeholder="タイトルを入力..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-[#111] border border-white/5 focus:border-blue-500/50 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-lg placeholder:text-gray-700"
+            className="w-full theme-surface border theme-border focus:border-blue-500/50 rounded-2xl py-4 px-6 theme-text focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-lg placeholder:text-gray-500"
           />
         </div>
 
         {/* Content */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">内容</label>
+          <label className="block text-[10px] font-black theme-muted uppercase tracking-widest mb-2 px-1">内容</label>
           <textarea 
             placeholder="今日の出来事や気持ちを書きましょう..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={12}
-            className="w-full bg-[#111] border border-white/5 focus:border-blue-500/50 rounded-3xl py-6 px-6 text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all leading-relaxed placeholder:text-gray-700 resize-none"
+            className="w-full theme-surface border theme-border focus:border-blue-500/50 rounded-3xl py-6 px-6 theme-text focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all leading-relaxed placeholder:text-gray-500 resize-none"
             required
           />
         </div>
@@ -176,16 +176,16 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       {showDatePicker && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDatePicker(false)} />
-          <div className="relative w-full max-w-[340px] bg-[#111] border border-white/5 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-[340px] theme-surface border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-lg text-white">
+              <h3 className="font-bold text-lg theme-text">
                 {format(calendarMonth, 'yyyy年 MM月', { locale: ja })}
               </h3>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                <button type="button" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 theme-muted hover:theme-text hover:bg-white/5 rounded-full transition-colors">
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <button type="button" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                <button type="button" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 theme-muted hover:theme-text hover:bg-white/5 rounded-full transition-colors">
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
@@ -193,7 +193,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
 
             <div className="grid grid-cols-7 gap-1">
               {['日', '月', '火', '水', '木', '金', '土'].map((d) => (
-                <div key={d} className="text-center text-[10px] font-black text-gray-500 uppercase pb-2">
+                <div key={d} className="text-center text-[10px] font-black theme-muted uppercase pb-2">
                   {d}
                 </div>
               ))}
@@ -221,11 +221,11 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                     disabled={isFutureDay}
                     className={`
                       relative aspect-square rounded-2xl flex flex-col items-center justify-center text-sm font-bold transition-all group
-                      ${isFutureDay ? 'opacity-20 cursor-not-allowed text-gray-500' : 'hover:bg-white/5 text-gray-400'}
+                      ${isFutureDay ? 'opacity-20 cursor-not-allowed theme-muted' : 'hover:bg-white/5 data-[theme=light]:hover:bg-black/5 theme-muted'}
                       ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30 text-blue-400' : ''}
                     `}
                   >
-                    <span className={`${isSelected ? 'text-blue-400' : isToday(day) ? 'text-white underline decoration-blue-500 underline-offset-4' : 'text-gray-400'}`}>
+                    <span className={`${isSelected ? 'text-blue-400' : isToday(day) ? 'theme-text underline decoration-blue-500 underline-offset-4' : 'theme-muted hover:theme-text'}`}>
                       {format(day, 'd')}
                     </span>
                     
@@ -242,7 +242,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
             <button
               type="button"
               onClick={() => setShowDatePicker(false)}
-              className="mt-6 w-full py-3.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+              className="mt-6 w-full py-3.5 rounded-xl theme-elevated theme-muted hover:bg-white/10 hover:theme-text font-bold text-sm transition-all flex items-center justify-center gap-2 border theme-border"
             >
               <X className="w-4 h-4" /> 閉じる
             </button>
