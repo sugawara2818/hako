@@ -36,7 +36,42 @@ export async function fetchCalendarEvents(hakoId: string, startDate: string, end
     return []
   }
 
-  return data as CalendarEvent[]
+  // Fetch per-Hako display names & avatars from hako_members
+  const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
+  try {
+    const { data: hakoMembers, error: memberError } = await supabase
+      .from('hako_members')
+      .select('user_id, display_name, avatar_url')
+      .eq('hako_id', hakoId)
+
+    if (!memberError && hakoMembers) {
+      for (const m of hakoMembers) {
+        memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch hako_members for profiling:', err)
+  }
+
+  const resolveName = (userId: string, profileName?: string | null) =>
+    memberDataMap[userId]?.display_name || profileName || 'ユーザー'
+    
+  const resolveAvatar = (userId: string, profileAvatar?: string | null) =>
+    memberDataMap[userId]?.avatar_url || profileAvatar || null
+
+  const events = (data || []).map(event => {
+    const pProfiles = (event as any).profiles || {}
+    return {
+      ...event,
+      profiles: {
+        ...pProfiles,
+        display_name: resolveName(event.user_id, pProfiles.display_name),
+        avatar_url: resolveAvatar(event.user_id, pProfiles.avatar_url)
+      }
+    }
+  })
+
+  return events as CalendarEvent[]
 }
 
 export async function createCalendarEvent(event: Omit<CalendarEvent, 'id' | 'created_at' | 'user_id' | 'profiles'>) {
