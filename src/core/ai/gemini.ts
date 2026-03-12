@@ -1,9 +1,17 @@
+'use server'
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = process.env.GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+function getGenAI() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new GoogleGenerativeAI(apiKey);
+}
 
 export async function generateText(prompt: string) {
+  const genAI = getGenAI();
   if (!genAI) {
     throw new Error('GEMINI_API_KEY is not set in environment variables.');
   }
