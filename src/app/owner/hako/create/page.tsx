@@ -56,10 +56,14 @@ export default function CreateHakoPage() {
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateAIHakoDescription(hakoName)
-      setHakoDescription(aiDescription)
+      const response = await generateAIHakoDescription(hakoName)
+      if (response.success && response.description) {
+        setHakoDescription(response.description)
+      } else {
+        alert('紹介文の生成に失敗しました: ' + (response.error || 'unknown error'))
+      }
     } catch (e: any) {
-      alert('紹介文の生成に失敗しました: ' + (e.message || 'unknown error'))
+      alert('通信エラーが発生しました: ' + (e.message || 'unknown error'))
     } finally {
       setIsAiGenerating(false)
     }

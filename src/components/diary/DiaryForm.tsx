@@ -91,10 +91,14 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
     setIsAiGenerating(true)
     setError(null)
     try {
-      const aiTitle = await generateAITitle(content)
-      setTitle(aiTitle)
+      const response = await generateAITitle(content)
+      if (response.success && response.title) {
+        setTitle(response.title)
+      } else {
+        setError(response.error || 'タイトルの生成に失敗しました')
+      }
     } catch (err: any) {
-      setError(err.message || 'タイトルの生成に失敗しました')
+      setError('通信エラーが発生しました。接続を確認してください。')
     } finally {
       setIsAiGenerating(false)
     }
