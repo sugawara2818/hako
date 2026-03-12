@@ -52,9 +52,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   return (
     <div className="flex flex-col h-full theme-bg overflow-hidden animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b theme-border bg-white/[0.02]">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-black theme-text">
+      <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
+        <div className="flex items-center gap-2 md:gap-4">
+          <h2 className="text-lg md:text-2xl font-black theme-text">
             {format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
@@ -72,16 +72,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         
         <button 
           onClick={() => onAddEvent(new Date())}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition-all shrink-0"
         >
-          <Plus className="w-4 h-4" /> 予定を追加
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">予定を追加</span>
         </button>
       </div>
 
       {/* Weekdays Header */}
       <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
         {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
-          <div key={day} className={`py-3 text-center text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
+          <div key={day} className={`py-2 md:py-3 text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
             {day}
           </div>
         ))}
@@ -99,7 +99,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             <div 
               key={day.toString()} 
               onClick={() => onAddEvent(day)}
-              className={`min-h-[100px] md:min-h-[120px] p-2 border-r border-b theme-border transition-colors hover:bg-white/[0.02] cursor-pointer group ${!isCurrentMonth ? 'opacity-30' : ''}`}
+              className={`min-h-[80px] md:min-h-[120px] p-1 md:p-2 border-r border-b theme-border transition-colors hover:bg-white/[0.02] cursor-pointer group ${!isCurrentMonth ? 'opacity-30' : ''}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className={`text-xs font-black w-6 h-6 flex items-center justify-center rounded-full transition-colors ${

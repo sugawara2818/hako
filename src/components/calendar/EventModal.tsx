@@ -85,8 +85,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       {/* Modal Card */}
       <div className="relative w-full max-w-lg bg-[#111] border-t sm:border theme-border rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
         <form onSubmit={handleSubmit}>
-          <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
-            <h3 className="text-lg font-black theme-text">
+          <div className="flex items-center justify-between px-5 py-3 md:px-6 md:py-4 border-b theme-border">
+            <h3 className="text-base md:text-lg font-black theme-text">
               {editingEvent ? '予定を編集' : '新しい予定'}
             </h3>
             <button type="button" onClick={onClose} className="p-2 hover:theme-elevated rounded-full transition-colors">
@@ -112,9 +112,9 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             </div>
 
             {/* Time */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
+                <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> 開始
                 </label>
                 <input
@@ -126,7 +126,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
+                <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> 終了
                 </label>
                 <input
@@ -187,12 +187,12 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             </div>
           </div>
 
-          <div className="p-6 border-t theme-border flex gap-3">
+          <div className="p-4 md:p-6 border-t theme-border flex gap-3">
              {editingEvent && onDelete && (
                <button
                  type="button"
                  onClick={() => onDelete(editingEvent.id)}
-                 className="p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95"
+                 className="p-3 md:p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95"
                  title="削除"
                >
                  <Trash2 className="w-5 h-5" />
@@ -201,7 +201,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '保存する'}
             </button>
