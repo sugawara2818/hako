@@ -110,7 +110,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
 
         {/* Timeline Header */}
-        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b theme-border theme-surface">
+        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b theme-border theme-bg">
           <h1 className="text-xl md:text-2xl font-black heading-gradient">
             タイムライン
           </h1>

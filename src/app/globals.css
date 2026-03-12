@@ -11,15 +11,15 @@
 
 /* ──── Dark Theme (default) ──── */
 :root {
-  --bg: #050505;
-  --bg-surface: #0f0f0f;
-  --bg-elevated: #1a1a1a;
-  --border: rgba(255, 255, 255, 0.07);
+  --bg: #000000;
+  --bg-surface: #050505;
+  --bg-elevated: #0a0a0a;
+  --border: rgba(255, 255, 255, 0.08);
   --text: #ffffff;
   --text-muted: #6b7280;
   --sidebar-bg: rgba(0, 0, 0, 0.5);
   --sidebar-footer-bg: rgba(0, 0, 0, 0.4);
-  --mobile-sidebar-bg: #0a0a0a;
+  --mobile-sidebar-bg: #000000;
 
   /* Semantic Brand Colors */
   --brand-blue: #2563eb;
@@ -62,15 +62,15 @@
 
 /* ──── Dark Theme (custom/nested) ──── */
 [data-theme="dark"] {
-  --bg: #050505;
-  --bg-surface: #0f0f0f;
-  --bg-elevated: #1a1a1a;
-  --border: rgba(255, 255, 255, 0.07);
+  --bg: #000000;
+  --bg-surface: #050505;
+  --bg-elevated: #0a0a0a;
+  --border: rgba(255, 255, 255, 0.08);
   --text: #ffffff;
   --text-muted: #6b7280;
   --sidebar-bg: rgba(0, 0, 0, 0.5);
   --sidebar-footer-bg: rgba(0, 0, 0, 0.4);
-  --mobile-sidebar-bg: #0a0a0a;
+  --mobile-sidebar-bg: #000000;
 
   /* Semantic Brand Colors */
   --brand-blue: #2563eb;
