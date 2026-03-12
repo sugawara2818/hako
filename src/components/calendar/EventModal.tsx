@@ -217,34 +217,69 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             {/* Description */}
             <div className="space-y-2">
               <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
-                 onClick={() => onDelete(editingEvent.id)}
-                 className="p-3 md:p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95"
-                 title="削除"
+                <AlignLeft className="w-3.5 h-3.5" /> 説明
+              </label>
+               <textarea
+                 value={description}
+                 onChange={e => setDescription(e.target.value)}
+                 placeholder="詳細を入力してください（任意）"
+                 rows={3}
+                 className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all resize-none disabled:opacity-50"
+                 disabled={!isEditable}
+               />
+             </div>
+
+             {!isEditable && editingEvent?.profiles && (
+               <div className="pt-4 border-t theme-border overflow-hidden">
+                 <div className="flex items-center gap-3 px-4 py-3 bg-black/5 dark:bg-white/5 rounded-2xl">
+                   {editingEvent.profiles.avatar_url ? (
+                     <img src={editingEvent.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                   ) : (
+                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-black text-white">
+                       {editingEvent.profiles.display_name?.[0] || '?'}
+                     </div>
+                   )}
+                   <div className="flex flex-col min-w-0">
+                     <span className="text-[10px] font-black theme-muted uppercase tracking-widest whitespace-nowrap">作成者</span>
+                     <span className="text-sm font-bold theme-text truncate">{editingEvent.profiles.display_name || 'Unknown'}</span>
+                   </div>
+                 </div>
+               </div>
+             )}
+           </div>
+
+           <div className="p-4 md:p-6 border-t theme-border flex gap-3">
+              {editingEvent && isEditable && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(editingEvent.id)}
+                  className="p-3 md:p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95"
+                  title="削除"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+             {isEditable && (
+               <button
+                 type="submit"
+                 disabled={isSubmitting}
+                 className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
                >
-                 <Trash2 className="w-5 h-5" />
+                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '保存する'}
                </button>
              )}
-            {isEditable && (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '保存する'}
-              </button>
-            )}
-            {!isEditable && (
-               <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 py-3 md:py-4 bg-white/10 hover:bg-white/15 theme-text rounded-2xl font-black text-base md:text-lg transition-all active:scale(0.98)"
-                >
-                  閉じる
-                </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
+             {!isEditable && (
+                <button
+                   type="button"
+                   onClick={onClose}
+                   className="flex-1 py-3 md:py-4 bg-white/10 hover:bg-white/15 theme-text rounded-2xl font-black text-base md:text-lg transition-all active:scale(0.98)"
+                 >
+                   閉じる
+                 </button>
+             )}
+           </div>
+         </form>
+       </div>
+     </div>
+   )
+ }
