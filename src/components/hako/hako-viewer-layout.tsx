@@ -339,7 +339,7 @@ export function HakoViewerLayout({
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen relative z-10">
+      <main className="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden h-16 flex items-center justify-between px-4 sticky top-0 z-50" style={{
           borderBottom: '1px solid var(--border)',

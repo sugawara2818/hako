@@ -211,9 +211,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   return (
     <div 
         id="calendar-view-container" 
-        className="flex flex-col h-full theme-bg select-none overflow-hidden relative"
+        className="flex flex-col h-full theme-bg select-none overflow-hidden relative overscroll-none touch-pan-x"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        style={{ height: '100%' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
