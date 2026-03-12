@@ -190,7 +190,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                         return (
                             <div key={i} className={`py-2 text-center border-r theme-border last:border-r-0 ${isT ? 'bg-purple-500/5' : ''}`}>
                                 <div className="text-[8px] font-black theme-muted uppercase tracking-widest">{format(day, 'eee', { locale: ja })}</div>
-                                <div className={`text-sm font-black mx-auto w-7 h-7 flex items-center justify-center rounded-full ${isT ? 'bg-purple-600 text-white' : 'theme-text'}`}>
+                                <div className={`text-sm font-black mx-auto w-7 h-7 flex items-center justify-center rounded-full ${isT ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-text'}`}>
                                     {format(day, 'd')}
                                 </div>
                             </div>
@@ -230,7 +230,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                                 const dayEvents = (eventsByDay[dayStr] || []).filter(e => !e.is_all_day)
                                 
                                 return (
-                                    <div key={dayIndex} className="relative border-r theme-border last:border-r-0">
+                                    <div key={dayIndex} className="relative border-r theme-border last:border-r-0 hover:bg-white/[0.01] transition-colors cursor-pointer" onClick={() => handleDayClick(dayDate)}>
                                         {isToday(dayDate) && (
                                             <div 
                                                 className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
@@ -251,16 +251,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                                             return (
                                                 <button
                                                     key={event.id}
-                                                    onClick={() => onEditEvent(event)}
-                                                    className="absolute left-1 right-1 p-1 rounded-sm border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all overflow-hidden z-10 text-left"
+                                                    onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
+                                                    className="absolute left-1 right-1 p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all overflow-hidden z-10 text-left group"
                                                     style={{ 
                                                         top: `${t + 2}px`, 
                                                         height: `${h}px`,
-                                                        borderLeft: `2px solid ${event.color}`,
+                                                        borderLeft: `3px solid ${event.color}`,
                                                         backgroundColor: `${event.color}15`
                                                     }}
                                                 >
-                                                    <div className="text-[8px] font-bold theme-text leading-tight truncate">{event.title}</div>
+                                                    <div className="text-[10px] font-bold theme-text leading-tight truncate">{event.title}</div>
                                                 </button>
                                             )
                                         })}
@@ -271,6 +271,55 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                     </div>
                 </div>
             </div>
+          </div>
+        )}
+
+        {viewMode === 'year' && (
+          <div className="p-4 md:p-8 grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 12 }).map((_, monthIndex) => {
+              const monthDate = new Date(currentMonth.getFullYear(), monthIndex, 1)
+              const monthStart = startOfMonth(monthDate)
+              const monthEnd = endOfMonth(monthDate)
+              const startWeek = startOfWeek(monthStart)
+              const endWeek = endOfWeek(monthEnd)
+              const monthDays = eachDayOfInterval({ start: startWeek, end: endWeek })
+
+              return (
+                <div key={monthIndex} className="space-y-4">
+                  <h3 className="text-sm font-black theme-text px-1 flex items-center justify-between">
+                    <span>{format(monthDate, 'M月', { locale: ja })}</span>
+                    <span className="text-[10px] opacity-40 font-bold uppercase tracking-wider">{format(monthDate, 'MMM', { locale: ja })}</span>
+                  </h3>
+                  <div className="grid grid-cols-7 gap-1">
+                    {['日', '月', '火', '水', '木', '金', '土'].map(d => (
+                      <div key={d} className="text-[8px] font-black theme-muted text-center py-1 opacity-50">{d}</div>
+                    ))}
+                    {monthDays.map(day => {
+                      const isCurrentM = isSameMonth(day, monthDate)
+                      const hasEvent = eventsByDay[format(day, 'yyyy-MM-dd')]?.length > 0
+                      const isT = isToday(day)
+
+                      return (
+                        <div 
+                          key={day.toString()}
+                          onClick={() => {
+                            setCurrentMonth(monthDate)
+                            setSelectedDay(day)
+                            setViewMode('month')
+                          }}
+                          className={`aspect-square flex items-center justify-center text-[9px] font-bold rounded-full cursor-pointer transition-all relative ${!isCurrentM ? 'opacity-0 pointer-events-none' : 'hover:theme-elevated'} ${isT ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'theme-text opacity-70'}`}
+                        >
+                          {format(day, 'd')}
+                          {isCurrentM && hasEvent && !isT && (
+                            <div className="absolute bottom-0.5 w-0.5 h-0.5 rounded-full bg-purple-500 scale-125" />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
