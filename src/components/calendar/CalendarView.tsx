@@ -196,7 +196,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-4">
                 {Array.from({ length: 24 }).map((_, hour) => (
-                  <div key={hour} className="h-20 text-[10px] theme-muted font-bold text-center pr-2">
+                  <div key={hour} className="h-[50px] text-[10px] theme-muted font-bold text-center pr-2">
                     {hour === 0 ? '' : `${hour}:00`}
                   </div>
                 ))}
@@ -204,17 +204,17 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
               {/* Timeline Content */}
               <div className="flex-1 relative">
-                {/* Hour Lines - Ultra-subtle styling */}
+                {/* Hour Lines - Better visibility, ultra-thin */}
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
                     key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border opacity-[0.08] h-20 pointer-events-none" 
-                    style={{ top: `${hour * 80}px`, borderTopWidth: '0.5px' }} 
+                    className="absolute left-0 right-0 border-t theme-border opacity-[0.2] h-[50px] pointer-events-none" 
+                    style={{ top: `${hour * 50}px`, borderTopWidth: '0.5px' }} 
                   />
                 ))}
 
                 {/* Events */}
-                <div className="relative h-[1920px]">
+                <div className="relative h-[1200px]">
                   {(() => {
                     const dayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
                       .filter(e => !e.is_all_day)
@@ -226,8 +226,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                       const startMinutes = startDate.getHours() * 60 + startDate.getMinutes()
                       const durationMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60)
                       
-                      const top = (startMinutes / 60) * 80
-                      const height = Math.max((durationMinutes / 60) * 80 - 2, 24)
+                      const top = (startMinutes / 60) * 50
+                      const height = Math.max((durationMinutes / 60) * 50 - 2, 20)
 
                       return (
                         <button
