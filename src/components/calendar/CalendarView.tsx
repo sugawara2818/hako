@@ -92,7 +92,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   }, [initialEvents])
 
   return (
-    <div id="calendar-view-container" className="flex flex-col h-full bg-black select-none overflow-hidden">
+    <div id="calendar-view-container" className="flex flex-col h-full theme-bg select-none overflow-hidden relative">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
         <div className="flex items-center gap-2 md:gap-4">
@@ -145,7 +145,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             <div 
               key={day.toString()} 
               onClick={() => setSelectedDay(day)}
-              className={`min-h-[70px] md:min-h-[100px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}
+              className={`min-h-[70px] md:min-h-[100px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
@@ -180,9 +180,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         })}
       </div>
 
-      {/* Resizer Handle */}
+      {/* Resizer Handle (Hit Area) */}
       <div 
-        className="h-1.5 w-full bg-white/5 hover:bg-purple-500/50 cursor-ns-resize transition-colors flex items-center justify-center group"
+        className="h-4 w-full cursor-ns-resize flex items-center justify-center group z-20 -mb-2 mt-[-8px]"
         onMouseDown={(e) => {
           e.preventDefault()
           setIsResizing(true)
@@ -191,15 +191,26 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
           setIsResizing(true)
         }}
       >
-        <div className="w-12 h-1 bg-white/10 group-hover:bg-white/30 rounded-full" />
+        <div className="w-12 h-1.5 bg-gray-400/20 group-hover:bg-purple-500/50 rounded-full transition-colors" />
       </div>
 
       {/* Selected Day Agenda */}
       <div 
-        className="flex flex-col overflow-hidden bg-white/[0.01]"
+        className="flex flex-col overflow-hidden theme-surface"
         style={{ height: `${agendaHeight}px`, minHeight: '150px' }}
       >
-        <div className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0">
+        <div 
+          className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0 cursor-ns-resize"
+          onMouseDown={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return
+            e.preventDefault()
+            setIsResizing(true)
+          }}
+          onTouchStart={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return
+            setIsResizing(true)
+          }}
+        >
           <div className="flex flex-col">
             <span className="text-[10px] font-black theme-muted uppercase tracking-widest">
               {format(selectedDay, 'yyyy年 M月 d日', { locale: ja })}
@@ -223,7 +234,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             <button
               key={event.id}
               onClick={() => onEditEvent(event)}
-              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border theme-border hover:theme-elevated transition-all active:scale-[0.98] group text-left"
+              className="w-full flex items-center gap-4 p-4 rounded-2xl theme-elevated border theme-border hover:border-purple-500/30 transition-all active:scale-[0.98] group text-left"
             >
               <div 
                 className="w-1.5 h-10 rounded-full shrink-0" 
