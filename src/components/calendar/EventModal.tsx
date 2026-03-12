@@ -12,6 +12,7 @@ interface EventModalProps {
   onDelete?: (id: string) => Promise<void>
   initialDate?: Date
   editingEvent?: CalendarEvent | null
+  currentUserId: string
 }
 
 const COLORS = [
@@ -24,7 +25,7 @@ const COLORS = [
   { name: 'Gray', value: '#64748b' },
 ]
 
-export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, editingEvent }: EventModalProps) {
+export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, editingEvent, currentUserId }: EventModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [startAt, setStartAt] = useState('')
@@ -32,6 +33,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
   const [isAllDay, setIsAllDay] = useState(false)
   const [color, setColor] = useState(COLORS[0].value)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isEditable = !editingEvent || editingEvent.user_id === currentUserId
 
   useEffect(() => {
     if (editingEvent) {
@@ -118,8 +121,9 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="予定のタイトルを入力"
-                className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text focus:outline-none focus:border-purple-500/50 transition-all font-bold"
+                className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text focus:outline-none focus:border-purple-500/50 transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                 required
+                disabled={!isEditable}
               />
             </div>
 
@@ -133,8 +137,9 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50"
                   required
+                  disabled={!isEditable}
                 />
               </div>
               <div className="space-y-2 min-w-0">
@@ -145,8 +150,9 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50"
                   required
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -159,8 +165,9 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   checked={isAllDay}
                   onChange={e => setIsAllDay(e.target.checked)}
                   className="sr-only"
+                  disabled={!isEditable}
                 />
-                <div className={`w-10 h-5 rounded-full transition-colors ${isAllDay ? 'bg-purple-600' : 'bg-gray-800'}`} />
+                <div className={`w-10 h-5 rounded-full transition-colors ${isAllDay ? 'bg-purple-600' : 'bg-gray-800'} ${!isEditable ? 'opacity-50' : ''}`} />
                 <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isAllDay ? 'right-1' : 'left-1'}`} />
               </div>
               <span className="text-sm font-bold theme-text">終日</span>
@@ -177,7 +184,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                     key={c.value}
                     type="button"
                     onClick={() => setColor(c.value)}
-                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full border-2 transition-all ${color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+                    disabled={!isEditable}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full border-2 transition-all ${color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'} disabled:cursor-not-allowed`}
                     style={{ backgroundColor: c.value }}
                   />
                 ))}
@@ -189,18 +197,37 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
               <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                 <AlignLeft className="w-3.5 h-3.5" /> 説明
               </label>
-              <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="詳細を入力してください（任意）"
-                rows={3}
-                className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all resize-none"
-              />
-            </div>
-          </div>
+               <textarea
+                 value={description}
+                 onChange={e => setDescription(e.target.value)}
+                 placeholder="詳細を入力してください（任意）"
+                 rows={3}
+                 className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all resize-none disabled:opacity-50"
+                 disabled={!isEditable}
+               />
+             </div>
+
+             {!isEditable && editingEvent?.profiles && (
+               <div className="pt-4 border-t border-white/5">
+                 <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-2xl">
+                   {editingEvent.profiles.avatar_url ? (
+                     <img src={editingEvent.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                   ) : (
+                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-black text-white">
+                       {editingEvent.profiles.display_name?.[0] || '?'}
+                     </div>
+                   )}
+                   <div className="flex flex-col">
+                     <span className="text-[10px] font-black theme-muted uppercase tracking-widest">作成者</span>
+                     <span className="text-sm font-bold theme-text">{editingEvent.profiles.display_name || 'Unknown'}</span>
+                   </div>
+                 </div>
+               </div>
+             )}
+           </div>
 
           <div className="p-4 md:p-6 border-t theme-border flex gap-3">
-             {editingEvent && onDelete && (
+             {editingEvent && isEditable && onDelete && (
                <button
                  type="button"
                  onClick={() => onDelete(editingEvent.id)}
@@ -210,13 +237,24 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                  <Trash2 className="w-5 h-5" />
                </button>
              )}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '保存する'}
-            </button>
+            {isEditable && (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-purple-500/20 active:scale(0.98) disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '保存する'}
+              </button>
+            )}
+            {!isEditable && (
+               <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 md:py-4 bg-white/10 hover:bg-white/15 theme-text rounded-2xl font-black text-base md:text-lg transition-all active:scale(0.98)"
+                >
+                  閉じる
+                </button>
+            )}
           </div>
         </form>
       </div>

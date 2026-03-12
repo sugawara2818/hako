@@ -88,6 +88,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         onDelete={handleDeleteEvent}
         initialDate={selectedDate}
         editingEvent={editingEvent}
+        currentUserId={currentUserId}
       />
       
       {loading && (
