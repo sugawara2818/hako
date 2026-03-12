@@ -156,7 +156,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
                )}
             </div>
             <div>
-              <p className="font-black text-lg text-white/90 leading-none mb-2">{displayName}</p>
+              <p className="font-black text-xl text-white/90 leading-tight mb-1">{displayName}</p>
               <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
