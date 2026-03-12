@@ -13,7 +13,14 @@ import {
   isSameDay, 
   eachDayOfInterval,
   isToday,
-  parseISO
+  parseISO,
+  addDays,
+  addWeeks,
+  addYears,
+  differenceInDays,
+  startOfToday,
+  isBefore,
+  isAfter
 } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Plus, Clock, User as UserIcon, Calendar, ArrowLeft, LayoutGrid, CalendarDays, CalendarRange, Calendar as CalendarIcon } from 'lucide-react'
@@ -55,14 +62,72 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
 
   const eventsByDay = useMemo(() => {
+    // Determine the total range for current view mode
+    let rangeStart: Date;
+    let rangeEnd: Date;
+    
+    if (viewMode === 'month') {
+        rangeStart = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+        rangeEnd = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
+    } else if (viewMode === 'week') {
+        rangeStart = startOfWeek(currentMonth, { weekStartsOn: 0 });
+        rangeEnd = endOfWeek(currentMonth, { weekStartsOn: 0 });
+    } else if (viewMode === 'year') {
+        rangeStart = new Date(currentMonth.getFullYear(), 0, 1);
+        rangeEnd = new Date(currentMonth.getFullYear(), 11, 31, 23, 59, 59);
+    } else {
+        rangeStart = subMonths(currentMonth, 1);
+        rangeEnd = addMonths(currentMonth, 1);
+    }
+
     const map: Record<string, CalendarEvent[]> = {}
+    
     initialEvents.forEach(event => {
-      const dateKey = format(parseISO(event.start_at), 'yyyy-MM-dd')
-      if (!map[dateKey]) map[dateKey] = []
-      map[dateKey].push(event)
+      const startAt = parseISO(event.start_at);
+      const endAt = parseISO(event.end_at);
+      const duration = endAt.getTime() - startAt.getTime();
+      
+      if (!event.recurrence_rule) {
+        if (isAfter(startAt, rangeEnd) || isBefore(startAt, subMonths(rangeStart, 1))) return; // rough filter
+        const dateKey = format(startAt, 'yyyy-MM-dd')
+        if (!map[dateKey]) map[dateKey] = []
+        map[dateKey].push(event)
+        return;
+      }
+
+      // Handle recurrence
+      let current = new Date(startAt);
+      
+      // Optimization: Skip to range start if possible
+      // (Simplified: always starting from original start for correctness with month/year skips)
+      
+      let safetyCounter = 0;
+      while (current <= rangeEnd && safetyCounter < 1000) {
+        safetyCounter++;
+        if (current >= rangeStart || isSameDay(current, rangeStart)) {
+          const dateKey = format(current, 'yyyy-MM-dd');
+          if (!map[dateKey]) map[dateKey] = []
+          
+          const virtualEvent = {
+            ...event,
+            id: `${event.id}_${dateKey}`,
+            realId: event.id,
+            start_at: current.toISOString(),
+            end_at: new Date(current.getTime() + duration).toISOString()
+          };
+          map[dateKey].push(virtualEvent);
+        }
+        
+        // Advance
+        if (event.recurrence_rule === 'daily') current = addDays(current, 1);
+        else if (event.recurrence_rule === 'weekly') current = addWeeks(current, 1);
+        else if (event.recurrence_rule === 'monthly') current = addMonths(current, 1);
+        else if (event.recurrence_rule === 'yearly') current = addYears(current, 1);
+        else break;
+      }
     })
     return map
-  }, [initialEvents])
+  }, [initialEvents, currentMonth, viewMode])
 
   const handleDayClick = (day: Date) => {
     setSelectedDay(day)

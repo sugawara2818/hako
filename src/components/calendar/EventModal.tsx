@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Clock, Type, AlignLeft, Palette, Loader2, Trash2 } from 'lucide-react'
+import { X, Clock, Type, AlignLeft, Palette, Loader2, Trash2, Calendar, Repeat } from 'lucide-react'
 import { format } from 'date-fns'
 import { CalendarEvent } from '@/core/calendar/actions'
 
@@ -33,6 +33,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
   const [isAllDay, setIsAllDay] = useState(false)
   const [color, setColor] = useState(COLORS[0].value)
   const [isPrivate, setIsPrivate] = useState(false)
+  const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEditable = !editingEvent || editingEvent.user_id === currentUserId
@@ -46,6 +47,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       setIsAllDay(editingEvent.is_all_day)
       setColor(editingEvent.color)
       setIsPrivate(editingEvent.is_private || false)
+      setRecurrenceRule(editingEvent.recurrence_rule || null)
     } else if (initialDate) {
       setTitle('')
       setDescription('')
@@ -58,6 +60,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       setIsAllDay(false)
       setColor(COLORS[0].value)
       setIsPrivate(false)
+      setRecurrenceRule(null)
     }
   }, [editingEvent, initialDate, isOpen])
 
@@ -86,7 +89,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
         end_at: new Date(endAt).toISOString(),
         is_all_day: isAllDay,
         color,
-        is_private: isPrivate
+        is_private: isPrivate,
+        recurrence_rule: recurrenceRule
       })
       onClose()
     } catch (error: any) {
@@ -135,13 +139,13 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2 min-w-0">
                 <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5" /> 開始
+                  <Calendar className="w-3.5 h-3.5" /> 開始
                 </label>
                 <input
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
-                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50"
+                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
                   required
                   disabled={!isEditable}
                 />
@@ -154,28 +158,48 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
-                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50"
+                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
                   required
                   disabled={!isEditable}
                 />
               </div>
             </div>
 
-            {/* All Day Toggle */}
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={isAllDay}
-                  onChange={e => setIsAllDay(e.target.checked)}
-                  className="sr-only"
-                  disabled={!isEditable}
-                />
-                <div className={`w-10 h-5 rounded-full transition-colors ${isAllDay ? 'bg-purple-600' : 'bg-black/20 dark:bg-gray-800'} ${!isEditable ? 'opacity-50' : ''}`} />
-                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isAllDay ? 'right-1' : 'left-1'}`} />
-              </div>
-              <span className="text-sm font-bold theme-text">終日</span>
-            </label>
+            {/* All Day and Recurrence */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <label className="flex items-center gap-3 cursor-pointer group shrink-0">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={isAllDay}
+                      onChange={e => setIsAllDay(e.target.checked)}
+                      className="sr-only"
+                      disabled={!isEditable}
+                    />
+                    <div className={`w-10 h-5 rounded-full transition-colors ${isAllDay ? 'bg-purple-600' : 'bg-black/20 dark:bg-gray-800'} ${!isEditable ? 'opacity-50' : ''}`} />
+                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isAllDay ? 'right-1' : 'left-1'}`} />
+                  </div>
+                  <span className="text-sm font-bold theme-text">終日</span>
+                </label>
+
+                <div className="flex-1 w-full sm:w-auto h-[1px] sm:h-8 sm:w-[1px] bg-white/10 hidden sm:block" />
+
+                <div className="flex-1 w-full flex items-center gap-2">
+                    <Repeat className="w-4 h-4 theme-muted" />
+                    <select
+                        value={recurrenceRule || 'none'}
+                        onChange={(e) => setRecurrenceRule(e.target.value === 'none' ? null : e.target.value)}
+                        disabled={!isEditable}
+                        className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-xs font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
+                    >
+                        <option value="none">繰り返さない</option>
+                        <option value="daily">毎日</option>
+                        <option value="weekly">毎週</option>
+                        <option value="monthly">毎月</option>
+                        <option value="yearly">毎年</option>
+                    </select>
+                </div>
+            </div>
 
             {/* Color Selection */}
             <div className="space-y-3">
@@ -197,7 +221,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             </div>
 
             {/* Privacy Toggle */}
-            <div className="p-4 bg-black/20 dark:bg-white/5 border theme-border rounded-2xl flex items-center justify-between group">
+            <div className="p-4 bg-black/5 dark:bg-white/5 border theme-border rounded-2xl flex items-center justify-between group">
               <div className="space-y-0.5">
                 <span className="text-sm font-bold theme-text">箱全体に共有する</span>
                 <p className="text-[10px] theme-muted font-medium">オフにすると自分だけに表示されます</p>

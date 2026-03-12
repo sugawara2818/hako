@@ -81,54 +81,66 @@ export function MobileSidebar({
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
         <div className="space-y-1">
           <p className="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">メニュー</p>
-          {features.includes('timeline') && (
-            <Link 
-              href={`/hako/${hakoId}`} 
-              onClick={onClose} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                isTimelineActive 
-                  ? 'bg-white/10 text-white border-white/5' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
-              }`}
-            >
-              <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
-              タイムライン
-              {hasNewTimeline && (
-                <span className="absolute top-3 right-4 w-2 h-2 bg-purple-500 rounded-full border-2 theme-surface animate-pulse" />
-              )}
-            </Link>
-          )}
-          {features.includes('diary') && (
-            <Link 
-              href={`/hako/${hakoId}/diary`} 
-              onClick={onClose} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                isDiaryActive 
-                  ? 'bg-white/10 text-white border-white/5' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
-              }`}
-            >
-              <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
-              日記
-              {hasNewDiary && (
-                <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
-              )}
-            </Link>
-          )}
-          {features.includes('calendar') && (
-            <Link 
-              href={`/hako/${hakoId}/calendar`} 
-              onClick={onClose} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                pathname.includes(`/hako/${hakoId}/calendar`)
-                  ? 'bg-white/10 text-white border-white/5' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
-              }`}
-            >
-              <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
-              カレンダー
-            </Link>
-          )}
+          {features.map((featureId) => {
+            if (featureId === 'timeline') {
+              return (
+                <Link 
+                  key="timeline"
+                  href={`/hako/${hakoId}`} 
+                  onClick={onClose} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    isTimelineActive 
+                      ? 'bg-white/10 text-white border-white/5' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
+                  タイムライン
+                  {hasNewTimeline && (
+                    <span className="absolute top-3 right-4 w-2 h-2 bg-purple-500 rounded-full border-2 theme-surface animate-pulse" />
+                  )}
+                </Link>
+              )
+            }
+            if (featureId === 'diary') {
+              return (
+                <Link 
+                  key="diary"
+                  href={`/hako/${hakoId}/diary`} 
+                  onClick={onClose} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    isDiaryActive 
+                      ? 'bg-white/10 text-white border-white/5' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
+                  日記
+                  {hasNewDiary && (
+                    <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
+                  )}
+                </Link>
+              )
+            }
+            if (featureId === 'calendar') {
+              return (
+                <Link 
+                  key="calendar"
+                  href={`/hako/${hakoId}/calendar`} 
+                  onClick={onClose} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    pathname.includes(`/hako/${hakoId}/calendar`)
+                      ? 'bg-white/10 text-white border-white/5' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
+                  カレンダー
+                </Link>
+              )
+            }
+            return null
+          })}
         </div>
 
         {isOwner && (

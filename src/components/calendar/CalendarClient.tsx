@@ -66,7 +66,8 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     try {
       let result;
       if (editingEvent) {
-        result = await updateCalendarEvent(editingEvent.id, hakoId, eventData)
+        const idToUpdate = (editingEvent as any).realId || editingEvent.id;
+        result = await updateCalendarEvent(idToUpdate, hakoId, eventData)
       } else {
         result = await createCalendarEvent({
           ...eventData,

@@ -14,6 +14,7 @@ export interface CalendarEvent {
   is_all_day: boolean
   color: string
   is_private: boolean
+  recurrence_rule?: string | null
   created_at: string
   profiles?: {
     display_name: string | null
@@ -25,12 +26,14 @@ export async function fetchCalendarEvents(hakoId: string, startDate: string, end
   const supabase = await createServerSupabaseClient()
   
   // Note: RLS handles the privacy filtering automatically
+  // Fetch events:
+  // 1. Recurring events (always fetch them to expand current occurrences)
+  // 2. Non-recurring events within the range
   const { data, error } = await supabase
     .from('hako_calendar_events')
     .select('*, profiles(display_name, avatar_url)')
     .eq('hako_id', hakoId)
-    .gte('start_at', startDate)
-    .lte('start_at', endDate)
+    .or(`recurrence_rule.neq.null,and(start_at.gte.${startDate},start_at.lte.${endDate})`)
     .order('start_at', { ascending: true })
 
   if (error) {
