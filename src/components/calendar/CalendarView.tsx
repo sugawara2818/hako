@@ -204,12 +204,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
               {/* Timeline Content */}
               <div className="flex-1 relative">
-                {/* Hour Lines - Subtler styling */}
+                {/* Hour Lines - Ultra-subtle styling */}
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
                     key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border/20 h-20" 
-                    style={{ top: `${hour * 80}px` }} 
+                    className="absolute left-0 right-0 border-t theme-border opacity-[0.08] h-20 pointer-events-none" 
+                    style={{ top: `${hour * 80}px`, borderTopWidth: '0.5px' }} 
                   />
                 ))}
 
