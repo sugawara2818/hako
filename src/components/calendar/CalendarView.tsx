@@ -40,6 +40,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'year'>('month')
   const [nowPosition, setNowPosition] = useState(0)
   
+  // Slide Animation State
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | 'none'>('none')
+  const [animationKey, setAnimationKey] = useState(Date.now())
+  
   // Swipe Gesture State
   const [touchStart, setTouchStart] = useState<{ x: number, y: number } | null>(null)
   const minSwipeDistance = 50
@@ -62,8 +66,27 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
     return eachDayOfInterval({ start, end })
   }, [currentMonth])
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
+  const nextMonth = () => {
+    setSlideDirection('right')
+    setAnimationKey(Date.now())
+    setCurrentMonth(addMonths(currentMonth, 1))
+  }
+  const prevMonth = () => {
+    setSlideDirection('left')
+    setAnimationKey(Date.now())
+    setCurrentMonth(subMonths(currentMonth, 1))
+  }
+  const nextWeek = () => {
+    setSlideDirection('right')
+    setAnimationKey(Date.now())
+    setCurrentMonth(addWeeks(currentMonth, 1))
+  }
+  
+  const prevWeek = () => {
+    setSlideDirection('left')
+    setAnimationKey(Date.now())
+    setCurrentMonth(addWeeks(currentMonth, -1))
+  }
   
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart({
@@ -88,11 +111,19 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       if (distanceX > 0) {
           // Swipe Left -> Next
           if (viewMode === 'month') nextMonth()
-          else if (viewMode === 'week') setCurrentMonth(addWeeks(currentMonth, 1))
+          else if (viewMode === 'week') {
+              setSlideDirection('right')
+              setAnimationKey(Date.now())
+              setCurrentMonth(addWeeks(currentMonth, 1))
+          }
       } else {
           // Swipe Right -> Prev
           if (viewMode === 'month') prevMonth()
-          else if (viewMode === 'week') setCurrentMonth(subMonths(currentMonth, 1))
+          else if (viewMode === 'week') {
+              setSlideDirection('left')
+              setAnimationKey(Date.now())
+              setCurrentMonth(addWeeks(currentMonth, -1))
+          }
       }
     }
     setTouchStart(null)
@@ -194,7 +225,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             <button onClick={prevMonth} className="p-1.5 hover:theme-elevated rounded-lg transition-colors theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={() => setCurrentMonth(new Date())} className="px-3 py-1 text-xs font-bold theme-muted hover:theme-text transition-colors">
+            <button 
+              onClick={() => {
+                setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
+                setAnimationKey(Date.now())
+                setCurrentMonth(new Date())
+              }} 
+              className="px-3 py-1 text-xs font-bold theme-muted hover:theme-text transition-colors"
+            >
               今日
             </button>
             <button onClick={nextMonth} className="p-1.5 hover:theme-elevated rounded-lg transition-colors theme-muted hover:theme-text">
@@ -231,7 +269,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div 
+        key={animationKey}
+        className={`flex-1 overflow-y-auto no-scrollbar ${
+          slideDirection === 'right' ? 'animate-slide-in-right' : 
+          slideDirection === 'left' ? 'animate-slide-in-left' : ''
+        }`}
+        onAnimationEnd={() => setSlideDirection('none')}
+      >
         {viewMode === 'month' && (
           <>
             <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
