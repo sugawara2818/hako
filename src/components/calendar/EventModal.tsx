@@ -89,8 +89,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
         is_private: isPrivate
       })
       onClose()
-    } catch (error) {
-      alert('保存に失敗しました')
+    } catch (error: any) {
+      alert(`保存に失敗しました: ${error.message || String(error)}`)
     } finally {
       setIsSubmitting(false)
     }

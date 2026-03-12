@@ -79,7 +79,24 @@ export async function fetchCalendarEvents(hakoId: string, startDate: string, end
 export async function createCalendarEvent(event: Omit<CalendarEvent, 'id' | 'created_at' | 'user_id' | 'profiles'>) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  if (!user) throw new Error('認証が必要です')
+
+  // Explicit membership check for better debugging
+  const { data: member, error: memberError } = await supabase
+    .from('hako_members')
+    .select('id')
+    .eq('hako_id', event.hako_id)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (memberError) {
+    console.error('Membership check error:', memberError)
+    throw new Error('メンバー情報の確認に失敗しました')
+  }
+  
+  if (!member) {
+    throw new Error('この箱のメンバーではありません')
+  }
 
   const { data, error } = await supabase
     .from('hako_calendar_events')
@@ -90,7 +107,10 @@ export async function createCalendarEvent(event: Omit<CalendarEvent, 'id' | 'cre
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('Create calendar event error:', error)
+    throw new Error(`予定の作成に失敗しました: ${error.message}`)
+  }
   
   revalidatePath(`/hako/${event.hako_id}/calendar`)
   return data
@@ -99,7 +119,7 @@ export async function createCalendarEvent(event: Omit<CalendarEvent, 'id' | 'cre
 export async function updateCalendarEvent(eventId: string, hakoId: string, updates: Partial<Omit<CalendarEvent, 'id' | 'created_at' | 'user_id' | 'hako_id' | 'profiles'>>) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  if (!user) throw new Error('認証が必要です')
 
   const { error } = await supabase
     .from('hako_calendar_events')
@@ -107,7 +127,10 @@ export async function updateCalendarEvent(eventId: string, hakoId: string, updat
     .eq('id', eventId)
     .eq('user_id', user.id)
 
-  if (error) throw error
+  if (error) {
+    console.error('Update calendar event error:', error)
+    throw new Error(`予定の更新に失敗しました: ${error.message}`)
+  }
   
   revalidatePath(`/hako/${hakoId}/calendar`)
   return { success: true }

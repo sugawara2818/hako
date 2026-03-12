@@ -29,10 +29,9 @@ CREATE POLICY "Members can view public events or their own events" ON hako_calen
 
 CREATE POLICY "Members can create events in their hako" ON hako_calendar_events
     FOR INSERT WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM hako_members 
-            WHERE hako_members.hako_id = hako_id 
-            AND hako_members.user_id = auth.uid()
+        hako_id IN (
+            SELECT hako_id FROM hako_members 
+            WHERE user_id = auth.uid()
         )
     );
 
