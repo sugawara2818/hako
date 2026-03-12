@@ -40,8 +40,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       if (calendarContainer) {
         const rect = calendarContainer.getBoundingClientRect()
         const newHeight = rect.bottom - e.clientY
-        // Clamp height between 150px and 70% of container height
-        setAgendaHeight(Math.max(150, Math.min(newHeight, rect.height * 0.7)))
+        // Deskstop: Clamp height between 150px and 70%
+        // Mobile: Allow up to 100%
+        const isMobile = window.innerWidth < 768
+        const maxHeight = isMobile ? rect.height : rect.height * 0.7
+        setAgendaHeight(Math.max(150, Math.min(newHeight, maxHeight)))
       }
     }
 
@@ -51,7 +54,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       if (calendarContainer) {
         const rect = calendarContainer.getBoundingClientRect()
         const newHeight = rect.bottom - e.touches[0].clientY
-        setAgendaHeight(Math.max(150, Math.min(newHeight, rect.height * 0.7)))
+        const isMobile = window.innerWidth < 768
+        const maxHeight = isMobile ? rect.height : rect.height * 0.7
+        setAgendaHeight(Math.max(150, Math.min(newHeight, maxHeight)))
       }
     }
 
@@ -132,7 +137,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       {/* Grid */}
       <div 
         className="grid grid-cols-7 auto-rows-fr border-b theme-border overflow-hidden"
-        style={{ flex: `0 0 auto`, maxHeight: `calc(100% - ${agendaHeight}px)` }}
+        style={{ flex: `1 1 auto` }}
       >
         {days.map((day, i) => {
           const dateKey = format(day, 'yyyy-MM-dd')
@@ -193,16 +198,20 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
       {/* Selected Day Agenda */}
       <div 
-        className={`flex flex-col overflow-hidden theme-surface relative ${isResizing ? 'touch-none' : ''}`}
+        className={`flex flex-col overflow-hidden theme-surface border-t theme-border shadow-[0_-8px_30px_rgb(0,0,0,0.12)] z-30 transition-[height] duration-75 ease-out ${isResizing ? 'touch-none' : ''} md:relative absolute bottom-0 left-0 right-0`}
         style={{ height: `${agendaHeight}px`, minHeight: '150px' }}
       >
         {/* Mobile Pull Handle Decorator */}
-        <div className="md:hidden w-full flex justify-center pt-2 pb-1 shrink-0">
-          <div className="w-10 h-1 bg-gray-400/20 rounded-full" />
+        <div 
+          className="md:hidden w-full flex justify-center pt-3 pb-2 shrink-0 cursor-ns-resize touch-none"
+          onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
+          onTouchStart={() => setIsResizing(true)}
+        >
+          <div className="w-12 h-1.5 bg-gray-400/30 rounded-full" />
         </div>
 
         <div 
-          className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0 cursor-ns-resize touch-none"
+          className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/95 backdrop-blur-md z-10 shrink-0 cursor-ns-resize touch-none"
           onMouseDown={(e) => {
             if ((e.target as HTMLElement).closest('button')) return
             e.preventDefault()
@@ -210,12 +219,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
           }}
           onTouchStart={(e) => {
             if ((e.target as HTMLElement).closest('button')) return
-            // No preventDefault here to allow potential swipe-down to close if we add it, 
-            // but we need to stop propagation if it's a drag handle
             setIsResizing(true)
           }}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col pointer-events-none">
             <span className="text-[10px] font-black theme-muted uppercase tracking-widest">
               {format(selectedDay, 'yyyy年 M月 d日', { locale: ja })}
             </span>
