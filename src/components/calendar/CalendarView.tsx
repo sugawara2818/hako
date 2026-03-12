@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { 
   format, 
   addMonths, 
@@ -44,6 +44,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
     const interval = setInterval(updatePosition, 60000)
     return () => clearInterval(interval)
   }, [])
+  const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 })
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
     return eachDayOfInterval({ start, end })
@@ -220,7 +221,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
                     key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border opacity-30 h-[50px] pointer-events-none" 
+                    className="absolute left-0 right-0 border-t theme-border opacity-60 h-[50px] pointer-events-none" 
                     style={{ top: `${hour * 50}px` }} 
                   />
                 ))}
