@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Clock, Type, AlignLeft, Palette, Loader2, Trash2, Calendar, Repeat } from 'lucide-react'
+import { X, Clock, Type, AlignLeft, Palette, Loader2, Trash2, Calendar, Repeat, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { CalendarEvent } from '@/core/calendar/actions'
 
@@ -213,9 +213,11 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                     type="button"
                     onClick={() => setColor(c.value)}
                     disabled={!isEditable}
-                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full border-2 transition-all ${color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'} disabled:cursor-not-allowed`}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full border-2 transition-all flex items-center justify-center ${color === c.value ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'} disabled:cursor-not-allowed`}
                     style={{ backgroundColor: c.value }}
-                  />
+                  >
+                    {color === c.value && <Check className="w-4 h-4 text-white drop-shadow-md" />}
+                  </button>
                 ))}
               </div>
             </div>
