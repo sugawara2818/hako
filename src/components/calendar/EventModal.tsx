@@ -9,7 +9,7 @@ interface EventModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (event: any) => Promise<void>
-  onDelete?: (id: string) => Promise<void>
+  onDelete?: (event: CalendarEvent) => void
   initialDate?: Date
   editingEvent?: CalendarEvent | null
   currentUserId: string
@@ -278,7 +278,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
               {editingEvent && isEditable && onDelete && (
                 <button
                   type="button"
-                  onClick={() => onDelete(editingEvent.id)}
+                  onClick={() => editingEvent && onDelete(editingEvent)}
                   className="p-3 md:p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95"
                   title="削除"
                 >

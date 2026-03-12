@@ -9,9 +9,11 @@ import {
   createCalendarEvent, 
   updateCalendarEvent, 
   deleteCalendarEvent,
+  deleteRecurringOccurrence,
+  deleteRecurringFuture,
   CalendarEvent 
 } from '@/core/calendar/actions'
-import { startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
+import { startOfMonth, endOfMonth, subMonths, addMonths, format, parseISO } from 'date-fns'
 
 interface CalendarClientProps {
   hakoId: string
@@ -86,15 +88,25 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     }
   }
 
-  const handleDeleteEvent = async (id: string) => {
-    setConfirmDelete({ id })
-  }
-
-  const executeDelete = async () => {
+  const executeDelete = async (type: 'all' | 'one' | 'future' = 'all') => {
     if (!confirmDelete) return
     setLoading(true)
     try {
-      const result = await deleteCalendarEvent(confirmDelete.id, hakoId)
+      const realId = (confirmDelete as any).realId || confirmDelete.id;
+      const occurrenceDate = (confirmDelete as any).date;
+
+      let result;
+      if (type === 'one' && occurrenceDate) {
+        result = await deleteRecurringOccurrence(realId, hakoId, occurrenceDate)
+      } else if (type === 'future' && occurrenceDate) {
+        // Stop before this date. We actually set recurrence_until to the day BEFORE this one.
+        const d = new Date(occurrenceDate);
+        d.setDate(d.getDate() - 1);
+        result = await deleteRecurringFuture(realId, hakoId, d.toISOString())
+      } else {
+        result = await deleteCalendarEvent(realId, hakoId)
+      }
+
       if (result.success) {
         await loadEvents()
         setIsModalOpen(false)
@@ -109,6 +121,19 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleDeleteEvent = (event: CalendarEvent) => {
+    const isRecurring = !!event.recurrence_rule;
+    const realId = (event as any).realId || event.id;
+    const date = (event as any).realId ? format(parseISO(event.start_at), 'yyyy-MM-dd') : undefined;
+    
+    setConfirmDelete({ 
+        id: event.id, 
+        isRecurring, 
+        realId,
+        date 
+    } as any);
   }
 
   return (
@@ -144,20 +169,51 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setConfirmDelete(null)} />
           <div className="relative w-full max-w-sm theme-surface border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black theme-text mb-2">予定を削除しますか？</h3>
-            <p className="theme-muted text-sm font-medium mb-6">この操作は取り消せません。</p>
-            <div className="flex gap-3">
+            <h3 className="text-xl font-black theme-text mb-2">
+              {(confirmDelete as any).isRecurring ? '繰り返し予定の削除' : '予定を削除しますか？'}
+            </h3>
+            <p className="theme-muted text-sm font-medium mb-6">
+              {(confirmDelete as any).isRecurring 
+                ? 'この予定は繰り返し設定されています。削除の範囲を選択してください。' 
+                : 'この操作は取り消せません。'}
+            </p>
+            
+            <div className="flex flex-col gap-3">
+              {(confirmDelete as any).isRecurring ? (
+                <>
+                  <button 
+                    onClick={() => executeDelete('one')}
+                    className="w-full py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-bold transition-all text-sm"
+                  >
+                    この予定のみ削除
+                  </button>
+                  <button 
+                    onClick={() => executeDelete('future')}
+                    className="w-full py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-bold transition-all text-sm"
+                  >
+                    これ以降の予定をすべて削除
+                  </button>
+                  <button 
+                    onClick={() => executeDelete('all')}
+                    className="w-full py-4 bg-red-500 text-white hover:bg-red-600 rounded-2xl font-bold transition-all text-sm shadow-lg shadow-red-500/20"
+                  >
+                    すべての予定（シリーズ全体）を削除
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={() => executeDelete('all')}
+                  className="w-full py-4 bg-red-500 text-white hover:bg-red-600 rounded-2xl font-bold transition-all text-sm"
+                >
+                  削除する
+                </button>
+              )}
+              
               <button 
                 onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-3 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 theme-text rounded-2xl font-bold transition-all"
+                className="w-full py-4 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 theme-text rounded-2xl font-bold transition-all text-sm mt-2"
               >
                 キャンセル
-              </button>
-              <button 
-                onClick={executeDelete}
-                className="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-bold transition-all"
-              >
-                削除する
               </button>
             </div>
           </div>

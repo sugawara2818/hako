@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { startOfMonth, endOfMonth, parseISO, isAfter } from 'date-fns'
 
 export interface CalendarEvent {
   id: string
@@ -15,6 +16,8 @@ export interface CalendarEvent {
   color: string
   is_private: boolean
   recurrence_rule?: string | null
+  recurrence_until?: string | null
+  excluded_dates?: string[]
   created_at: string
   profiles?: {
     display_name: string | null
@@ -156,5 +159,55 @@ export async function deleteCalendarEvent(eventId: string, hakoId: string) {
   } catch (error: any) {
     console.error('Delete calendar event error:', error)
     return { success: false, error: error.message || '予定の削除に失敗しました' }
+  }
+}
+
+export async function deleteRecurringOccurrence(id: string, hakoId: string, date: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    
+    // Get current excluded dates
+    const { data: event, error: fetchError } = await supabase
+      .from('hako_calendar_events')
+      .select('excluded_dates')
+      .eq('id', id)
+      .single()
+      
+    if (fetchError) throw fetchError
+    
+    const excluded = (event.excluded_dates as string[]) || []
+    if (!excluded.includes(date)) {
+      excluded.push(date)
+    }
+    
+    const { error } = await supabase
+      .from('hako_calendar_events')
+      .update({ excluded_dates: excluded })
+      .eq('id', id)
+      
+    if (error) throw error
+    revalidatePath(`/hako/${hakoId}/calendar`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Delete recurring occurrence error:', error)
+    return { success: false, error: error.message || 'この予定の削除に失敗しました' }
+  }
+}
+
+export async function deleteRecurringFuture(id: string, hakoId: string, untilDate: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    
+    const { error } = await supabase
+      .from('hako_calendar_events')
+      .update({ recurrence_until: untilDate })
+      .eq('id', id)
+      
+    if (error) throw error
+    revalidatePath(`/hako/${hakoId}/calendar`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Delete recurring future error:', error)
+    return { success: false, error: error.message || 'これ以降の予定の削除に失敗しました' }
   }
 }

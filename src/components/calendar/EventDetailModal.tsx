@@ -12,7 +12,7 @@ interface EventDetailModalProps {
   event: CalendarEvent | null
   currentUserId: string
   onEdit: (event: CalendarEvent) => void
-  onDelete: (id: string) => void
+  onDelete: (event: CalendarEvent) => void
 }
 
 export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit, onDelete }: EventDetailModalProps) {
@@ -122,7 +122,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
                   <Edit2 className="w-5 h-5" /> 編集する
                 </button>
                 <button
-                  onClick={() => onDelete(event.id)}
+                  onClick={() => onDelete(event)}
                   className="p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl transition-all active:scale-95 border border-red-500/20"
                 >
                   <Trash2 className="w-6 h-6" />

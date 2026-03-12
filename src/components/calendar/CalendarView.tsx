@@ -104,8 +104,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       let safetyCounter = 0;
       while (current <= rangeEnd && safetyCounter < 1000) {
         safetyCounter++;
-        if (current >= rangeStart || isSameDay(current, rangeStart)) {
-          const dateKey = format(current, 'yyyy-MM-dd');
+        
+        const dateKey = format(current, 'yyyy-MM-dd');
+        
+        // Respect recurrence_until and excluded_dates
+        const isPastUntil = event.recurrence_until && isAfter(current, parseISO(event.recurrence_until));
+        const isExcluded = event.excluded_dates && event.excluded_dates.includes(dateKey);
+
+        if (!isPastUntil && !isExcluded && (current >= rangeStart || isSameDay(current, rangeStart))) {
           if (!map[dateKey]) map[dateKey] = []
           
           const virtualEvent = {
@@ -317,12 +323,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                                                 <button
                                                     key={event.id}
                                                     onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                                                    className="absolute left-1 right-1 p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all overflow-hidden z-10 text-left group"
+                                                    className="absolute left-1 right-1 p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all overflow-hidden z-10 text-left group"
                                                     style={{ 
                                                         top: `${t + 2}px`, 
                                                         height: `${h}px`,
                                                         borderLeft: `3px solid ${event.color}`,
-                                                        backgroundColor: `${event.color}15`
+                                                        backgroundColor: `${event.color}25`
                                                     }}
                                                 >
                                                     <div className="text-[10px] font-bold theme-text leading-tight truncate">{event.title}</div>
@@ -521,14 +527,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                         <button
                           key={pos.event.id}
                           onClick={() => onEditEvent(pos.event)}
-                          className="absolute p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
+                          className="absolute p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
                           style={{ 
                             top: `${pos.top + 2}px`, 
                             height: `${pos.height}px`,
                             left: `${left}%`,
                             width: `${width}%`,
                             borderLeft: `3px solid ${pos.event.color}`,
-                            backgroundColor: `${pos.event.color}15`
+                            backgroundColor: `${pos.event.color}25`
                           }}
                         >
                           <h4 className="text-[10px] font-bold theme-text leading-tight truncate">
