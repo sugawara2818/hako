@@ -30,8 +30,20 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const [isDayViewOpen, setIsDayViewOpen] = useState(false)
+  const [nowPosition, setNowPosition] = useState(0)
 
-  const days = useMemo(() => {
+  // Current time indicator logic
+  useEffect(() => {
+    const updatePosition = () => {
+      const now = new Date()
+      const startOfDayTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+      const minutesSinceStart = (now.getTime() - startOfDayTime) / (1000 * 60)
+      setNowPosition((minutesSinceStart / 60) * 50)
+    }
+    updatePosition()
+    const interval = setInterval(updatePosition, 60000)
+    return () => clearInterval(interval)
+  }, [])
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 })
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
     return eachDayOfInterval({ start, end })
@@ -204,14 +216,25 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
               {/* Timeline Content */}
               <div className="flex-1 relative">
-                {/* Hour Lines - Better visibility, ultra-thin */}
+                {/* Hour Lines - High visibility */}
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
                     key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border opacity-[0.2] h-[50px] pointer-events-none" 
-                    style={{ top: `${hour * 50}px`, borderTopWidth: '0.5px' }} 
+                    className="absolute left-0 right-0 border-t theme-border opacity-30 h-[50px] pointer-events-none" 
+                    style={{ top: `${hour * 50}px` }} 
                   />
                 ))}
+
+                {/* Current Time Indicator */}
+                {isToday(selectedDay) && (
+                  <div 
+                    className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                    style={{ top: `${nowPosition}px` }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1 shadow-lg shadow-blue-500/50" />
+                    <div className="flex-1 h-[2px] bg-blue-500 shadow-lg shadow-blue-500/20" />
+                  </div>
+                )}
 
                 {/* Events */}
                 <div className="relative h-[1200px]">

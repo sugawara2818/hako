@@ -62,15 +62,20 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
   }
 
   const handleSaveEvent = async (eventData: any) => {
-    if (editingEvent) {
-      await updateCalendarEvent(editingEvent.id, hakoId, eventData)
-    } else {
-      await createCalendarEvent({
-        ...eventData,
-        hako_id: hakoId
-      })
+    try {
+      if (editingEvent) {
+        await updateCalendarEvent(editingEvent.id, hakoId, eventData)
+      } else {
+        await createCalendarEvent({
+          ...eventData,
+          hako_id: hakoId
+        })
+      }
+      await loadEvents()
+    } catch (error) {
+      console.error('Save event failed details:', error)
+      throw error // Re-throw to inform EventModal
     }
-    await loadEvents()
   }
 
   const handleDeleteEvent = async (id: string) => {
