@@ -50,13 +50,13 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
             <h2 className="text-2xl md:text-3xl font-black theme-text leading-tight">
               {event.title}
             </h2>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors shrink-0">
+            <button onClick={onClose} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors shrink-0">
               <X className="w-6 h-6 theme-muted" />
             </button>
           </div>
 
           {/* Time Section */}
-          <div className="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border theme-border">
+          <div className="flex items-start gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border theme-border">
             <div className="p-3 bg-purple-500/10 rounded-xl">
               <Clock className="w-6 h-6 text-purple-400" />
             </div>
@@ -85,7 +85,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
               <div className="flex items-center gap-2 text-xs font-black theme-muted uppercase tracking-widest px-1">
                 <AlignLeft className="w-3.5 h-3.5" /> 詳細
               </div>
-              <div className="p-5 bg-white/[0.03] border theme-border rounded-2xl text-base theme-text leading-relaxed whitespace-pre-wrap">
+              <div className="p-5 bg-black/5 dark:bg-white/[0.03] border theme-border rounded-2xl text-base theme-text leading-relaxed whitespace-pre-wrap">
                 {event.description}
               </div>
             </div>
@@ -96,7 +96,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
             <div className="flex items-center gap-2 text-xs font-black theme-muted uppercase tracking-widest px-1">
               <UserIcon className="w-3.5 h-3.5" /> 作成者
             </div>
-            <div className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-2xl border border-white/5">
+            <div className="flex items-center gap-4 p-4 bg-black/5 dark:bg-white/[0.02] rounded-2xl border theme-border">
               {event.profiles?.avatar_url ? (
                 <img src={event.profiles.avatar_url} alt="" className="w-12 h-12 rounded-full border-2 border-white/10 shadow-xl" />
               ) : (
@@ -117,7 +117,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
               <>
                 <button
                   onClick={() => onEdit(event)}
-                  className="flex-1 py-4 bg-white/10 hover:bg-white/15 theme-text rounded-2xl font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 py-4 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 theme-text border theme-border rounded-2xl font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                   <Edit2 className="w-5 h-5" /> 編集する
                 </button>
