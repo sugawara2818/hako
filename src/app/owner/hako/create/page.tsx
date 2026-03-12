@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createHakoForOwner } from '@/core/hako/actions'
+import { createHakoForOwner, generateAIHakoDescription } from '@/core/hako/actions'
 import { supabase } from '@/lib/supabase/client'
-import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen } from 'lucide-react'
+import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 const FEATURE_PIECES = [
@@ -15,6 +15,7 @@ const FEATURE_PIECES = [
 export default function CreateHakoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [hakoName, setHakoName] = useState('')
   const [hakoDescription, setHakoDescription] = useState('')
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['timeline'])
@@ -44,6 +45,23 @@ export default function CreateHakoPage() {
       console.error(e)
       alert('箱の作成に失敗しました: ' + (e.message || 'unknown error'))
       setLoading(false)
+    }
+  }
+
+  const handleAiGenerateDescription = async () => {
+    if (!hakoName.trim()) {
+      alert('先に箱の名前を入力してください')
+      return
+    }
+
+    setIsAiGenerating(true)
+    try {
+      const aiDescription = await generateAIHakoDescription(hakoName)
+      setHakoDescription(aiDescription)
+    } catch (e: any) {
+      alert('紹介文の生成に失敗しました: ' + (e.message || 'unknown error'))
+    } finally {
+      setIsAiGenerating(false)
     }
   }
 
@@ -91,12 +109,26 @@ export default function CreateHakoPage() {
             />
           </div>
 
-          {/* Hako Description */}
           <div className="glass-card p-8 rounded-3xl border border-white/5 space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">2</span>
-              箱の紹介文
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">2</span>
+                箱の紹介文
+              </h2>
+              <button
+                type="button"
+                onClick={handleAiGenerateDescription}
+                disabled={isAiGenerating || !hakoName.trim()}
+                className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                {isAiGenerating ? (
+                   <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                   <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                )}
+                AIに紹介文を考えてもらう
+              </button>
+            </div>
             <textarea
               value={hakoDescription}
               onChange={e => setHakoDescription(e.target.value)}

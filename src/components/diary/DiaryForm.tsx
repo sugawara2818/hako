@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Calendar, Lock, Unlock, Loader2, Check, AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { createDiaryEntry, updateDiaryEntry, fetchUserDiaryDates } from '@/core/diary/actions'
+import { Calendar, Lock, Unlock, Loader2, Check, AlertCircle, ChevronLeft, ChevronRight, X, Sparkles } from 'lucide-react'
+import { createDiaryEntry, updateDiaryEntry, fetchUserDiaryDates, generateAITitle } from '@/core/diary/actions'
 import { useRouter } from 'next/navigation'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isToday, isFuture, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -21,6 +21,7 @@ interface DiaryFormProps {
 export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [existingDates, setExistingDates] = useState<string[]>([])
 
@@ -81,6 +82,24 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
     }
   }
 
+  const handleAiGenerateTitle = async () => {
+    if (!content.trim()) {
+      setError('内容を入力してからAIにタイトルを考えてもらいましょう。')
+      return
+    }
+
+    setIsAiGenerating(true)
+    setError(null)
+    try {
+      const aiTitle = await generateAITitle(content)
+      setTitle(aiTitle)
+    } catch (err: any) {
+      setError(err.message || 'タイトルの生成に失敗しました')
+    } finally {
+      setIsAiGenerating(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div className="space-y-4">
@@ -107,9 +126,23 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
           )}
         </div>
 
-        {/* Title */}
         <div className="relative">
-          <label className="block text-[10px] font-black theme-muted uppercase tracking-widest mb-2 px-1">タイトル (任意)</label>
+          <div className="flex items-center justify-between mb-2 px-1">
+            <label className="block text-[10px] font-black theme-muted uppercase tracking-widest">タイトル (任意)</label>
+            <button
+              type="button"
+              onClick={handleAiGenerateTitle}
+              disabled={isAiGenerating || !content.trim()}
+              className="flex items-center gap-1.5 text-[10px] font-black text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {isAiGenerating ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
+              )}
+              AIに考えてもらう
+            </button>
+          </div>
           <input 
             type="text" 
             placeholder="タイトルを入力..."

@@ -2,7 +2,8 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-// オーナーが箱作成
+import { generateHakoDescription as aiGenerateDescription } from '@/core/ai/gemini'
+// 繧ｪ繝ｼ繝翫・縺檎ｮｱ菴懈・
 export async function createHakoForOwner(userId: string, name: string, description: string = '', features: string[] = ['timeline']) {
   const supabase = await createServerSupabaseClient()
   const { data: hako, error } = await supabase
@@ -22,7 +23,7 @@ export async function createHakoForOwner(userId: string, name: string, descripti
   return hako
 }
 
-// メンバーが箱に参加
+// 繝｡繝ｳ繝舌・縺檎ｮｱ縺ｫ蜿ょ刈
 export async function joinHako(userId: string, hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data: member, error } = await supabase
@@ -35,7 +36,7 @@ export async function joinHako(userId: string, hakoId: string) {
   return member
 }
 
-// メンバー一覧取得
+// 繝｡繝ｳ繝舌・荳隕ｧ蜿門ｾ・
 export async function fetchHakoMembers(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
@@ -48,7 +49,7 @@ export async function fetchHakoMembers(hakoId: string) {
   return data
 }
 
-// メンバー退会
+// 繝｡繝ｳ繝舌・騾莨・
 export async function leaveHako(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -64,7 +65,7 @@ export async function leaveHako(hakoId: string) {
   return { success: true }
 }
 
-// ディスプレイネーム更新
+// 繝・ぅ繧ｹ繝励Ξ繧､繝阪・繝譖ｴ譁ｰ
 export async function updateDisplayName(hakoId: string, displayName: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -81,7 +82,7 @@ export async function updateDisplayName(hakoId: string, displayName: string) {
   return { success: true }
 }
 
-// メンバーアバター更新 (URL直接指定)
+// 繝｡繝ｳ繝舌・繧｢繝舌ち繝ｼ譖ｴ譁ｰ (URL逶ｴ謗･謖・ｮ・
 export async function updateUserAvatar(hakoId: string, avatarUrl: string | null) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -98,7 +99,7 @@ export async function updateUserAvatar(hakoId: string, avatarUrl: string | null)
   return { success: true }
 }
 
-// メンバーアバター画像アップロードとDB更新 (FormData経由)
+// 繝｡繝ｳ繝舌・繧｢繝舌ち繝ｼ逕ｻ蜒上い繝・・繝ｭ繝ｼ繝峨→DB譖ｴ譁ｰ (FormData邨檎罰)
 export async function uploadAndUpdateUserAvatar(hakoId: string, formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -138,7 +139,7 @@ export async function uploadAndUpdateUserAvatar(hakoId: string, formData: FormDa
   return { success: true, url: publicUrl }
 }
 
-// 箱の情報更新 (オーナー向け)
+// 邂ｱ縺ｮ諠・ｱ譖ｴ譁ｰ (繧ｪ繝ｼ繝翫・蜷代￠)
 export async function updateHako(hakoId: string, updates: { name?: string, icon_url?: string | null, icon_color?: string | null, features?: string[] }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -169,7 +170,7 @@ export async function updateHako(hakoId: string, updates: { name?: string, icon_
   return { success: true }
 }
 
-// 箱を削除 (オーナー向け)
+// 邂ｱ繧貞炎髯､ (繧ｪ繝ｼ繝翫・蜷代￠)
 export async function deleteHako(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -204,4 +205,13 @@ export async function deleteHako(hakoId: string) {
   revalidatePath('/')
   
   return { success: true }
+}
+export async function generateAIHakoDescription(name: string) {
+  try {
+    const description = await aiGenerateDescription(name)
+    return description.trim()
+  } catch (error) {
+    console.error('AI Hako Description Generation Error:', error)
+    throw new Error('紹介文の生成に失敗しました。')
+  }
 }

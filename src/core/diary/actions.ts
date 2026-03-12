@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { generateDiaryTitle as aiGenerateTitle } from '@/core/ai/gemini'
 
 export async function createDiaryEntry(hakoId: string, title: string, content: string, diaryDate: string, isPublic: boolean = true) {
   const supabase = await createServerSupabaseClient()
@@ -199,4 +200,14 @@ export async function fetchUserDiaryDates(hakoId: string) {
 
   if (error) throw error
   return data.map(d => d.diary_date)
+}
+
+export async function generateAITitle(content: string) {
+  try {
+    const title = await aiGenerateTitle(content)
+    return title.trim()
+  } catch (error) {
+    console.error('AI Title Generation Error:', error)
+    throw new Error('タイトルの生成に失敗しました。APIキーが設定されているか確認してください。')
+  }
 }
