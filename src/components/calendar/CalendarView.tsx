@@ -328,7 +328,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                                                         top: `${t + 2}px`, 
                                                         height: `${h}px`,
                                                         borderLeft: `3px solid ${event.color}`,
-                                                        backgroundColor: `${event.color}25`
+                                                        backgroundColor: `${event.color}40`,
+                                                        boxShadow: `0 2px 8px -2px ${event.color}40`
                                                     }}
                                                 >
                                                     <div className="text-[10px] font-bold theme-text leading-tight truncate">{event.title}</div>
@@ -534,7 +535,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                             left: `${left}%`,
                             width: `${width}%`,
                             borderLeft: `3px solid ${pos.event.color}`,
-                            backgroundColor: `${pos.event.color}25`
+                            backgroundColor: `${pos.event.color}40`,
+                            boxShadow: `0 2px 10px -2px ${pos.event.color}40`
                           }}
                         >
                           <h4 className="text-[10px] font-bold theme-text leading-tight truncate">

@@ -235,10 +235,19 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialI
             <span className="text-[10px] theme-muted font-black uppercase tracking-widest">有効化と順序変更</span>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            {FEATURE_PIECES.map((piece) => {
-              const featureId = piece.id
-              const isEnabled = features.includes(featureId)
-              const index = features.indexOf(featureId)
+            {[...FEATURE_PIECES]
+              .sort((a, b) => {
+                const indexA = features.indexOf(a.id)
+                const indexB = features.indexOf(b.id)
+                if (indexA === -1 && indexB === -1) return 0
+                if (indexA === -1) return 1
+                if (indexB === -1) return -1
+                return indexA - indexB
+              })
+              .map((piece) => {
+                const featureId = piece.id
+                const isEnabled = features.includes(featureId)
+                const index = features.indexOf(featureId)
 
               return (
                 <div
