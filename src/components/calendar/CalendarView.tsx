@@ -17,7 +17,7 @@ import {
   parseISO
 } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User as UserIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User as UserIcon, Calendar } from 'lucide-react'
 import { CalendarEvent } from '@/core/calendar/actions'
 
 interface CalendarViewProps {
@@ -29,6 +29,7 @@ interface CalendarViewProps {
 
 export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedDay, setSelectedDay] = useState(new Date())
   
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 })
@@ -88,56 +89,109 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       </div>
 
       {/* Grid */}
-      <div className="flex-1 grid grid-cols-7 auto-rows-fr overflow-y-auto no-scrollbar">
+      <div className="grid grid-cols-7 auto-rows-fr border-b theme-border">
         {days.map((day, i) => {
           const dateKey = format(day, 'yyyy-MM-dd')
           const dayEvents = eventsByDay[dateKey] || []
           const isCurrentMonth = isSameMonth(day, currentMonth)
           const isTodayDate = isToday(day)
+          const isSelected = isSameDay(day, selectedDay)
 
           return (
             <div 
               key={day.toString()} 
-              onClick={() => onAddEvent(day)}
-              className={`min-h-[80px] md:min-h-[120px] p-1 md:p-2 border-r border-b theme-border transition-colors hover:bg-white/[0.02] cursor-pointer group ${!isCurrentMonth ? 'opacity-30' : ''}`}
+              onClick={() => setSelectedDay(day)}
+              className={`min-h-[70px] md:min-h-[100px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs font-black w-6 h-6 flex items-center justify-center rounded-full transition-colors ${
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
                   isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
+                  isSelected ? 'bg-white/20 theme-text' :
                   i % 7 === 0 ? 'text-red-400' :
                   i % 7 === 6 ? 'text-blue-400' :
                   'theme-text opacity-70'
                 }`}>
                   {format(day, 'd')}
                 </span>
-                <Plus className="w-3 h-3 theme-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               
-              <div className="space-y-1">
-                {dayEvents.map(event => (
-                  <button
+              <div className="flex flex-wrap gap-0.5">
+                {dayEvents.slice(0, 3).map(event => (
+                  <div 
                     key={event.id}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEditEvent(event)
-                    }}
-                    className="w-full text-left px-2 py-1 rounded-md text-[10px] font-bold truncate transition-all active:scale-95 shadow-sm border border-black/10"
-                    style={{ 
-                      backgroundColor: `${event.color}20`, 
-                      color: event.color,
-                      borderLeft: `3px solid ${event.color}`
-                    }}
-                  >
-                    {!event.is_all_day && (
-                        <span className="mr-1 opacity-70">{format(parseISO(event.start_at), 'H:mm')}</span>
-                    )}
-                    {event.title}
-                  </button>
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: event.color }}
+                  />
                 ))}
+                {dayEvents.length > 3 && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                )}
               </div>
+
+              {isSelected && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 shadow-[0_0_10px_purple]" />
+              )}
             </div>
           )
         })}
+      </div>
+
+      {/* Selected Day Agenda */}
+      <div className="flex-1 overflow-y-auto no-scrollbar bg-white/[0.01]">
+        <div className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black theme-muted uppercase tracking-widest">
+              {format(selectedDay, 'yyyy年 M月 d日', { locale: ja })}
+            </span>
+            <span className="text-lg font-black theme-text">
+              {format(selectedDay, 'eeee', { locale: ja })}の予定
+            </span>
+          </div>
+          <button 
+            onClick={() => onAddEvent(selectedDay)}
+            className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95 theme-text border theme-border"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {eventsByDay[format(selectedDay, 'yyyy-MM-dd')]?.map(event => (
+            <button
+              key={event.id}
+              onClick={() => onEditEvent(event)}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border theme-border hover:theme-elevated transition-all active:scale-[0.98] group text-left"
+            >
+              <div 
+                className="w-1.5 h-10 rounded-full shrink-0" 
+                style={{ backgroundColor: event.color }}
+              />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold theme-text truncate group-hover:text-purple-400 transition-colors">
+                  {event.title}
+                </h4>
+                <div className="flex items-center gap-3 mt-1 text-xs theme-muted font-bold">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {event.is_all_day ? '終日' : `${format(parseISO(event.start_at), 'H:mm')} - ${format(parseISO(event.end_at), 'H:mm')}`}
+                  </div>
+                  {event.profiles?.display_name && (
+                    <div className="flex items-center gap-1">
+                      <UserIcon className="w-3 h-3" />
+                      {event.profiles.display_name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 theme-muted group-hover:theme-text transition-all" />
+            </button>
+          )) || (
+            <div className="py-12 flex flex-col items-center justify-center theme-muted text-sm italic">
+              <Calendar className="w-12 h-12 mb-3 opacity-20" />
+              予定はありません
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

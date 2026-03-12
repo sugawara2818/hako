@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { CalendarView } from '@/components/calendar/CalendarView'
 import { EventModal } from '@/components/calendar/EventModal'
+import { EventDetailModal } from '@/components/calendar/EventDetailModal'
 import { 
   fetchCalendarEvents, 
   createCalendarEvent, 
@@ -21,7 +22,9 @@ interface CalendarClientProps {
 export function CalendarClient({ hakoId, currentUserId, initialEvents }: CalendarClientProps) {
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [loading, setLoading] = useState(false)
 
@@ -46,9 +49,15 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     setIsModalOpen(true)
   }
 
-  const handleEditEvent = (event: CalendarEvent) => {
+  const handleShowDetail = (event: CalendarEvent) => {
+    setSelectedEvent(event)
+    setIsDetailOpen(true)
+  }
+
+  const handleEditFromDetail = (event: CalendarEvent) => {
     setEditingEvent(event)
     setSelectedDate(undefined)
+    setIsDetailOpen(false)
     setIsModalOpen(true)
   }
 
@@ -69,6 +78,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       await deleteCalendarEvent(id, hakoId)
       await loadEvents()
       setIsModalOpen(false)
+      setIsDetailOpen(false)
     }
   }
 
@@ -78,9 +88,18 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         hakoId={hakoId}
         initialEvents={events}
         onAddEvent={handleAddEvent}
-        onEditEvent={handleEditEvent}
+        onEditEvent={handleShowDetail}
       />
       
+      <EventDetailModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        event={selectedEvent}
+        currentUserId={currentUserId}
+        onEdit={handleEditFromDetail}
+        onDelete={handleDeleteEvent}
+      />
+
       <EventModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
