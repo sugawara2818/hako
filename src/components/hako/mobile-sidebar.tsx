@@ -27,10 +27,12 @@ interface MobileSidebarProps {
   features?: string[]
   isOpen: boolean
   onClose: () => void
+  hasNewTimeline?: boolean
+  hasNewDiary?: boolean
 }
 
 export function MobileSidebar({
-  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose
+  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary
 }: MobileSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -83,7 +85,7 @@ export function MobileSidebar({
             <Link 
               href={`/hako/${hakoId}`} 
               onClick={onClose} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
                 isTimelineActive 
                   ? 'bg-white/10 text-white border-white/5' 
                   : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
@@ -91,13 +93,16 @@ export function MobileSidebar({
             >
               <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
               タイムライン
+              {hasNewTimeline && (
+                <span className="absolute top-3 right-4 w-2 h-2 bg-purple-500 rounded-full border-2 theme-surface animate-pulse" />
+              )}
             </Link>
           )}
           {features.includes('diary') && (
             <Link 
               href={`/hako/${hakoId}/diary`} 
               onClick={onClose} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
                 isDiaryActive 
                   ? 'bg-white/10 text-white border-white/5' 
                   : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
@@ -105,6 +110,9 @@ export function MobileSidebar({
             >
               <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
               日記
+              {hasNewDiary && (
+                <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
+              )}
             </Link>
           )}
         </div>

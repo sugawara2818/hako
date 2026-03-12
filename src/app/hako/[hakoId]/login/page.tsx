@@ -28,11 +28,20 @@ export default function HakoLoginPage({ params }: { params: Promise<{ hakoId: st
       // Apply the same alias transformation used during signup
       const aliasedEmail = email.replace('@', `+${hakoId}@`)
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      let { error: signInError } = await supabase.auth.signInWithPassword({
         email: aliasedEmail,
         password,
       })
       
+      // Fallback: If aliased login fails, try raw email (for owners)
+      if (signInError) {
+        const { error: fallbackError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        signInError = fallbackError
+      }
+
       if (signInError) throw signInError
 
       // Redirect back to the hako space

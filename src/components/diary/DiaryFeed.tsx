@@ -30,6 +30,7 @@ interface DiaryFeedProps {
   currentUserId: string
   entries: DiaryEntry[]
   onDelete?: (id: string) => void | Promise<void>
+  isProfileView?: boolean
 }
 
 // ──────────────────────────────────────────────────
@@ -79,7 +80,7 @@ function ConfirmDialog({
 }
 // ──────────────────────────────────────────────────
 
-export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFeedProps) {
+export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [confirmState, setConfirmState] = useState<{
     id: string
@@ -163,13 +164,14 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete }: DiaryFee
           isAuthor={entry.user_id === currentUserId} 
           hakoId={hakoId}
           onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
+          isProfileView={isProfileView}
         />
       ))}
     </div>
   )
 }
 
-function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void> }) {
+function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void>, isProfileView?: boolean }) {
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
   
@@ -178,7 +180,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete }: { entry: DiaryEntry, i
 
   return (
     <div className="group relative bg-[#111] border border-white/5 rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">
-      <Link href={`/hako/${hakoId}/diary/${entry.id}`} className="block p-6">
+      <Link href={`/hako/${hakoId}/diary/${entry.id}${isProfileView ? `?from=profile&userId=${entry.user_id}` : ''}`} className="block p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="group/avatar shrink-0">

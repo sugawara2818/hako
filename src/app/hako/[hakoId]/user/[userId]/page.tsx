@@ -163,6 +163,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                     hakoId={hakoId}
                     currentUserId={currentUser.id}
                     entries={initialDiaries}
+                    isProfileView={true}
                     onDelete={isOwnProfile ? async (id) => {
                       'use server'
                       const { deleteDiaryEntry } = await import('@/core/diary/actions')

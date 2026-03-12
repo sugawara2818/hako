@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import Image from 'next/image'
 import { deleteDiaryEntry } from '@/core/diary/actions'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface DiaryDetailProps {
   hakoId: string
@@ -64,6 +64,10 @@ function ConfirmDialog({
 
 export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get('from')
+  const referralUserId = searchParams.get('userId')
+  
   const isAuthor = entry.user_id === currentUserId
   
   const formatDateSafe = (dateStr: string, formatStr: string) => {
@@ -109,8 +113,11 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
         />
       )}
       <div className="flex items-center justify-between mb-10">
-        <Link href={`/hako/${hakoId}/diary`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors font-bold">
-          <ChevronLeft className="w-4 h-4" /> 日記一覧
+        <Link 
+          href={from === 'profile' && referralUserId ? `/hako/${hakoId}/user/${referralUserId}?tab=diary` : `/hako/${hakoId}/diary`} 
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors font-bold"
+        >
+          <ChevronLeft className="w-4 h-4" /> {from === 'profile' ? 'プロフィールへ戻る' : '日記一覧'}
         </Link>
         
         {isAuthor && (

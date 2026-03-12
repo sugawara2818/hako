@@ -9,6 +9,7 @@ import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
 import Image from 'next/image'
+import { getLatestTimestamps } from '@/core/hako/actions'
 
 interface HakoViewerLayoutProps {
   hakoId: string
@@ -39,6 +40,9 @@ export function HakoViewerLayout({
   // dragOffset: 0 = closed, 1 = fully open
   const [dragProgress, setDragProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  
+  const [hasNewTimeline, setHasNewTimeline] = useState(false)
+  const [hasNewDiary, setHasNewDiary] = useState(false)
 
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
@@ -123,6 +127,41 @@ export function HakoViewerLayout({
     }
   }, [handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel])
 
+  useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        const { latestPost, latestDiary } = await getLatestTimestamps(hakoId)
+        const lastTimeline = localStorage.getItem(`hako_${hakoId}_last_timeline`)
+        const lastDiary = localStorage.getItem(`hako_${hakoId}_last_diary`)
+        
+        if (latestPost && (!lastTimeline || new Date(latestPost) > new Date(lastTimeline))) {
+            if (!isTimelineActive) setHasNewTimeline(true)
+        }
+        if (latestDiary && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
+            if (!isDiaryActive) setHasNewDiary(true)
+        }
+      } catch (e) {
+        console.error("Failed to check notifications:", e)
+      }
+    }
+    checkNotifications()
+    
+    // Check every 5 minutes
+    const interval = setInterval(checkNotifications, 1000 * 60 * 5)
+    return () => clearInterval(interval)
+  }, [hakoId, isTimelineActive, isDiaryActive])
+
+  useEffect(() => {
+    if (isTimelineActive) {
+        localStorage.setItem(`hako_${hakoId}_last_timeline`, new Date().toISOString())
+        setHasNewTimeline(false)
+    }
+    if (isDiaryActive) {
+        localStorage.setItem(`hako_${hakoId}_last_diary`, new Date().toISOString())
+        setHasNewDiary(false)
+    }
+  }, [isTimelineActive, isDiaryActive, hakoId])
+
   const handleClose = useCallback(() => {
     setIsOpen(false)
     setDragProgress(0)
@@ -171,25 +210,31 @@ export function HakoViewerLayout({
             {features.includes('timeline') && (
               <Link
                 href={`/hako/${hakoId}`}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${isTimelineActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${isTimelineActive
                     ? 'theme-surface theme-text border theme-border shadow-sm'
                     : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                   }`}
               >
                 <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
                 タイムライン
+                {hasNewTimeline && (
+                  <span className="absolute top-3 right-4 w-2 h-2 bg-purple-500 rounded-full border-2 theme-surface animate-pulse" />
+                )}
               </Link>
             )}
             {features.includes('diary') && (
               <Link
                 href={`/hako/${hakoId}/diary`}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${isDiaryActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${isDiaryActive
                     ? 'theme-surface theme-text border theme-border shadow-sm'
                     : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                   }`}
               >
                 <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
                 日記
+                {hasNewDiary && (
+                  <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
+                )}
               </Link>
             )}
           </div>
@@ -258,6 +303,8 @@ export function HakoViewerLayout({
             features={features}
             isOpen={isOpen}
             onClose={handleClose}
+            hasNewTimeline={hasNewTimeline}
+            hasNewDiary={hasNewDiary}
           />
         </div>
       </div>

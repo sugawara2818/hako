@@ -70,20 +70,20 @@ export default function CreateHakoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen theme-bg theme-text p-6 font-sans transition-colors duration-300">
       {/* Top Nav */}
       <header className="flex items-center justify-between max-w-5xl mx-auto py-4 md:py-6 mb-8 md:mb-12">
         <div className="flex items-center gap-4 md:gap-8">
-            <Link href="/owner/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
+            <Link href="/owner/dashboard" className="flex items-center gap-2 theme-muted hover:theme-text transition-colors group">
               <Blocks className="w-6 h-6 text-purple-500 transition-transform group-hover:scale-110" />
               <span className="text-lg md:text-xl font-bold">hako</span>
             </Link>
-            <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
-            <Link href="/owner/dashboard" className="hidden sm:flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors">
+            <div className="h-6 w-[1px] theme-border hidden sm:block" />
+            <Link href="/owner/dashboard" className="hidden sm:flex items-center gap-2 text-sm theme-muted hover:theme-text transition-colors">
                  ダッシュボードへ戻る
             </Link>
         </div>
-        <div className="text-[10px] md:text-sm text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">Step 1 of 2: Create Space</div>
+        <div className="text-[10px] md:text-sm theme-muted theme-elevated px-3 py-1 rounded-full border theme-border">Step 1 of 2: Create Space</div>
       </header>
 
       <main className="max-w-3xl mx-auto animate-fade-in relative z-10">
@@ -98,7 +98,7 @@ export default function CreateHakoPage() {
         <form onSubmit={handleCreateHako} className="space-y-12">
           
           {/* Hako Name */}
-          <div className="glass-card p-8 rounded-3xl border border-white/5 space-y-4">
+          <div className="glass-card p-8 rounded-3xl theme-border space-y-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <span className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">1</span>
               箱の名前
@@ -108,12 +108,12 @@ export default function CreateHakoPage() {
               value={hakoName}
               onChange={e => setHakoName(e.target.value)}
               placeholder="例: My Secret Community"
-              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all font-medium"
+              className="w-full theme-elevated border theme-border rounded-xl px-4 py-4 text-xl theme-text placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all font-medium"
               required
             />
           </div>
 
-          <div className="glass-card p-8 rounded-3xl border border-white/5 space-y-4">
+          <div className="glass-card p-8 rounded-3xl theme-border space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">2</span>
@@ -138,12 +138,12 @@ export default function CreateHakoPage() {
               onChange={e => setHakoDescription(e.target.value)}
               placeholder="箱の目的や、どんなユーザーに参加してほしいかを書きましょう"
               rows={4}
-              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-lg text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
+              className="w-full theme-elevated border theme-border rounded-xl px-4 py-4 text-lg theme-text placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
             />
           </div>
 
           {/* Feature Selection */}
-          <div className="glass-card p-8 rounded-3xl border border-white/5 space-y-6">
+          <div className="glass-card p-8 rounded-3xl theme-border space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm">3</span>
@@ -163,7 +163,7 @@ export default function CreateHakoPage() {
                     className={`p-6 rounded-2xl text-left border overflow-hidden relative transition-all duration-300 ${
                       isSelected 
                         ? 'bg-purple-500/10 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.15)] shadow-purple-500/20 scale-[1.02]' 
-                        : 'bg-white/5 border-white/5 hover:bg-white/10'
+                        : 'theme-elevated theme-border hover:theme-muted/5'
                     }`}
                   >
                     {isSelected && (

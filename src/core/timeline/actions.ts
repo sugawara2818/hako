@@ -281,3 +281,21 @@ export async function ensureProfile(userId: string, email?: string) {
       })
   }
 }
+
+// Update a comment
+export async function updateTimelineComment(commentId: string, hakoId: string, content: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { error } = await supabase
+    .from('hako_timeline_comments')
+    .update({ content })
+    .eq('id', commentId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+
+  revalidatePath(`/hako/${hakoId}`)
+  return true
+}

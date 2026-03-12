@@ -3,6 +3,21 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { generateHakoDescription as aiGenerateDescription } from '@/core/ai/gemini'
+
+// 箱内の最新更新日時を取得
+export async function getLatestTimestamps(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  const [postRes, diaryRes] = await Promise.all([
+    supabase.from('hako_timeline_posts').select('created_at').eq('hako_id', hakoId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('hako_diaries').select('created_at').eq('hako_id', hakoId).eq('is_public', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+  ])
+  
+  return {
+    latestPost: postRes.data?.created_at || null,
+    latestDiary: diaryRes.data?.created_at || null
+  }
+}
 // オーナーが箱作成
 export async function createHakoForOwner(userId: string, name: string, description: string = '', features: string[] = ['timeline']) {
   const supabase = await createServerSupabaseClient()

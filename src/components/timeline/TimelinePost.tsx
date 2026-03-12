@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User } from 'lucide-react'
-import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment } from '@/core/timeline/actions'
+import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
+import { Edit2 } from 'lucide-react'
 import { ImageLightbox } from './ImageLightbox'
 import Image from 'next/image'
 
@@ -122,6 +123,9 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null)
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editCommentText, setEditCommentText] = useState('')
+  const [isUpdatingComment, setIsUpdatingComment] = useState(false)
 
   // Custom confirm dialog state
   const [confirmState, setConfirmState] = useState<{
@@ -183,6 +187,21 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
         console.error("Comment delete failed", e)
       }
     })
+  }
+
+  const handleUpdateComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCommentId || !editCommentText.trim() || isUpdatingComment) return
+    setIsUpdatingComment(true)
+    try {
+      await updateTimelineComment(editingCommentId, post.hako_id, editCommentText)
+      setEditingCommentId(null)
+      setEditCommentText('')
+    } catch (e) {
+      console.error("Comment update failed", e)
+    } finally {
+      setIsUpdatingComment(false)
+    }
   }
 
   if (isDeleting) {
@@ -353,29 +372,72 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                   )}
                   {post.comments?.map(comment => (
                     <div key={comment.id} className="relative flex gap-3 group/comment">
-                  {comment.profiles?.avatar_url ? (
-                    <Image src={comment.profiles.avatar_url} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
-                       {comment.profiles?.display_name?.charAt(0) || '?'}
-                    </div>
-                  )}
+                      <Link href={`/hako/${post.hako_id}/user/${comment.user_id}`} className="shrink-0 hover:opacity-80 transition-opacity">
+                        {comment.profiles?.avatar_url ? (
+                          <Image src={comment.profiles.avatar_url} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold border border-white/5 text-xs">
+                             {comment.profiles?.display_name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                      </Link>
                       <div className="flex-1 min-w-0 bg-white/5 rounded-2xl rounded-tl-none p-3 pb-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                             <span className="font-bold text-white text-xs">{comment.profiles?.display_name}</span>
+                             <Link href={`/hako/${post.hako_id}/user/${comment.user_id}`} className="font-bold text-white text-xs hover:underline truncate max-w-[100px] sm:max-w-none">
+                                {comment.profiles?.display_name}
+                             </Link>
                              <span className="text-gray-500 text-[10px]">{formatRelativeTime(comment.created_at)}</span>
                           </div>
-                          {currentUserId === comment.user_id && (
-                            <button 
-                              onClick={() => handleDeleteComment(comment.id)}
-                              className="text-gray-500 hover:text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                          {currentUserId === comment.user_id && !editingCommentId && (
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => {
+                                  setEditingCommentId(comment.id)
+                                  setEditCommentText(comment.content)
+                                }}
+                                className="text-gray-500 hover:text-blue-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="text-gray-500 hover:text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           )}
                         </div>
-                        <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                        {editingCommentId === comment.id ? (
+                          <form onSubmit={handleUpdateComment} className="mt-2">
+                            <textarea
+                              value={editCommentText}
+                              onChange={e => setEditCommentText(e.target.value)}
+                              className="w-full bg-black/50 border border-purple-500/50 rounded-xl p-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-purple-500 mb-2 resize-none"
+                              rows={2}
+                              autoFocus
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button 
+                                type="button" 
+                                onClick={() => setEditingCommentId(null)}
+                                className="px-3 py-1 text-[10px] font-bold text-gray-400 hover:text-white transition-colors"
+                              >
+                                キャンセル
+                              </button>
+                              <button 
+                                type="submit"
+                                disabled={!editCommentText.trim() || isUpdatingComment}
+                                className="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-[10px] font-bold disabled:opacity-50 transition-colors"
+                              >
+                                {isUpdatingComment ? '保存中...' : '保存'}
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                        )}
                       </div>
                     </div>
                   ))}
