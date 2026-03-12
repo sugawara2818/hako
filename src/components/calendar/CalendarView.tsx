@@ -39,6 +39,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   const [isDayViewOpen, setIsDayViewOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'year'>('month')
   const [nowPosition, setNowPosition] = useState(0)
+  
+  // Swipe Gesture State
+  const [touchStart, setTouchStart] = useState<{ x: number, y: number } | null>(null)
+  const minSwipeDistance = 50
 
   // Current time indicator logic
   useEffect(() => {
@@ -60,6 +64,39 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    })
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return
+    
+    const touchEnd = {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY
+    }
+    
+    const distanceX = touchStart.x - touchEnd.x
+    const distanceY = touchStart.y - touchEnd.y
+    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY)
+    
+    if (isHorizontalSwipe && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+          // Swipe Left -> Next
+          if (viewMode === 'month') nextMonth()
+          else if (viewMode === 'week') setCurrentMonth(addWeeks(currentMonth, 1))
+      } else {
+          // Swipe Right -> Prev
+          if (viewMode === 'month') prevMonth()
+          else if (viewMode === 'week') setCurrentMonth(subMonths(currentMonth, 1))
+      }
+    }
+    setTouchStart(null)
+  }
 
   const eventsByDay = useMemo(() => {
     // Determine the total range for current view mode
@@ -141,7 +178,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   }
 
   return (
-    <div id="calendar-view-container" className="flex flex-col h-full theme-bg select-none overflow-hidden relative">
+    <div 
+        id="calendar-view-container" 
+        className="flex flex-col h-full theme-bg select-none overflow-hidden relative"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
         <div className="flex items-center gap-2 md:gap-4">
