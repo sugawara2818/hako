@@ -268,17 +268,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         </div>
       </div>
 
-      {/* Grid Content */}
       <div 
         key={animationKey}
-        className={`flex-1 overflow-y-auto no-scrollbar ${
+        className={`flex-1 min-h-0 overflow-hidden ${
           slideDirection === 'right' ? 'animate-slide-in-right' : 
           slideDirection === 'left' ? 'animate-slide-in-left' : ''
         }`}
         onAnimationEnd={() => setSlideDirection('none')}
       >
         {viewMode === 'month' && (
-          <>
+          <div className="flex flex-col h-full">
             <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
               {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
                 <div key={day} className={`py-2 md:py-3 text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
@@ -286,7 +285,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 border-b theme-border min-h-full">
+            <div className={`flex-1 grid grid-cols-7 border-b theme-border min-h-0 ${days.length > 35 ? 'grid-rows-6' : 'grid-rows-5'}`}>
               {days.map((day, i) => {
                 const dateKey = format(day, 'yyyy-MM-dd')
                 const dayEvents = eventsByDay[dateKey] || []
@@ -298,9 +297,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-[90px] md:min-h-[120px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
+                    className={`min-h-0 p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
                   >
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-0.5 md:mb-1">
                       <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
                         isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
                         isSelected ? 'theme-text ring-1 ring-purple-500/50' :
@@ -332,7 +331,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                 )
               })}
             </div>
-          </>
+          </div>
         )}
 
         {viewMode === 'week' && (
