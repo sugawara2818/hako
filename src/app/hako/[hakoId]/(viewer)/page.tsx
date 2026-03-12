@@ -88,40 +88,23 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
     console.error('Failed to fetch initial posts:', err)
   }
 
-  // 6. Import components
+  // 6. Import component
   const { TimelineFeed } = await import('@/components/timeline/TimelineFeed')
-  const { HakoViewerLayout } = await import('@/components/hako/hako-viewer-layout')
 
   return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={count || 1}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={features}
-      userId={user.id}
-    >
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
-
-        {/* Timeline Header */}
-        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b theme-border theme-bg">
-          <h1 className="text-xl md:text-2xl font-black heading-gradient">
-            タイムライン
-          </h1>
-        </div>
-
-        <TimelineFeed
-          hakoId={hakoId}
-          currentUserId={user.id}
-          initialPosts={initialPosts}
-        />
+    <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
+      {/* Timeline Header */}
+      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-fade-in border-x border-b theme-border theme-bg">
+        <h1 className="text-xl md:text-2xl font-black heading-gradient">
+          タイムライン
+        </h1>
       </div>
-    </HakoViewerLayout>
+
+      <TimelineFeed
+        hakoId={hakoId}
+        currentUserId={user.id}
+        initialPosts={initialPosts}
+      />
+    </div>
   )
 }

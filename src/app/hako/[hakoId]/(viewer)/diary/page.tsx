@@ -28,32 +28,18 @@ export default async function DiaryPage({ params }: { params: Promise<{ hakoId: 
   const initialEntries = await fetchDiaryEntries(hakoId)
 
   return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={count || 1}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={hako.features || ['timeline']}
-      userId={user.id}
-    >
-      <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
-        <div className="max-w-2xl mx-auto mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-black mb-3 heading-gradient">
-            日記
-          </h1>
-        </div>
-
-        <DiaryPortal
-          hakoId={hakoId}
-          currentUserId={user.id}
-          initialEntries={initialEntries}
-        />
+    <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
+      <div className="max-w-2xl mx-auto mb-12 animate-fade-in">
+        <h1 className="text-4xl md:text-5xl font-black mb-3 heading-gradient">
+          日記
+        </h1>
       </div>
-    </HakoViewerLayout>
+
+      <DiaryPortal
+        hakoId={hakoId}
+        currentUserId={user.id}
+        initialEntries={initialEntries}
+      />
+    </div>
   )
 }

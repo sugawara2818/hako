@@ -33,36 +33,22 @@ export default async function CalendarPage({ params }: { params: Promise<{ hakoI
   const initialEvents = await fetchCalendarEvents(hakoId, start, end)
 
   return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={count || 1}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={hako.features || ['timeline']}
-      userId={user.id}
-    >
-      <div className="flex-1 flex flex-col min-h-0 bg-black overflow-hidden">
-        {/* Page Header (Desktop) */}
-        <div className="hidden md:block px-8 py-6 border-b theme-border bg-white/[0.02]">
-           <h1 className="text-3xl font-black heading-gradient">
-             共有カレンダー
-           </h1>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden">
-          <CalendarClient
-            hakoId={hakoId}
-            currentUserId={user.id}
-            initialEvents={initialEvents}
-          />
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-black overflow-hidden">
+      {/* Page Header (Desktop) */}
+      <div className="hidden md:block px-8 py-6 border-b theme-border bg-white/[0.02]">
+         <h1 className="text-3xl font-black heading-gradient">
+           共有カレンダー
+         </h1>
       </div>
-    </HakoViewerLayout>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden">
+        <CalendarClient
+          hakoId={hakoId}
+          currentUserId={user.id}
+          initialEvents={initialEvents}
+        />
+      </div>
+    </div>
   )
 }
