@@ -83,7 +83,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       
       {/* Modal Card */}
-      <div className="relative w-full max-w-lg bg-[#111] border-t sm:border theme-border rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg bg-[#111] border-t sm:border theme-border rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 mx-auto">
         <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between px-5 py-3 md:px-6 md:py-4 border-b theme-border">
             <h3 className="text-base md:text-lg font-black theme-text">
@@ -94,7 +94,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             </button>
           </div>
 
-          <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+          <div className="p-4 sm:p-6 space-y-6 max-h-[70vh] overflow-y-auto overflow-x-hidden no-scrollbar">
             {/* Title */}
             <div className="space-y-2">
               <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
@@ -113,7 +113,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
 
             {/* Time */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> 開始
                 </label>
@@ -121,11 +121,11 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0"
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> 終了
                 </label>
@@ -133,7 +133,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0"
                   required
                 />
               </div>
@@ -159,13 +159,13 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
               <label className="text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                 <Palette className="w-3.5 h-3.5" /> カラー
               </label>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 md:gap-3">
                 {COLORS.map(c => (
                   <button
                     key={c.value}
                     type="button"
                     onClick={() => setColor(c.value)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full border-2 transition-all ${color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
                     style={{ backgroundColor: c.value }}
                   />
                 ))}
