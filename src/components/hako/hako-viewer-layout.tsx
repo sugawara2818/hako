@@ -3,7 +3,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -240,6 +240,18 @@ export function HakoViewerLayout({
                 {hasNewDiary && (
                   <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
                 )}
+              </Link>
+            )}
+            {features.includes('calendar') && (
+              <Link
+                href={`/hako/${hakoId}/calendar`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/calendar`)
+                    ? 'theme-surface theme-text border theme-border shadow-sm'
+                    : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                  }`}
+              >
+                <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
+                カレンダー
               </Link>
             )}
           </div>

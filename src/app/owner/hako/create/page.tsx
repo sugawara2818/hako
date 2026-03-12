@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createHakoForOwner, generateAIHakoDescription } from '@/core/hako/actions'
 import { supabase } from '@/lib/supabase/client'
-import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles } from 'lucide-react'
+import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 const FEATURE_PIECES = [
   { id: 'timeline', label: 'タイムライン', desc: 'Xのようなリアルタイムな投稿機能', icon: Users },
   { id: 'diary', label: '日記', desc: '日々の想いを綴るクローズドな日記帳', icon: BookOpen },
+  { id: 'calendar', label: '共有カレンダー', desc: '共有のカレンダーで予定を管理・表示', icon: Calendar },
 ]
 
 export default function CreateHakoPage() {

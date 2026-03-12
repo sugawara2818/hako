@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
@@ -113,6 +113,20 @@ export function MobileSidebar({
               {hasNewDiary && (
                 <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
               )}
+            </Link>
+          )}
+          {features.includes('calendar') && (
+            <Link 
+              href={`/hako/${hakoId}/calendar`} 
+              onClick={onClose} 
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                pathname.includes(`/hako/${hakoId}/calendar`)
+                  ? 'bg-white/10 text-white border-white/5' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+              }`}
+            >
+              <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
+              カレンダー
             </Link>
           )}
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, Hash } from 'lucide-react'
+import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, Hash, Calendar } from 'lucide-react'
 import { updateHako, deleteHako } from '@/core/hako/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { useRouter } from 'next/navigation'
@@ -18,6 +18,7 @@ interface HakoSettingsFormProps {
 const FEATURE_PIECES = [
   { id: 'timeline', label: 'タイムライン', desc: 'Xのようなリアルタイムな投稿機能', icon: Hash }, 
   { id: 'diary', label: '日記', desc: '日々の想いを綴るクローズドな日記帳', icon: BookOpen },
+  { id: 'calendar', label: '共有カレンダー', desc: '共有のカレンダーで予定を管理・表示', icon: Calendar },
 ]
 
 const PRESET_GRADIENTS = [
