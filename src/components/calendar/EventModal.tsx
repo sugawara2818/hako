@@ -55,6 +55,18 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
     }
   }, [editingEvent, initialDate, isOpen])
 
+  // Scroll lock effect
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,7 +133,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none"
                   required
                 />
               </div>
@@ -133,7 +145,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
-                  className="w-full bg-white/5 border theme-border rounded-xl px-4 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0"
+                  className="w-full bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none"
                   required
                 />
               </div>
