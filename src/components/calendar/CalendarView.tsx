@@ -180,27 +180,29 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         })}
       </div>
 
-      {/* Resizer Handle (Hit Area) */}
+      {/* Resizer Handle (Desktop only) */}
       <div 
-        className="h-4 w-full cursor-ns-resize flex items-center justify-center group z-20 -mb-2 mt-[-8px]"
+        className="hidden md:flex h-1.5 w-full bg-white/5 hover:bg-purple-500/50 cursor-ns-resize transition-colors items-center justify-center group"
         onMouseDown={(e) => {
           e.preventDefault()
           setIsResizing(true)
         }}
-        onTouchStart={(e) => {
-          setIsResizing(true)
-        }}
       >
-        <div className="w-12 h-1.5 bg-gray-400/20 group-hover:bg-purple-500/50 rounded-full transition-colors" />
+        <div className="w-12 h-1 bg-white/10 group-hover:bg-white/30 rounded-full" />
       </div>
 
       {/* Selected Day Agenda */}
       <div 
-        className="flex flex-col overflow-hidden theme-surface"
+        className={`flex flex-col overflow-hidden theme-surface relative ${isResizing ? 'touch-none' : ''}`}
         style={{ height: `${agendaHeight}px`, minHeight: '150px' }}
       >
+        {/* Mobile Pull Handle Decorator */}
+        <div className="md:hidden w-full flex justify-center pt-2 pb-1 shrink-0">
+          <div className="w-10 h-1 bg-gray-400/20 rounded-full" />
+        </div>
+
         <div 
-          className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0 cursor-ns-resize"
+          className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0 cursor-ns-resize touch-none"
           onMouseDown={(e) => {
             if ((e.target as HTMLElement).closest('button')) return
             e.preventDefault()
@@ -208,6 +210,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
           }}
           onTouchStart={(e) => {
             if ((e.target as HTMLElement).closest('button')) return
+            // No preventDefault here to allow potential swipe-down to close if we add it, 
+            // but we need to stop propagation if it's a drag handle
             setIsResizing(true)
           }}
         >
