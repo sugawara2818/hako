@@ -170,25 +170,46 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto relative bg-white/[0.01]">
+          {/* All Day Events (Fixed below header) */}
+          {(() => {
+            const allDayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || []).filter(e => e.is_all_day)
+            if (allDayEvents.length === 0) return null
+            return (
+              <div className="z-20 theme-surface border-b theme-border px-6 py-3 flex flex-wrap gap-2 shrink-0">
+                <div className="text-[9px] font-black theme-muted uppercase tracking-[0.2em] w-full mb-1 opacity-50">終日の予定</div>
+                {allDayEvents.map(event => (
+                  <button
+                    key={event.id}
+                    onClick={() => onEditEvent(event)}
+                    className="px-3 py-1.5 rounded-lg theme-elevated border theme-border flex items-center gap-2 max-w-full hover:theme-elevated/80 transition-all shadow-sm"
+                    style={{ borderLeft: `3px solid ${event.color}` }}
+                  >
+                    <span className="text-xs font-bold theme-text truncate">{event.title}</span>
+                  </button>
+                ))}
+              </div>
+            )
+          })()}
+
+          <div className="flex-1 overflow-y-auto relative no-scrollbar">
             <div className="flex min-h-full">
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-4">
                 {Array.from({ length: 24 }).map((_, hour) => (
-                  <div key={hour} className="h-20 text-[10px] theme-muted font-black text-center -mt-2">
-                    {hour}:00
+                  <div key={hour} className="h-20 text-[10px] theme-muted font-bold text-center pr-2">
+                    {hour === 0 ? '' : `${hour}:00`}
                   </div>
                 ))}
               </div>
 
               {/* Timeline Content */}
-              <div className="flex-1 relative pt-4">
-                {/* Hour Lines */}
+              <div className="flex-1 relative">
+                {/* Hour Lines - Subtler styling */}
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
                     key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border/30 h-20" 
-                    style={{ top: `${hour * 80 + 16}px` }} 
+                    className="absolute left-0 right-0 border-t theme-border/20 h-20" 
+                    style={{ top: `${hour * 80}px` }} 
                   />
                 ))}
 
@@ -199,32 +220,31 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                       .filter(e => !e.is_all_day)
                       .sort((a, b) => a.start_at.localeCompare(b.start_at))
 
-                    // Simple overlap detection (could be improved)
-                    return dayEvents.map((event, idx) => {
+                    return dayEvents.map((event) => {
                       const startDate = parseISO(event.start_at)
                       const endDate = parseISO(event.end_at)
                       const startMinutes = startDate.getHours() * 60 + startDate.getMinutes()
                       const durationMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60)
                       
-                      const top = (startMinutes / 60) * 80 + 16
-                      const height = Math.max((durationMinutes / 60) * 80, 24) // 24px min height
+                      const top = (startMinutes / 60) * 80
+                      const height = Math.max((durationMinutes / 60) * 80 - 2, 24)
 
                       return (
                         <button
                           key={event.id}
                           onClick={() => onEditEvent(event)}
-                          className="absolute left-2 right-4 p-2 rounded-lg border theme-border theme-elevated shadow-lg shadow-black/5 hover:border-purple-500/30 transition-all active:scale-[0.98] group text-left overflow-hidden"
+                          className="absolute left-1 right-2 p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
                           style={{ 
-                            top: `${top}px`, 
+                            top: `${top + 2}px`, 
                             height: `${height}px`,
-                            borderLeft: `4px solid ${event.color}`
+                            borderLeft: `3px solid ${event.color}`,
+                            backgroundColor: `${event.color}15`
                           }}
                         >
-                          <h4 className="text-xs font-black theme-text leading-tight truncate">
+                          <h4 className="text-[11px] font-bold theme-text leading-tight truncate">
                             {event.title}
                           </h4>
-                          <div className="flex items-center gap-1 mt-0.5 text-[9px] theme-muted font-bold">
-                            <Clock className="w-2.5 h-2.5 text-purple-500" />
+                          <div className="flex items-center gap-1 mt-0.5 text-[9px] theme-muted font-medium">
                             {format(startDate, 'H:mm')} - {format(endDate, 'H:mm')}
                           </div>
                         </button>
@@ -234,27 +254,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                 </div>
               </div>
             </div>
-
-            {/* All Day Events (Fixed Overlay at bottom or top?) Let's put All-day at the top of scroll view but sticky */}
-            {(() => {
-              const allDayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || []).filter(e => e.is_all_day)
-              if (allDayEvents.length === 0) return null
-              return (
-                <div className="sticky top-0 z-20 theme-surface border-b theme-border px-6 py-2 flex flex-wrap gap-2">
-                  <div className="text-[10px] font-black theme-muted uppercase tracking-widest w-full mb-1">終日の予定</div>
-                  {allDayEvents.map(event => (
-                    <button
-                      key={event.id}
-                      onClick={() => onEditEvent(event)}
-                      className="px-3 py-1.5 rounded-full theme-elevated border theme-border flex items-center gap-2 max-w-full"
-                      style={{ borderLeft: `4px solid ${event.color}` }}
-                    >
-                      <span className="text-xs font-bold theme-text truncate">{event.title}</span>
-                    </button>
-                  ))}
-                </div>
-              )
-            })()}
           </div>
         </div>
       )}
