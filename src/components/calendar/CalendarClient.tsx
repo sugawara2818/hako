@@ -63,14 +63,20 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleSaveEvent = async (eventData: any) => {
     try {
+      let result;
       if (editingEvent) {
-        await updateCalendarEvent(editingEvent.id, hakoId, eventData)
+        result = await updateCalendarEvent(editingEvent.id, hakoId, eventData)
       } else {
-        await createCalendarEvent({
+        result = await createCalendarEvent({
           ...eventData,
           hako_id: hakoId
         })
       }
+      
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+
       await loadEvents()
     } catch (error) {
       console.error('Save event failed details:', error)
@@ -80,10 +86,14 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleDeleteEvent = async (id: string) => {
     if (confirm('この予定を削除しますか？')) {
-      await deleteCalendarEvent(id, hakoId)
-      await loadEvents()
-      setIsModalOpen(false)
-      setIsDetailOpen(false)
+      const result = await deleteCalendarEvent(id, hakoId)
+      if (result.success) {
+        await loadEvents()
+        setIsModalOpen(false)
+        setIsDetailOpen(false)
+      } else {
+        alert(`削除に失敗しました: ${result.error}`)
+      }
     }
   }
 
