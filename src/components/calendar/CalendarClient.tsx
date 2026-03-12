@@ -142,13 +142,13 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       {confirmDelete && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm bg-[#111] border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-sm theme-surface border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-xl font-black theme-text mb-2">予定を削除しますか？</h3>
             <p className="theme-muted text-sm font-medium mb-6">この操作は取り消せません。</p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-3 bg-white/5 hover:bg-white/10 theme-text rounded-2xl font-bold transition-all"
+                className="flex-1 py-3 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 theme-text rounded-2xl font-bold transition-all"
               >
                 キャンセル
               </button>

@@ -40,7 +40,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
       
       {/* Modal Card */}
-      <div className="relative w-full max-w-lg bg-[#0a0a0a] border-t sm:border theme-border rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 mx-auto">
+      <div className="relative w-full max-w-lg theme-surface border-t sm:border theme-border rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 mx-auto">
         {/* Color Strip */}
         <div className="h-2 w-full" style={{ backgroundColor: event.color }} />
 
