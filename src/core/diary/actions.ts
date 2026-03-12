@@ -205,9 +205,11 @@ export async function fetchUserDiaryDates(hakoId: string) {
 export async function generateAITitle(content: string) {
   try {
     const title = await aiGenerateTitle(content)
+    if (!title) throw new Error('タイトルを生成できませんでした。')
     return title.trim()
-  } catch (error) {
+  } catch (error: any) {
     console.error('AI Title Generation Error:', error)
-    throw new Error('タイトルの生成に失敗しました。APIキーが設定されているか確認してください。')
+    // Avoid returning the full stack in production but keep the message
+    throw new Error(error.message || 'タイトルの生成に失敗しました。')
   }
 }

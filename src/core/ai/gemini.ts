@@ -1,25 +1,23 @@
-'use server'
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-function getGenAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new GoogleGenerativeAI(apiKey);
-}
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 export async function generateText(prompt: string) {
-  const genAI = getGenAI();
   if (!genAI) {
-    throw new Error('GEMINI_API_KEY is not set in environment variables.');
+    console.error('GEMINI_API_KEY is missing');
+    throw new Error('AI機能の設定（APIキー）が不足しています。');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  return response.text();
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Gemini API call failed:', error);
+    throw new Error('AIとの通信に失敗しました。時間をおいて再度お試しください。');
+  }
 }
 
 export async function generateDiaryTitle(content: string) {
