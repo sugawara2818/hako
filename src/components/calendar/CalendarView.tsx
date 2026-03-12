@@ -190,16 +190,18 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             return (
               <div className="z-20 theme-surface border-b theme-border px-6 py-3 flex flex-wrap gap-2 shrink-0">
                 <div className="text-[9px] font-black theme-muted uppercase tracking-[0.2em] w-full mb-1 opacity-50">終日の予定</div>
-                {allDayEvents.map(event => (
-                  <button
-                    key={event.id}
-                    onClick={() => onEditEvent(event)}
-                    className="px-3 py-1.5 rounded-lg theme-elevated border theme-border flex items-center gap-2 max-w-full hover:theme-elevated/80 transition-all shadow-sm"
-                    style={{ borderLeft: `3px solid ${event.color}` }}
-                  >
-                    <span className="text-xs font-bold theme-text truncate">{event.title}</span>
-                  </button>
-                ))}
+                <div className="flex flex-col gap-1 w-full">
+                  {allDayEvents.map(event => (
+                    <button
+                      key={event.id}
+                      onClick={() => onEditEvent(event)}
+                      className="w-full px-3 py-1.5 rounded-lg theme-elevated border theme-border flex items-center gap-2 hover:theme-elevated/80 transition-all shadow-sm"
+                      style={{ borderLeft: `3px solid ${event.color}`, backgroundColor: `${event.color}15` }}
+                    >
+                      <span className="text-xs font-bold theme-text truncate">{event.title}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )
           })()}
@@ -244,33 +246,61 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                       .filter(e => !e.is_all_day)
                       .sort((a, b) => a.start_at.localeCompare(b.start_at))
 
-                    return dayEvents.map((event) => {
+                    // Overlap Handling Logic
+                    const eventPositions: Array<{
+                      event: CalendarEvent;
+                      top: number;
+                      height: number;
+                      left: number;
+                      width: number;
+                    }> = [];
+
+                    const columns: Array<Array<{ start: number; end: number }>> = [];
+
+                    dayEvents.forEach(event => {
                       const startDate = parseISO(event.start_at)
                       const endDate = parseISO(event.end_at)
-                      const startMinutes = startDate.getHours() * 60 + startDate.getMinutes()
-                      const durationMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60)
-                      
-                      const top = (startMinutes / 60) * 50
-                      const height = Math.max((durationMinutes / 60) * 50 - 2, 20)
+                      const start = startDate.getHours() * 60 + startDate.getMinutes()
+                      const end = endDate.getHours() * 60 + endDate.getMinutes()
+                      const top = (start / 60) * 50
+                      const height = Math.max(((end - start) / 60) * 50 - 2, 20)
+
+                      let colIndex = columns.findIndex(col => 
+                        !col.some(e => (start < e.end && end > e.start))
+                      );
+
+                      if (colIndex === -1) {
+                        colIndex = columns.length;
+                        columns.push([{ start, end }]);
+                      } else {
+                        columns[colIndex].push({ start, end });
+                      }
+
+                      eventPositions.push({ event, top, height, left: colIndex, width: 0 });
+                    });
+
+                    return eventPositions.map((pos) => {
+                      const totalCols = columns.length;
+                      const width = 100 / totalCols;
+                      const left = pos.left * width;
 
                       return (
                         <button
-                          key={event.id}
-                          onClick={() => onEditEvent(event)}
-                          className="absolute left-1 right-2 p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
+                          key={pos.event.id}
+                          onClick={() => onEditEvent(pos.event)}
+                          className="absolute p-1.5 rounded-md border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
                           style={{ 
-                            top: `${top + 2}px`, 
-                            height: `${height}px`,
-                            borderLeft: `3px solid ${event.color}`,
-                            backgroundColor: `${event.color}15`
+                            top: `${pos.top + 2}px`, 
+                            height: `${pos.height}px`,
+                            left: `${left}%`,
+                            width: `${width}%`,
+                            borderLeft: `3px solid ${pos.event.color}`,
+                            backgroundColor: `${pos.event.color}15`
                           }}
                         >
-                          <h4 className="text-[11px] font-bold theme-text leading-tight truncate">
-                            {event.title}
+                          <h4 className="text-[10px] font-bold theme-text leading-tight truncate">
+                            {pos.event.title}
                           </h4>
-                          <div className="flex items-center gap-1 mt-0.5 text-[9px] theme-muted font-medium">
-                            {format(startDate, 'H:mm')} - {format(endDate, 'H:mm')}
-                          </div>
                         </button>
                       )
                     })
