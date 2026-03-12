@@ -95,7 +95,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
 
       {/* Grid */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="grid grid-cols-7 border-b theme-border">
+        <div className="grid grid-cols-7 border-b theme-border min-h-full">
           {days.map((day, i) => {
             const dateKey = format(day, 'yyyy-MM-dd')
             const dayEvents = eventsByDay[dateKey] || []
@@ -170,44 +170,91 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-24">
-            {(eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
-              .sort((a, b) => a.start_at.localeCompare(b.start_at))
-              .map(event => (
-              <button
-                key={event.id}
-                onClick={() => onEditEvent(event)}
-                className="w-full flex items-center gap-4 p-5 rounded-3xl theme-elevated border theme-border hover:border-purple-500/30 transition-all active:scale-[0.98] group text-left shadow-lg shadow-black/5"
-              >
-                <div 
-                  className="w-1.5 h-12 rounded-full shrink-0" 
-                  style={{ backgroundColor: event.color }}
-                />
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-lg font-bold theme-text truncate group-hover:text-purple-400 transition-colors">
-                    {event.title}
-                  </h4>
-                  <div className="flex items-center gap-4 mt-1.5 text-sm theme-muted font-bold">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-purple-500" />
-                      {event.is_all_day ? '終日' : `${format(parseISO(event.start_at), 'H:mm')} - ${format(parseISO(event.end_at), 'H:mm')}`}
-                    </div>
-                    {event.profiles?.display_name && (
-                      <div className="flex items-center gap-1.5">
-                        <UserIcon className="w-4 h-4 text-pink-500" />
-                        {event.profiles.display_name}
-                      </div>
-                    )}
+          <div className="flex-1 overflow-y-auto relative bg-white/[0.01]">
+            <div className="flex min-h-full">
+              {/* Time Axis */}
+              <div className="w-14 shrink-0 border-r theme-border pt-4">
+                {Array.from({ length: 24 }).map((_, hour) => (
+                  <div key={hour} className="h-20 text-[10px] theme-muted font-black text-center -mt-2">
+                    {hour}:00
                   </div>
-                </div>
-                <ChevronRight className="w-6 h-6 theme-muted group-hover:theme-text transition-all" />
-              </button>
-            )) || (
-              <div className="py-20 flex flex-col items-center justify-center theme-muted text-lg italic">
-                <Calendar className="w-20 h-20 mb-6 opacity-10" />
-                この日の予定はありません
+                ))}
               </div>
-            )}
+
+              {/* Timeline Content */}
+              <div className="flex-1 relative pt-4">
+                {/* Hour Lines */}
+                {Array.from({ length: 24 }).map((_, hour) => (
+                  <div 
+                    key={hour} 
+                    className="absolute left-0 right-0 border-t theme-border/30 h-20" 
+                    style={{ top: `${hour * 80 + 16}px` }} 
+                  />
+                ))}
+
+                {/* Events */}
+                <div className="relative h-[1920px]">
+                  {(() => {
+                    const dayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
+                      .filter(e => !e.is_all_day)
+                      .sort((a, b) => a.start_at.localeCompare(b.start_at))
+
+                    // Simple overlap detection (could be improved)
+                    return dayEvents.map((event, idx) => {
+                      const startDate = parseISO(event.start_at)
+                      const endDate = parseISO(event.end_at)
+                      const startMinutes = startDate.getHours() * 60 + startDate.getMinutes()
+                      const durationMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60)
+                      
+                      const top = (startMinutes / 60) * 80 + 16
+                      const height = Math.max((durationMinutes / 60) * 80, 24) // 24px min height
+
+                      return (
+                        <button
+                          key={event.id}
+                          onClick={() => onEditEvent(event)}
+                          className="absolute left-2 right-4 p-2 rounded-lg border theme-border theme-elevated shadow-lg shadow-black/5 hover:border-purple-500/30 transition-all active:scale-[0.98] group text-left overflow-hidden"
+                          style={{ 
+                            top: `${top}px`, 
+                            height: `${height}px`,
+                            borderLeft: `4px solid ${event.color}`
+                          }}
+                        >
+                          <h4 className="text-xs font-black theme-text leading-tight truncate">
+                            {event.title}
+                          </h4>
+                          <div className="flex items-center gap-1 mt-0.5 text-[9px] theme-muted font-bold">
+                            <Clock className="w-2.5 h-2.5 text-purple-500" />
+                            {format(startDate, 'H:mm')} - {format(endDate, 'H:mm')}
+                          </div>
+                        </button>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* All Day Events (Fixed Overlay at bottom or top?) Let's put All-day at the top of scroll view but sticky */}
+            {(() => {
+              const allDayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || []).filter(e => e.is_all_day)
+              if (allDayEvents.length === 0) return null
+              return (
+                <div className="sticky top-0 z-20 theme-surface border-b theme-border px-6 py-2 flex flex-wrap gap-2">
+                  <div className="text-[10px] font-black theme-muted uppercase tracking-widest w-full mb-1">終日の予定</div>
+                  {allDayEvents.map(event => (
+                    <button
+                      key={event.id}
+                      onClick={() => onEditEvent(event)}
+                      className="px-3 py-1.5 rounded-full theme-elevated border theme-border flex items-center gap-2 max-w-full"
+                      style={{ borderLeft: `4px solid ${event.color}` }}
+                    >
+                      <span className="text-xs font-bold theme-text truncate">{event.title}</span>
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}
