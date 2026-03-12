@@ -222,6 +222,35 @@ export async function deleteHako(hakoId: string) {
   return { success: true }
 }
 
+// 箱の並び替え順序を更新
+export async function reorderHakos(hakoIds: string[]) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Update sort_order for each hako
+  // Using a loop for simplicity as Supabase doesn't have a bulk update with unique values easily in one call
+  const promises = hakoIds.map((id, index) => 
+    supabase
+      .from('hako')
+      .update({ sort_order: index + 1 })
+      .eq('id', id)
+      .eq('owner_id', user.id)
+  )
+
+  const results = await Promise.all(promises)
+  const errors = results.filter(r => r.error)
+  
+  if (errors.length > 0) {
+    console.error('Errors during Hako reordering:', errors)
+    throw new Error('並び替えの保存に失敗しました')
+  }
+
+  revalidatePath('/owner/dashboard')
+  revalidatePath('/')
+  return { success: true }
+}
+
 export async function generateAIHakoDescription(name: string) {
   try {
     console.log('Generating AI description for Hako:', name)
