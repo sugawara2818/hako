@@ -117,63 +117,162 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         </div>
       </div>
 
-      {/* Weekdays Header */}
-      <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
-        {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
-          <div key={day} className={`py-2 md:py-3 text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
-            {day}
-          </div>
-        ))}
-      </div>
-
-      {/* Grid */}
+      {/* Grid Content */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="grid grid-cols-7 border-b theme-border min-h-full">
-          {days.map((day, i) => {
-            const dateKey = format(day, 'yyyy-MM-dd')
-            const dayEvents = eventsByDay[dateKey] || []
-            const isCurrentMonth = isSameMonth(day, currentMonth)
-            const isTodayDate = isToday(day)
-            const isSelected = isSameDay(day, selectedDay)
+        {viewMode === 'month' && (
+          <>
+            <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
+              {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
+                <div key={day} className={`py-2 md:py-3 text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 border-b theme-border min-h-full">
+              {days.map((day, i) => {
+                const dateKey = format(day, 'yyyy-MM-dd')
+                const dayEvents = eventsByDay[dateKey] || []
+                const isCurrentMonth = isSameMonth(day, currentMonth)
+                const isTodayDate = isToday(day)
+                const isSelected = isSameDay(day, selectedDay)
 
-            return (
-              <div 
-                key={day.toString()} 
-                onClick={() => handleDayClick(day)}
-                className={`min-h-[90px] md:min-h-[120px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
-                    isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
-                    isSelected ? 'theme-text ring-1 ring-purple-500/50' :
-                    i % 7 === 0 ? 'text-red-400' :
-                    i % 7 === 6 ? 'text-blue-400' :
-                    'theme-text opacity-70'
-                  }`}>
-                    {format(day, 'd')}
-                  </span>
-                </div>
-                
-                <div className="flex flex-col gap-0.5 overflow-hidden">
-                  {dayEvents.slice(0, 3).map(event => (
-                    <div 
-                      key={event.id}
-                      className="px-1.5 py-0.5 rounded-sm text-[8px] md:text-[10px] truncate theme-text font-bold"
-                      style={{ backgroundColor: `${event.color}20`, borderLeft: `2px solid ${event.color}` }}
-                    >
-                      {event.title}
+                return (
+                  <div 
+                    key={day.toString()} 
+                    onClick={() => handleDayClick(day)}
+                    className={`min-h-[90px] md:min-h-[120px] p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
+                        isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
+                        isSelected ? 'theme-text ring-1 ring-purple-500/50' :
+                        i % 7 === 0 ? 'text-red-400' :
+                        i % 7 === 6 ? 'text-blue-400' :
+                        'theme-text opacity-70'
+                      }`}>
+                        {format(day, 'd')}
+                      </span>
                     </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-[8px] md:text-[10px] theme-muted font-bold pl-1">
-                      他 {dayEvents.length - 3} 件
+                    
+                    <div className="flex flex-col gap-0.5 overflow-hidden">
+                      {dayEvents.slice(0, 3).map(event => (
+                        <div 
+                          key={event.id}
+                          className="px-1.5 py-0.5 rounded-sm text-[8px] md:text-[10px] truncate theme-text font-bold"
+                          style={{ backgroundColor: `${event.color}20`, borderLeft: `2px solid ${event.color}` }}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="text-[8px] md:text-[10px] theme-muted font-bold pl-1">
+                          他 {dayEvents.length - 3} 件
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
+
+        {viewMode === 'week' && (
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="grid grid-cols-[3.5rem_repeat(7,1fr)] border-b theme-border bg-white/[0.01]">
+                <div className="border-r theme-border" />
+                {(() => {
+                    const start = startOfWeek(currentMonth, { weekStartsOn: 0 })
+                    return Array.from({ length: 7 }).map((_, i) => {
+                        const day = new Date(start)
+                        day.setDate(start.getDate() + i)
+                        const isT = isToday(day)
+                        return (
+                            <div key={i} className={`py-2 text-center border-r theme-border last:border-r-0 ${isT ? 'bg-purple-500/5' : ''}`}>
+                                <div className="text-[8px] font-black theme-muted uppercase tracking-widest">{format(day, 'eee', { locale: ja })}</div>
+                                <div className={`text-sm font-black mx-auto w-7 h-7 flex items-center justify-center rounded-full ${isT ? 'bg-purple-600 text-white' : 'theme-text'}`}>
+                                    {format(day, 'd')}
+                                </div>
+                            </div>
+                        )
+                    })
+                })()}
+            </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar relative min-h-0">
+                <div className="flex min-h-[1200px]">
+                    {/* Time Axis */}
+                    <div className="w-14 shrink-0 border-r theme-border pt-4 bg-white/[0.02]">
+                        {Array.from({ length: 24 }).map((_, hour) => (
+                            <div key={hour} className="h-[50px] text-[10px] theme-muted font-bold text-center pr-2">
+                                {hour === 0 ? '' : `${hour}:00`}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Timeline Grid */}
+                    <div className="flex-1 grid grid-cols-7 relative">
+                        {/* Hour Lines */}
+                        {Array.from({ length: 24 }).map((_, hour) => (
+                            <div 
+                                key={hour} 
+                                className="absolute left-0 right-0 border-t theme-border opacity-30 h-[50px] pointer-events-none" 
+                                style={{ top: `${hour * 50}px` }} 
+                            />
+                        ))}
+
+                        {/* Day Columns */}
+                        {(() => {
+                            const start = startOfWeek(currentMonth, { weekStartsOn: 0 })
+                            return Array.from({ length: 7 }).map((_, dayIndex) => {
+                                const dayDate = new Date(start)
+                                dayDate.setDate(start.getDate() + dayIndex)
+                                const dayStr = format(dayDate, 'yyyy-MM-dd')
+                                const dayEvents = (eventsByDay[dayStr] || []).filter(e => !e.is_all_day)
+                                
+                                return (
+                                    <div key={dayIndex} className="relative border-r theme-border last:border-r-0">
+                                        {isToday(dayDate) && (
+                                            <div 
+                                                className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                                                style={{ top: `${nowPosition}px` }}
+                                            >
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 -ml-[3px]" />
+                                                <div className="flex-1 h-[1px] bg-blue-500" />
+                                            </div>
+                                        )}
+                                        {dayEvents.map(event => {
+                                            const sDate = parseISO(event.start_at)
+                                            const eDate = parseISO(event.end_at)
+                                            const s = sDate.getHours() * 60 + sDate.getMinutes()
+                                            const e = eDate.getHours() * 60 + eDate.getMinutes()
+                                            const t = (s / 60) * 50
+                                            const h = Math.max(((e - s) / 60) * 50 - 2, 20)
+                                            
+                                            return (
+                                                <button
+                                                    key={event.id}
+                                                    onClick={() => onEditEvent(event)}
+                                                    className="absolute left-1 right-1 p-1 rounded-sm border theme-border theme-elevated shadow-sm hover:theme-elevated/80 transition-all overflow-hidden z-10 text-left"
+                                                    style={{ 
+                                                        top: `${t + 2}px`, 
+                                                        height: `${h}px`,
+                                                        borderLeft: `2px solid ${event.color}`,
+                                                        backgroundColor: `${event.color}15`
+                                                    }}
+                                                >
+                                                    <div className="text-[8px] font-bold theme-text leading-tight truncate">{event.title}</div>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )
+                            })
+                        })()}
+                    </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Full-Screen Day View Overlay */}
