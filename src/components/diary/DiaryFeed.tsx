@@ -139,7 +139,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
           <select 
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
-            className="appearance-none bg-[#111] border border-white/10 text-gray-300 text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-purple-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
+            className="appearance-none theme-surface border border-white/10 theme-text text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-purple-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
           >
             <option value="date_desc">新しい順 (日付)</option>
             <option value="date_asc">古い順 (日付)</option>
@@ -179,7 +179,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
   const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
 
   return (
-    <div className="group relative bg-[#111] border border-white/5 rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">
+    <div className="group relative theme-surface border theme-border rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">
       <Link href={`/hako/${hakoId}/diary/${entry.id}${isProfileView ? `?from=profile&userId=${entry.user_id}` : ''}`} className="block p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
               </div>
             </Link>
             <div>
-              <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="font-bold text-sm text-white/90 hover:underline">
+              <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="font-bold text-sm theme-text opacity-90 hover:underline">
                 {displayName}
               </Link>
               <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium mt-0.5">
@@ -226,7 +226,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
               <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Link 
                   href={`/hako/${hakoId}/diary/edit/${entry.id}`}
-                  className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                  className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:theme-text hover:bg-white/10 rounded-full transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Edit2 className="w-4 h-4" />
@@ -250,12 +250,12 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
         </div>
 
         {entry.title && (
-          <h3 className="text-xl font-bold text-white mb-2 leading-tight">
+          <h3 className="text-xl font-bold theme-text mb-2 leading-tight text-white dark:text-inherit">
             {entry.title}
           </h3>
         )}
 
-        <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">
+        <p className="theme-text opacity-70 text-sm leading-relaxed line-clamp-3">
           {entry.content}
         </p>
       </Link>

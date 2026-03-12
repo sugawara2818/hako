@@ -115,7 +115,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
       <div className="flex items-center justify-between mb-10">
         <Link 
           href={from === 'profile' && referralUserId ? `/hako/${hakoId}/user/${referralUserId}?tab=diary` : `/hako/${hakoId}/diary`} 
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors font-bold"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:theme-text transition-colors font-bold"
         >
           <ChevronLeft className="w-4 h-4" /> {from === 'profile' ? 'プロフィールへ戻る' : '日記一覧'}
         </Link>
@@ -124,7 +124,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
           <div className="flex items-center gap-2">
             <Link 
               href={`/hako/${hakoId}/diary/edit/${entry.id}`}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition-all text-xs font-bold"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 theme-text rounded-2xl transition-all text-xs font-bold"
             >
               <Edit2 className="w-3.5 h-3.5" /> 編集
             </Link>
@@ -156,7 +156,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
                )}
             </div>
             <div>
-              <p className="font-black text-xl text-white/90 leading-tight mb-1">{displayName}</p>
+              <p className="font-black text-xl theme-text leading-tight mb-1">{displayName}</p>
               <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
@@ -177,14 +177,14 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
         </div>
 
         {entry.title && (
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.15] mb-4">
+          <h1 className="text-3xl md:text-5xl font-black theme-text leading-[1.15] mb-4">
              {entry.title}
           </h1>
         )}
       </header>
 
       <div className="prose prose-invert prose-lg max-w-none">
-        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap text-lg md:text-xl font-medium">
+        <p className="theme-text opacity-90 leading-relaxed whitespace-pre-wrap text-lg md:text-xl font-medium">
           {entry.content}
         </p>
       </div>
