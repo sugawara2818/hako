@@ -1,103 +1,68 @@
-'use client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
+import { HakoViewerLayout } from '@/components/hako/hako-viewer-layout'
+import { CalendarClient } from '@/components/calendar/CalendarClient'
+import { fetchCalendarEvents } from '@/core/calendar/actions'
+import { startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
-import { CalendarView } from '@/components/calendar/CalendarView'
-import { EventModal } from '@/components/calendar/EventModal'
-import { 
-  fetchCalendarEvents, 
-  createCalendarEvent, 
-  updateCalendarEvent, 
-  deleteCalendarEvent,
-  CalendarEvent 
-} from '@/core/calendar/actions'
-import { startOfMonth, endOfMonth, subMonths, addMonths, format } from 'date-fns'
+export const dynamic = 'force-dynamic'
 
-export default function CalendarPage() {
-  const params = useParams()
-  const hakoId = params.hakoId as string
-  
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [loading, setLoading] = useState(true)
+export default async function CalendarPage({ params }: { params: Promise<{ hakoId: string }> }) {
+  const { hakoId } = await params
+  const supabase = await createServerSupabaseClient()
 
-  const loadEvents = useCallback(async () => {
-    setLoading(true)
-    try {
-      // Fetch a generous range (current month +/- 1 month)
-      const now = new Date()
-      const start = startOfMonth(subMonths(now, 1)).toISOString()
-      const end = endOfMonth(addMonths(now, 2)).toISOString()
-      const data = await fetchCalendarEvents(hakoId, start, end)
-      setEvents(data)
-    } catch (error) {
-      console.error('Failed to load events:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [hakoId])
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect(`/hako/${hakoId}/login`)
 
-  useEffect(() => {
-    loadEvents()
-  }, [loadEvents])
+  const [hakoResponse, memberResponse, countResponse] = await Promise.all([
+    supabase.from('hako').select('*').eq('id', hakoId).single(),
+    supabase.from('hako_members').select('*').eq('hako_id', hakoId).eq('user_id', user.id).maybeSingle(),
+    supabase.from('hako_members').select('*', { count: 'exact', head: true }).eq('hako_id', hakoId)
+  ])
 
-  const handleAddEvent = (date: Date) => {
-    setEditingEvent(null)
-    setSelectedDate(date)
-    setIsModalOpen(true)
-  }
+  const { data: hako } = hakoResponse
+  const { data: member } = memberResponse
+  const { count } = countResponse
 
-  const handleEditEvent = (event: CalendarEvent) => {
-    setEditingEvent(event)
-    setSelectedDate(undefined)
-    setIsModalOpen(true)
-  }
+  if (!hako || !member) return notFound()
 
-  const handleSaveEvent = async (eventData: any) => {
-    if (editingEvent) {
-      await updateCalendarEvent(editingEvent.id, hakoId, eventData)
-    } else {
-      await createCalendarEvent({
-        ...eventData,
-        hako_id: hakoId
-      })
-    }
-    await loadEvents()
-  }
-
-  const handleDeleteEvent = async (id: string) => {
-    if (confirm('この予定を削除しますか？')) {
-      await deleteCalendarEvent(id, hakoId)
-      await loadEvents()
-      setIsModalOpen(false)
-    }
-  }
+  // Fetch initial events (generous range)
+  const now = new Date()
+  const start = startOfMonth(subMonths(now, 1)).toISOString()
+  const end = endOfMonth(addMonths(now, 2)).toISOString()
+  const initialEvents = await fetchCalendarEvents(hakoId, start, end)
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-black">
-      <CalendarView 
-        hakoId={hakoId}
-        initialEvents={events}
-        onAddEvent={handleAddEvent}
-        onEditEvent={handleEditEvent}
-      />
-      
-      <EventModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveEvent}
-        onDelete={handleDeleteEvent}
-        initialDate={selectedDate}
-        editingEvent={editingEvent}
-      />
-      
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] pointer-events-none">
-          <div className="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+    <HakoViewerLayout
+      hakoId={hako.id}
+      hakoName={hako.name}
+      iconUrl={hako.icon_url || null}
+      iconColor={hako.icon_color || null}
+      email={user.email || ''}
+      isOwner={member.role === 'owner'}
+      memberCount={count || 1}
+      displayName={member.display_name}
+      avatarUrl={member.avatar_url || null}
+      features={hako.features || ['timeline']}
+      userId={user.id}
+    >
+      <div className="flex-1 flex flex-col min-h-0 bg-black overflow-hidden">
+        {/* Page Header (Desktop) */}
+        <div className="hidden md:block px-8 py-6 border-b theme-border bg-white/[0.02]">
+           <h1 className="text-3xl font-black heading-gradient">
+             共有カレンダー
+           </h1>
         </div>
-      )}
-    </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-hidden">
+          <CalendarClient
+            hakoId={hakoId}
+            currentUserId={user.id}
+            initialEvents={initialEvents}
+          />
+        </div>
+      </div>
+    </HakoViewerLayout>
   )
 }
