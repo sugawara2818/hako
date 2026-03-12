@@ -16,7 +16,7 @@ import {
   parseISO
 } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Plus, Clock, User as UserIcon, Calendar, ArrowLeft } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Clock, User as UserIcon, Calendar, ArrowLeft, LayoutGrid, CalendarDays, CalendarRange, Calendar as CalendarIcon } from 'lucide-react'
 import { CalendarEvent } from '@/core/calendar/actions'
 
 interface CalendarViewProps {
@@ -30,6 +30,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const [isDayViewOpen, setIsDayViewOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'year'>('month')
   const [nowPosition, setNowPosition] = useState(0)
 
   // Current time indicator logic
@@ -74,7 +75,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
         <div className="flex items-center gap-2 md:gap-4">
           <h2 className="text-lg md:text-2xl font-black theme-text">
-            {format(currentMonth, 'yyyy年 M月', { locale: ja })}
+            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
             <button onClick={prevMonth} className="p-1.5 hover:theme-elevated rounded-lg transition-colors theme-muted hover:theme-text">
@@ -88,13 +89,32 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
             </button>
           </div>
         </div>
-        
-        <button 
-          onClick={() => onAddEvent(new Date())}
-          className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">予定を追加</span>
-        </button>
+
+        <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border mr-2">
+                {[
+                    { id: 'month', label: '月', icon: LayoutGrid },
+                    { id: 'week', label: '週', icon: CalendarRange },
+                    { id: 'year', label: '年', icon: CalendarIcon }
+                ].map((mode) => (
+                    <button
+                        key={mode.id}
+                        onClick={() => setViewMode(mode.id as any)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === mode.id ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-muted hover:theme-text'}`}
+                    >
+                        <mode.icon className="w-3.5 h-3.5" />
+                        {mode.label}
+                    </button>
+                ))}
+            </div>
+            
+            <button 
+              onClick={() => onAddEvent(new Date())}
+              className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">予定を追加</span>
+            </button>
+        </div>
       </div>
 
       {/* Weekdays Header */}

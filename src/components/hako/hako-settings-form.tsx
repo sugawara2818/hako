@@ -230,31 +230,103 @@ export function HakoSettingsForm({ hakoId, initialName, initialIconUrl, initialI
         </div>
 
         <div className="space-y-4">
-          <label className="text-sm font-bold text-gray-400 ml-1">機能ピースの管理</label>
+          <div className="flex items-center justify-between ml-1">
+            <label className="text-sm font-bold text-gray-400">機能ピースの管理</label>
+            <span className="text-[10px] theme-muted font-black uppercase tracking-widest">ドラッグまたは矢印で順序変更</span>
+          </div>
           <div className="grid grid-cols-1 gap-3">
-            {FEATURE_PIECES.map(piece => {
-              const isEnabled = features.includes(piece.id)
+            {features.map((featureId, index) => {
+              const piece = FEATURE_PIECES.find(p => p.id === featureId)
+              if (!piece) return null
+              const isEnabled = true // In this view, we're showing enabled ones first for reordering, 
+                                     // but the original logic was a toggle. 
+                                     // Let's stick to the current list of 'features' and add a toggle for available ones.
               return (
-                <button
-                  key={piece.id}
-                  type="button"
-                  onClick={() => {
-                    setFeatures(prev => 
-                      prev.includes(piece.id) ? prev.filter(f => f !== piece.id) : [...prev, piece.id]
-                    )
-                  }}
-                  className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isEnabled ? 'bg-purple-500/10 border-purple-500/50 text-white' : 'bg-black/40 border-white/5 text-gray-500 hover:border-white/10'}`}
+                <div
+                  key={featureId}
+                  className="flex items-center gap-3 p-4 rounded-2xl border bg-purple-500/10 border-purple-500/50 text-white group"
                 >
-                  <div className="flex items-center gap-3">
-                    <piece.icon className="w-5 h-5" />
-                    <span className="font-bold">{piece.label}</span>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (index === 0) return
+                        const newFeatures = [...features]
+                        const temp = newFeatures[index]
+                        newFeatures[index] = newFeatures[index - 1]
+                        newFeatures[index - 1] = temp
+                        setFeatures(newFeatures)
+                      }}
+                      disabled={index === 0}
+                      className="p-1 hover:bg-white/10 rounded-md disabled:opacity-30 transition-colors"
+                    >
+                      <Check className="w-3 h-3 rotate-180" style={{ transform: 'rotate(180deg)' }} /> {/* Using Check as arrow for now or just import ChevronUp */}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (index === features.length - 1) return
+                        const newFeatures = [...features]
+                        const temp = newFeatures[index]
+                        newFeatures[index] = newFeatures[index + 1]
+                        newFeatures[index + 1] = temp
+                        setFeatures(newFeatures)
+                      }}
+                      disabled={index === features.length - 1}
+                      className="p-1 hover:bg-white/10 rounded-md disabled:opacity-30 transition-colors"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
                   </div>
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${isEnabled ? 'bg-purple-500' : 'bg-gray-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isEnabled ? 'right-1' : 'left-1'}`} />
+                  
+                  <div className="flex items-center gap-3 flex-1">
+                    <piece.icon className="w-5 h-5 text-purple-400" />
+                    <div className="flex flex-col">
+                        <span className="font-bold">{piece.label}</span>
+                        <span className="text-[10px] theme-muted">{piece.desc}</span>
+                    </div>
                   </div>
-                </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFeatures(prev => prev.filter(f => f !== featureId))
+                    }}
+                    className="p-2 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
+                    title="機能を無効化"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               )
             })}
+
+            {/* Available Features to Add */}
+            {FEATURE_PIECES.filter(p => !features.includes(p.id)).length > 0 && (
+                <div className="pt-4 space-y-3">
+                    <p className="text-[10px] font-black theme-muted uppercase tracking-widest ml-1">追加可能な機能</p>
+                    <div className="grid grid-cols-1 gap-2">
+                        {FEATURE_PIECES.filter(p => !features.includes(p.id)).map(piece => (
+                            <button
+                                key={piece.id}
+                                type="button"
+                                onClick={() => setFeatures(prev => [...prev, piece.id])}
+                                className="flex items-center justify-between p-4 rounded-2xl border border-dashed border-white/10 bg-black/20 text-gray-500 hover:border-purple-500/30 hover:text-gray-300 transition-all group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <piece.icon className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                    <span className="font-bold">{piece.label}</span>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-all">
+                                    <Check className="w-4 h-4 opacity-0 group-hover:opacity-100" />
+                                    <span className="text-xl group-hover:hidden">+</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
           </div>
         </div>
 
