@@ -85,7 +85,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     }
   }
 
-  const handleDeleteEvent = (id: string) => {
+  const handleDeleteEvent = async (id: string) => {
     setConfirmDelete({ id })
   }
 
