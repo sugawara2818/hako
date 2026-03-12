@@ -152,15 +152,20 @@ export function HakoViewerLayout({
   }, [hakoId, isTimelineActive, isDiaryActive])
 
   useEffect(() => {
+    if (isTimelineActive || isDiaryActive) {
+        localStorage.setItem('hako_last_visited_path', pathname)
+    }
     if (isTimelineActive) {
+        localStorage.setItem(`hako_last_visited_path`, pathname)
         localStorage.setItem(`hako_${hakoId}_last_timeline`, new Date().toISOString())
         setHasNewTimeline(false)
     }
     if (isDiaryActive) {
+        localStorage.setItem(`hako_last_visited_path`, pathname)
         localStorage.setItem(`hako_${hakoId}_last_diary`, new Date().toISOString())
         setHasNewDiary(false)
     }
-  }, [isTimelineActive, isDiaryActive, hakoId])
+  }, [isTimelineActive, isDiaryActive, hakoId, pathname])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
