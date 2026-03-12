@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS hako_calendar_events (
     end_at TIMESTAMPTZ NOT NULL,
     is_all_day BOOLEAN DEFAULT false,
     color TEXT DEFAULT '#3b82f6',
+    is_private BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -16,13 +17,14 @@ CREATE TABLE IF NOT EXISTS hako_calendar_events (
 ALTER TABLE hako_calendar_events ENABLE ROW LEVEL SECURITY;
 
 -- Policies
-CREATE POLICY "Members can view events in their hako" ON hako_calendar_events
+CREATE POLICY "Members can view public events or their own events" ON hako_calendar_events
     FOR SELECT USING (
-        EXISTS (
+        (is_private = false AND EXISTS (
             SELECT 1 FROM hako_members 
             WHERE hako_members.hako_id = hako_calendar_events.hako_id 
             AND hako_members.user_id = auth.uid()
-        )
+        ))
+        OR (user_id = auth.uid())
     );
 
 CREATE POLICY "Members can create events in their hako" ON hako_calendar_events

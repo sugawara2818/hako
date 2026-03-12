@@ -13,6 +13,7 @@ export interface CalendarEvent {
   end_at: string
   is_all_day: boolean
   color: string
+  is_private: boolean
   created_at: string
   profiles?: {
     display_name: string | null
@@ -23,6 +24,7 @@ export interface CalendarEvent {
 export async function fetchCalendarEvents(hakoId: string, startDate: string, endDate: string) {
   const supabase = await createServerSupabaseClient()
   
+  // Note: RLS handles the privacy filtering automatically
   const { data, error } = await supabase
     .from('hako_calendar_events')
     .select('*, profiles(display_name, avatar_url)')

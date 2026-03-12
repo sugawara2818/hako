@@ -32,6 +32,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
   const [endAt, setEndAt] = useState('')
   const [isAllDay, setIsAllDay] = useState(false)
   const [color, setColor] = useState(COLORS[0].value)
+  const [isPrivate, setIsPrivate] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEditable = !editingEvent || editingEvent.user_id === currentUserId
@@ -44,6 +45,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       setEndAt(format(new Date(editingEvent.end_at), "yyyy-MM-dd'T'HH:mm"))
       setIsAllDay(editingEvent.is_all_day)
       setColor(editingEvent.color)
+      setIsPrivate(editingEvent.is_private || false)
     } else if (initialDate) {
       setTitle('')
       setDescription('')
@@ -55,6 +57,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       setEndAt(format(end, "yyyy-MM-dd'T'HH:mm"))
       setIsAllDay(false)
       setColor(COLORS[0].value)
+      setIsPrivate(false)
     }
   }, [editingEvent, initialDate, isOpen])
 
@@ -82,7 +85,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
         start_at: new Date(startAt).toISOString(),
         end_at: new Date(endAt).toISOString(),
         is_all_day: isAllDay,
-        color
+        color,
+        is_private: isPrivate
       })
       onClose()
     } catch (error) {
@@ -190,6 +194,24 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   />
                 ))}
               </div>
+            </div>
+
+            {/* Privacy Toggle */}
+            <div className="p-4 bg-white/5 border theme-border rounded-2xl flex items-center justify-between group">
+              <div className="space-y-0.5">
+                <span className="text-sm font-bold theme-text">箱全体に共有する</span>
+                <p className="text-[10px] theme-muted font-medium">オフにすると自分だけに表示されます</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!isPrivate}
+                  onChange={e => setIsPrivate(!e.target.checked)}
+                  className="sr-only peer"
+                  disabled={!isEditable}
+                />
+                <div className="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
             </div>
 
             {/* Description */}

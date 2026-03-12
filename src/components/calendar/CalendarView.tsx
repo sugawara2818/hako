@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { 
   format, 
   addMonths, 
@@ -30,6 +30,47 @@ interface CalendarViewProps {
 export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
+  const [agendaHeight, setAgendaHeight] = useState(300) // Default height
+  const [isResizing, setIsResizing] = useState(false)
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return
+      const calendarContainer = document.getElementById('calendar-view-container')
+      if (calendarContainer) {
+        const rect = calendarContainer.getBoundingClientRect()
+        const newHeight = rect.bottom - e.clientY
+        // Clamp height between 150px and 70% of container height
+        setAgendaHeight(Math.max(150, Math.min(newHeight, rect.height * 0.7)))
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isResizing) return
+      const calendarContainer = document.getElementById('calendar-view-container')
+      if (calendarContainer) {
+        const rect = calendarContainer.getBoundingClientRect()
+        const newHeight = rect.bottom - e.touches[0].clientY
+        setAgendaHeight(Math.max(150, Math.min(newHeight, rect.height * 0.7)))
+      }
+    }
+
+    const stopResizing = () => setIsResizing(false)
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', stopResizing)
+      window.addEventListener('touchmove', handleTouchMove)
+      window.addEventListener('touchend', stopResizing)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', stopResizing)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', stopResizing)
+    }
+  }, [isResizing])
   
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 })
@@ -51,7 +92,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
   }, [initialEvents])
 
   return (
-    <div className="flex flex-col h-full theme-bg overflow-hidden animate-fade-in">
+    <div id="calendar-view-container" className="flex flex-col h-full bg-black select-none overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
         <div className="flex items-center gap-2 md:gap-4">
@@ -89,7 +130,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-7 auto-rows-fr border-b theme-border">
+      <div 
+        className="grid grid-cols-7 auto-rows-fr border-b theme-border overflow-hidden"
+        style={{ flex: `0 0 auto`, maxHeight: `calc(100% - ${agendaHeight}px)` }}
+      >
         {days.map((day, i) => {
           const dateKey = format(day, 'yyyy-MM-dd')
           const dayEvents = eventsByDay[dateKey] || []
@@ -136,9 +180,26 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
         })}
       </div>
 
+      {/* Resizer Handle */}
+      <div 
+        className="h-1.5 w-full bg-white/5 hover:bg-purple-500/50 cursor-ns-resize transition-colors flex items-center justify-center group"
+        onMouseDown={(e) => {
+          e.preventDefault()
+          setIsResizing(true)
+        }}
+        onTouchStart={(e) => {
+          setIsResizing(true)
+        }}
+      >
+        <div className="w-12 h-1 bg-white/10 group-hover:bg-white/30 rounded-full" />
+      </div>
+
       {/* Selected Day Agenda */}
-      <div className="flex-1 overflow-y-auto no-scrollbar bg-white/[0.01]">
-        <div className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10">
+      <div 
+        className="flex flex-col overflow-hidden bg-white/[0.01]"
+        style={{ height: `${agendaHeight}px`, minHeight: '150px' }}
+      >
+        <div className="px-6 py-4 flex items-center justify-between border-b theme-border sticky top-0 theme-bg/80 backdrop-blur-md z-10 shrink-0">
           <div className="flex flex-col">
             <span className="text-[10px] font-black theme-muted uppercase tracking-widest">
               {format(selectedDay, 'yyyy年 M月 d日', { locale: ja })}
@@ -155,8 +216,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
           </button>
         </div>
 
-        <div className="p-4 space-y-3">
-          {eventsByDay[format(selectedDay, 'yyyy-MM-dd')]?.map(event => (
+        <div className="p-4 space-y-3 shrink-0 overflow-y-auto no-scrollbar flex-1 pb-20">
+          {(eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
+            .sort((a, b) => a.start_at.localeCompare(b.start_at))
+            .map(event => (
             <button
               key={event.id}
               onClick={() => onEditEvent(event)}
