@@ -103,8 +103,9 @@ export function UserAvatarUpload({ hakoId, avatarUrl, size = 40, className = '' 
               unoptimized={localAvatar.startsWith('data:')}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <User className="w-1/2 h-1/2 text-gray-400 group-hover:text-purple-400 transition-colors" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-gray-400 group-hover:text-purple-400 transition-colors font-bold text-xl">
+              {/* Note: We don't easily have the display name here, but we can at least better match the style */}
+              <User className="w-1/2 h-1/2" />
             </div>
           )}
 

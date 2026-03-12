@@ -194,7 +194,9 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
                      className="w-full h-full object-cover" 
                    />
                  ) : (
-                   <User className="w-5 h-5 text-gray-500" />
+                   <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">
+                     {entry.profiles?.display_name?.charAt(0) || '?'}
+                   </div>
                  )}
               </div>
             </Link>

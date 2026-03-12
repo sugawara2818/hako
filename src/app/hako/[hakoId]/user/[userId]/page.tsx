@@ -93,19 +93,21 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                     className="w-full h-full object-cover" 
                   />
                 ) : (
-                  <UserIcon className="w-12 h-12 text-gray-500" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400 font-bold text-4xl">
+                    {targetMember.display_name?.charAt(0) || '?'}
+                  </div>
                 )}
               </div>
             )}
             
             <div className="flex-1 text-center md:text-left space-y-2">
-              <div className="flex items-center justify-center md:justify-start gap-3">
+              <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-x-3 gap-y-1">
                 {isOwnProfile ? (
                   <UsernameEditor hakoId={hakoId} currentName={targetMember.display_name || ''} />
                 ) : (
-                  <h1 className="text-2xl font-black theme-text">{targetMember.display_name || 'ユーザー'}</h1>
+                  <h1 className="text-2xl font-black theme-text leading-none">{targetMember.display_name || 'ユーザー'}</h1>
                 )}
-                <div className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${targetMember.role === 'owner' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                <div className={`px-2 py-0.5 rounded-full border text-[10px] font-bold self-center md:self-auto ${targetMember.role === 'owner' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
                     {targetMember.role === 'owner' ? 'Owner' : 'Member'}
                 </div>
               </div>
