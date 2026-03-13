@@ -46,6 +46,5 @@ export default async function NewDiaryPage({
 
           <DiaryForm hakoId={hakoId} initialData={defaultDate ? { diary_date: defaultDate, title: '', content: '', id: '', is_public: true } : undefined} />
       </div>
-    </div>
   )
 }

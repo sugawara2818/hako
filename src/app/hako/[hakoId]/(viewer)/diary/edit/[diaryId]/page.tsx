@@ -45,6 +45,5 @@ export default async function EditDiaryPage({ params }: { params: Promise<{ hako
 
           <DiaryForm hakoId={hakoId} initialData={diary} />
       </div>
-    </div>
   )
 }
