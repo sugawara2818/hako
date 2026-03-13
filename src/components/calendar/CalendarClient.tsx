@@ -53,13 +53,12 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
   }
 
   const handleMoveEvent = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
-    const realId = (event as any).realId
-    const isRecurring = !!realId && realId !== event.id
-
-    // Optimistic Update
     const oldEvents = [...events]
+    const realId = (event as any).realId || event.id
+    const isRecurring = !!(event as any).realId && (event as any).realId !== event.id
+
     setEvents(prev => prev.map(e => {
-      if (e.id === event.id) {
+      if (e.id === event.id || (e.id === realId && !isRecurring)) {
         return {
           ...e,
           start_at: newStart.toISOString(),
