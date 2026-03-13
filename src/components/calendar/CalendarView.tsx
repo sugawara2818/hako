@@ -662,7 +662,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       return (
                         <div 
                           key={i} 
-                          className={`absolute left-0 right-0 border-t ${isHour ? 'border-zinc-500/30' : 'border-zinc-500/10 border-dashed'}`} 
+                          className={`absolute left-0 right-0 border-t ${isHour ? 'border-slate-300/50 dark:border-white/20' : 'border-slate-200/30 dark:border-white/10 border-dashed'}`} 
                           style={{ top: `${(hourIndex + minute / 60) * 50}px` }} 
                         />
                       );
@@ -805,11 +805,29 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       className="w-full p-4 rounded-xl theme-elevated border theme-border flex items-center justify-between hover:theme-elevated/80 transition-all text-left group"
                       style={{ borderLeft: `4px solid ${event.color}` }}
                     >
-                      <div className="flex flex-col gap-1">
-                        <h4 className="font-bold theme-text">{event.title}</h4>
-                        <div className="flex items-center gap-2 text-xs theme-muted">
-                          <Clock className="w-3 h-3" />
-                          {format(parseISO(event.start_at), 'H:mm')} - {format(parseISO(event.end_at), 'H:mm')}
+                      <div className="flex items-center gap-3">
+                        {event.profiles?.avatar_url ? (
+                          <img 
+                            src={event.profiles.avatar_url} 
+                            alt="" 
+                            className="w-8 h-8 rounded-full border theme-border"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-white/5 border theme-border flex items-center justify-center">
+                            <UserIcon className="w-4 h-4 opacity-40" />
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-0.5">
+                          <h4 className="font-bold theme-text leading-tight">{event.title}</h4>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] theme-muted font-medium">
+                              {event.profiles?.display_name || 'ユーザー'}
+                            </span>
+                            <div className="flex items-center gap-1 text-[10px] theme-muted">
+                              <Clock className="w-3 h-3" />
+                              {format(parseISO(event.start_at), 'H:mm')} - {format(parseISO(event.end_at), 'H:mm')}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <ChevronRight className="w-5 h-5 theme-muted group-hover:theme-text transition-colors" />
