@@ -89,7 +89,14 @@ export function DiaryCalendar({ hakoId, onDateSelect, selectedDate }: DiaryCalen
                 ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30' : ''}
               `}
             >
-              <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : isToday(day) ? 'theme-text border-t-2 border-blue-500 pt-1' : 'theme-muted hover:theme-text'}`}>
+              <span className={`
+                flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all
+                ${isSelected 
+                  ? 'bg-blue-600 text-white' 
+                  : isToday(day) 
+                    ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30' 
+                    : 'theme-muted hover:theme-text'}
+              `}>
                 {format(day, 'd')}
               </span>
               
