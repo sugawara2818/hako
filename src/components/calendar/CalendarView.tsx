@@ -418,13 +418,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     })
                 })()}
             </div>
-            <div className="flex-1 overflow-y-auto no-scrollbar relative min-h-0">
+            <div className="flex-1 overflow-y-auto no-scrollbar relative min-h-0 pb-24">
                 <div className="flex min-h-[1200px]">
                     {/* Time Axis */}
                     <div className="w-14 shrink-0 border-r theme-border pt-4 bg-white/[0.02]">
-                        {Array.from({ length: 24 }).map((_, hour) => (
+                        {Array.from({ length: 25 }).map((_, hour) => (
                             <div key={hour} className="h-[60px] text-[10px] theme-muted font-bold text-center pr-2">
-                                {hour === 0 ? '' : `${hour}:00`}
+                                {hour === 0 ? '' : hour === 24 ? '24:00' : `${hour}:00`}
                             </div>
                         ))}
                     </div>
@@ -432,7 +432,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     {/* Timeline Grid */}
                     <div className="flex-1 grid grid-cols-7 relative">
                         {/* Hour Lines */}
-                        {Array.from({ length: 24 }).map((_, hour) => (
+                        {Array.from({ length: 25 }).map((_, hour) => (
                             <div 
                                 key={hour} 
                                 className="absolute left-0 right-0 border-t theme-border opacity-30 h-[60px] pointer-events-none" 
@@ -612,7 +612,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
 
           <div className="flex-1 overflow-hidden flex flex-col">
             {view === 'timeline' ? (
-              <div className="flex-1 overflow-y-auto relative no-scrollbar px-1">
+              <div className="flex-1 overflow-y-auto relative no-scrollbar px-1 pb-24">
                 <div 
                   ref={timelineRef}
                   className="flex min-h-full"
