@@ -63,9 +63,12 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     const isRecurring = !!(event as any).realId && (event as any).realId !== event.id
 
     setEvents(prev => prev.map(e => {
-      if (e.id === event.id || (e.id === realId && !isRecurring)) {
+      // Always match by realId if available, and ensure resulting ID is the real one
+      const eRealId = e.realId || e.id
+      if (eRealId === realId) {
         return {
           ...e,
+          id: realId, // Restore real ID
           start_at: newStart.toISOString(),
           end_at: newEnd.toISOString()
         }
@@ -144,6 +147,12 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         throw new Error(result.error)
       }
 
+      // If updating, ensure state doesn't leak virtual IDs
+      if (editingEvent) {
+        const realId = editingEvent.realId || editingEvent.id;
+        setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, id: realId, ...eventData } : e));
+      }
+
       await loadEvents()
     } catch (error) {
       console.error('Save event failed details:', error)
@@ -171,10 +180,11 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       }
 
       if (result.success) {
-        await loadEvents()
+        console.log('Delete successful, refreshing state...');
         setIsModalOpen(false)
         setIsDetailOpen(false)
         setConfirmDelete(null)
+        await loadEvents()
       } else {
         alert(`削除に失敗しました: ${result.error}`)
       }
@@ -294,7 +304,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       )}
 
       {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] pointer-events-none">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
           <div className="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
         </div>
       )}

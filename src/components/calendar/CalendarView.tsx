@@ -10,8 +10,6 @@ import {
   startOfWeek, 
   endOfWeek, 
   isSameMonth, 
-  isSameDay, 
-  eachDayOfInterval,
   isToday,
   parseISO,
   addDays,
@@ -19,8 +17,11 @@ import {
   addYears,
   differenceInDays,
   startOfToday,
+  startOfDay,
+  subMinutes,
   isBefore,
-  isAfter
+  isAfter,
+  isSameDay
 } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Plus, Clock, User as UserIcon, Calendar, ArrowLeft, LayoutGrid, CalendarDays, CalendarRange, Calendar as CalendarIcon } from 'lucide-react'
@@ -213,23 +214,31 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
     const map: Record<string, CalendarEvent[]> = {}
     
     initialEvents.forEach(event => {
+      // Safety: Ignore virtual items that might have leaked into state. 
+      // Only process "real" database events.
+      if (event.id.includes('_')) return;
+
       const startAt = parseISO(event.start_at);
       const endAt = parseISO(event.end_at);
       const duration = endAt.getTime() - startAt.getTime();
       
       if (!event.recurrence_rule) {
         // Multi-day non-recurring events
-        let current = new Date(startAt);
-        const eventEnd = new Date(endAt);
+        let current = startOfDay(startAt);
+        // If it ends exactly at 00:00 on a subsequent day, we don't show it on that day.
+        const effectiveEnd = (endAt.getHours() === 0 && endAt.getMinutes() === 0 && !isSameDay(startAt, endAt))
+            ? subMinutes(endAt, 1)
+            : endAt;
+        const lastDay = startOfDay(effectiveEnd);
         
-        while (current <= eventEnd && current <= rangeEnd) {
+        while (current <= lastDay && current <= rangeEnd) {
           if (current >= rangeStart || isSameDay(current, rangeStart)) {
             const dateKey = format(current, 'yyyy-MM-dd')
             if (!map[dateKey]) map[dateKey] = []
             
-            // Add virtual instance for multi-day display if it spans across days
-            const isMultiDay = !isSameDay(startAt, eventEnd);
-            if (isMultiDay) {
+            // For display consistency, always use virtual IDs for non-single-day events
+            const isSpansDays = !isSameDay(startAt, lastDay);
+            if (isSpansDays) {
               map[dateKey].push({
                 ...event,
                 id: `${event.id}_${dateKey}`,
