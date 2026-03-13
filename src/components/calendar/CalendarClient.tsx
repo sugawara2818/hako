@@ -90,7 +90,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
           is_private: event.is_private,
           recurrence_rule: null,
           recurrence_until: null,
-          excluded_dates: null
+          excluded_dates: undefined
         })
         if (!createResult.success) throw new Error(createResult.error)
       } else {
