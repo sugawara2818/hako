@@ -49,6 +49,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
   // Slide Animation State
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | 'none'>('none')
   const [animationKey, setAnimationKey] = useState(Date.now())
+  const [view, setView] = useState<'timeline' | 'list'>('timeline')
+  const timelineRef = React.useRef<HTMLDivElement>(null)
   
   // Swipe Gesture State
   const [touchStart, setTouchStart] = useState<{ x: number, y: number } | null>(null)
@@ -66,6 +68,61 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
     const interval = setInterval(updatePosition, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Global listeners for drag stability
+  useEffect(() => {
+    if (!draggingEvent) return
+
+    const handleGlobalMove = (clientY: number) => {
+      if (!timelineRef.current) return
+      const rect = timelineRef.current.getBoundingClientRect()
+      const scrollTop = timelineRef.current.parentElement?.scrollTop || 0
+      
+      // Calculate y relative to the start of the 0:00 line
+      // Subtract 24px (pt-6) to align y=0 with 0:00
+      const y = clientY - rect.top + scrollTop - 24
+      
+      const rawMinutes = ((y - dragOffset) / 50) * 60
+      const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
+      setDragCurrentTop((snappedMinutes / 60) * 50)
+    }
+
+    const handleGlobalEnd = () => {
+      if (!draggingEvent) return;
+      const finalTop = dragCurrentTop
+      const minutes = (finalTop / 50) * 60
+      const newStartDate = new Date(selectedDay)
+      newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
+      
+      const oldStart = parseISO(draggingEvent.start_at)
+      const oldEnd = parseISO(draggingEvent.end_at)
+      const duration = oldEnd.getTime() - oldStart.getTime()
+      const newEndDate = new Date(newStartDate.getTime() + duration)
+      
+      onMoveEvent?.(draggingEvent, newStartDate, newEndDate)
+      setDraggingEvent(null)
+    }
+
+    const onMouseMove = (e: MouseEvent) => handleGlobalMove(e.clientY)
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.cancelable) e.preventDefault()
+      handleGlobalMove(e.touches[0].clientY)
+    }
+    const onMouseUp = () => handleGlobalEnd()
+    const onTouchEnd = () => handleGlobalEnd()
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [draggingEvent, dragOffset, dragCurrentTop, selectedDay, onMoveEvent])
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 })
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
@@ -508,6 +565,21 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               </span>
             </div>
             <div className="flex-1" />
+            <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-2xl mr-2">
+              {(['timeline', 'list'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                    view === v 
+                      ? 'bg-white dark:bg-white/10 theme-text shadow-sm' 
+                      : 'theme-muted hover:theme-text'
+                  }`}
+                >
+                  {v === 'timeline' ? '24時間' : 'リスト'}
+                </button>
+              ))}
+            </div>
             <button 
               onClick={() => onAddEvent(selectedDay)}
               className="p-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
@@ -539,64 +611,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
             )
           })()}
 
-          <div className="flex-1 overflow-y-auto relative no-scrollbar">
-            <div 
-              className="flex min-h-full"
-              onMouseMove={(e) => {
-                if (!draggingEvent) return
-                const rect = e.currentTarget.getBoundingClientRect()
-                const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
-                const y = e.clientY - rect.top + scrollTop
-                
-                // Snap to 15 minutes and clamp to stay within the day (0:00 - 23:45)
-                // rect.top is the top of the 'flex min-h-full' container, which includes pt-6
-                const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
-                const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
-                setDragCurrentTop((snappedMinutes / 60) * 50)
-              }}
-              onMouseUp={() => {
-                if (!draggingEvent) return
-                // dragCurrentTop is already snapped and clamped
-                const finalTop = dragCurrentTop
-                const minutes = (finalTop / 50) * 60
-                const newStartDate = new Date(selectedDay)
-                newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
-                
-                const oldStart = parseISO(draggingEvent.start_at)
-                const oldEnd = parseISO(draggingEvent.end_at)
-                const duration = oldEnd.getTime() - oldStart.getTime()
-                const newEndDate = new Date(newStartDate.getTime() + duration)
-                
-                onMoveEvent?.(draggingEvent, newStartDate, newEndDate)
-                setDraggingEvent(null)
-              }}
-              onTouchMove={(e) => {
-                if (!draggingEvent) return
-                const rect = e.currentTarget.getBoundingClientRect()
-                const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
-                const y = e.touches[0].clientY - rect.top + scrollTop
-                
-                // Snap to 15 minutes and clamp
-                const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
-                const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
-                setDragCurrentTop((snappedMinutes / 60) * 50)
-              }}
-              onTouchEnd={() => {
-                if (!draggingEvent) return
-                const finalTop = dragCurrentTop
-                const minutes = (finalTop / 50) * 60
-                const newStartDate = new Date(selectedDay)
-                newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
-                
-                const oldStart = parseISO(draggingEvent.start_at)
-                const oldEnd = parseISO(draggingEvent.end_at)
-                const duration = oldEnd.getTime() - oldStart.getTime()
-                const newEndDate = new Date(newStartDate.getTime() + duration)
-                
-                onMoveEvent?.(draggingEvent, newStartDate, newEndDate)
-                setDraggingEvent(null)
-              }}
-            >
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {view === 'timeline' ? (
+              <div className="flex-1 overflow-y-auto relative no-scrollbar px-1">
+                <div 
+                  ref={timelineRef}
+                  className="flex min-h-full"
+                >
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-6">
                 {Array.from({ length: 24 }).map((_, hour) => (
@@ -768,10 +789,37 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         </React.Fragment>
                       )
                     })
-                  })()}
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {(eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
+                  .sort((a, b) => a.start_at.localeCompare(b.start_at))
+                  .map(event => (
+                    <button
+                      key={event.id}
+                      onClick={() => onEditEvent(event)}
+                      className="w-full p-4 rounded-xl theme-elevated border theme-border flex items-center justify-between hover:theme-elevated/80 transition-all text-left group"
+                      style={{ borderLeft: `4px solid ${event.color}` }}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <h4 className="font-bold theme-text">{event.title}</h4>
+                        <div className="flex items-center gap-2 text-xs theme-muted">
+                          <Clock className="w-3 h-3" />
+                          {format(parseISO(event.start_at), 'H:mm')} - {format(parseISO(event.end_at), 'H:mm')}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 theme-muted group-hover:theme-text transition-colors" />
+                    </button>
+                  ))}
+                {(eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || []).length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12 theme-muted">
+                    <Clock className="w-12 h-12 opacity-10 mb-4" />
+                    <p className="text-sm font-bold opacity-40">予定はありません</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
