@@ -218,10 +218,29 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       const duration = endAt.getTime() - startAt.getTime();
       
       if (!event.recurrence_rule) {
-        if (isAfter(startAt, rangeEnd) || isBefore(startAt, subMonths(rangeStart, 1))) return; // rough filter
-        const dateKey = format(startAt, 'yyyy-MM-dd')
-        if (!map[dateKey]) map[dateKey] = []
-        map[dateKey].push(event)
+        // Multi-day non-recurring events
+        let current = new Date(startAt);
+        const eventEnd = new Date(endAt);
+        
+        while (current <= eventEnd && current <= rangeEnd) {
+          if (current >= rangeStart || isSameDay(current, rangeStart)) {
+            const dateKey = format(current, 'yyyy-MM-dd')
+            if (!map[dateKey]) map[dateKey] = []
+            
+            // Add virtual instance for multi-day display if it spans across days
+            const isMultiDay = !isSameDay(startAt, eventEnd);
+            if (isMultiDay) {
+              map[dateKey].push({
+                ...event,
+                id: `${event.id}_${dateKey}`,
+                realId: event.id
+              });
+            } else {
+              map[dateKey].push(event);
+            }
+          }
+          current = addDays(current, 1);
+        }
         return;
       }
 
@@ -463,8 +482,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                         {dayEvents.map(event => {
                                             const sDate = parseISO(event.start_at)
                                             const eDate = parseISO(event.end_at)
-                                            const s = sDate.getHours() * 60 + sDate.getMinutes()
-                                            let e = eDate.getHours() * 60 + eDate.getMinutes()
+                                            
+                                            // Calculate start/end minutes for THIS specific day column
+                                            const isStartsBefore = isBefore(sDate, dayDate) && !isSameDay(sDate, dayDate)
+                                            const isEndsAfter = isAfter(eDate, addDays(dayDate, 1)) || (isAfter(eDate, dayDate) && !isSameDay(eDate, dayDate) && (eDate.getHours() !== 0 || eDate.getMinutes() !== 0))
+                                            
+                                            const s = isStartsBefore ? 0 : sDate.getHours() * 60 + sDate.getMinutes()
+                                            let e = isEndsAfter ? 1440 : eDate.getHours() * 60 + eDate.getMinutes()
                                             
                                             // Handle midnight endings
                                             if (e === 0 && eDate.getDate() !== sDate.getDate()) {
@@ -703,8 +727,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     dayEvents.forEach(event => {
                       const startDate = parseISO(event.start_at)
                       const endDate = parseISO(event.end_at)
-                      const start = startDate.getHours() * 60 + startDate.getMinutes()
-                      let end = endDate.getHours() * 60 + endDate.getMinutes()
+                      
+                      // Calculate for this specific day (selectedDay)
+                      const isStartsBefore = isBefore(startDate, selectedDay) && !isSameDay(startDate, selectedDay)
+                      const isEndsAfter = isAfter(endDate, addDays(selectedDay, 1)) || (isAfter(endDate, selectedDay) && !isSameDay(endDate, selectedDay) && (endDate.getHours() !== 0 || endDate.getMinutes() !== 0))
+
+                      const start = isStartsBefore ? 0 : startDate.getHours() * 60 + startDate.getMinutes()
+                      let end = isEndsAfter ? 1440 : endDate.getHours() * 60 + endDate.getMinutes()
 
                       // Handle midnight endings
                       if (end === 0 && endDate.getDate() !== startDate.getDate()) {

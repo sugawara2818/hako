@@ -23,6 +23,7 @@ export interface CalendarEvent {
     display_name: string | null
     avatar_url: string | null
   }
+  realId?: string // Link virtual segment back to original event ID
 }
 
 export async function fetchCalendarEvents(hakoId: string, startDate: string, endDate: string) {
@@ -36,7 +37,7 @@ export async function fetchCalendarEvents(hakoId: string, startDate: string, end
     .from('hako_calendar_events')
     .select('*, profiles(display_name, avatar_url)')
     .eq('hako_id', hakoId)
-    .or(`recurrence_rule.neq.null,and(start_at.gte.${startDate},start_at.lte.${endDate})`)
+    .or(`recurrence_rule.neq.null,and(start_at.lte.${endDate},end_at.gte.${startDate})`)
     .order('start_at', { ascending: true })
 
   if (error) {

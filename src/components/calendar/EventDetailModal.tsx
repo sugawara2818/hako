@@ -63,6 +63,7 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
             <div className="space-y-1">
               <p className="text-sm font-black theme-text">
                 {format(startDate, 'yyyy年 M月 d日 (eeee)', { locale: ja })}
+                {!isSameDay(startDate, endDate) && ` 〜 ${format(endDate, 'yyyy年 M月 d日 (eeee)', { locale: ja })}`}
                 {event.is_private && (
                   <span className="ml-2 px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded-full border border-red-500/20">
                     非公開
