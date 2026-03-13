@@ -223,10 +223,17 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
                     className={`
                       relative aspect-square rounded-2xl flex flex-col items-center justify-center text-sm font-bold transition-all group
                       ${isFutureDay ? 'opacity-20 cursor-not-allowed theme-muted' : 'hover:bg-white/5 data-[theme=light]:hover:bg-black/5 theme-muted'}
-                      ${isSelected ? 'bg-blue-600/20 ring-1 ring-blue-500/30 text-blue-400' : ''}
+                      ${isSelected ? 'bg-blue-600 ring-1 ring-blue-500/30' : isToday(day) ? 'bg-blue-500/10 ring-1 ring-blue-500/20' : ''}
                     `}
                   >
-                    <span className={`${isSelected ? 'text-blue-400' : isToday(day) ? 'theme-text underline decoration-blue-500 underline-offset-4' : 'theme-muted hover:theme-text'}`}>
+                    <span className={`
+                      flex items-center justify-center w-8 h-8 rounded-full transition-all
+                      ${isSelected 
+                        ? 'text-white' 
+                        : isToday(day) 
+                          ? 'text-blue-400' 
+                          : 'theme-muted hover:theme-text'}
+                    `}>
                       {format(day, 'd')}
                     </span>
                     

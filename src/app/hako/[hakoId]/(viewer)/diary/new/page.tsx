@@ -34,20 +34,7 @@ export default async function NewDiaryPage({
   if (!hako || !member) return notFound()
 
   return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={count || 1}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={hako.features || ['timeline']}
-      userId={user.id}
-    >
-      <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
+    <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
               <Link href={`/hako/${hakoId}/diary`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold">
                 <ChevronLeft className="w-4 h-4" /> 日記に戻る
@@ -59,6 +46,6 @@ export default async function NewDiaryPage({
 
           <DiaryForm hakoId={hakoId} initialData={defaultDate ? { diary_date: defaultDate, title: '', content: '', id: '', is_public: true } : undefined} />
       </div>
-    </HakoViewerLayout>
+    </div>
   )
 }
