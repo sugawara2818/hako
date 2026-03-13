@@ -53,7 +53,8 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
   }
 
   const handleMoveEvent = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
-    const realId = (event as any).realId || event.id
+    const realId = (event as any).realId
+    const isRecurring = !!realId && realId !== event.id
 
     // Optimistic Update
     const oldEvents = [...events]
@@ -69,20 +70,40 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     }))
 
     try {
-      const result = await updateCalendarEvent(realId, hakoId, {
-        start_at: newStart.toISOString(),
-        end_at: newEnd.toISOString()
-      })
-      
-      if (!result.success) {
-        throw new Error(result.error)
+      if (isRecurring) {
+        // Handle recurrence exception: exclude current date and create new one-off
+        const originalDateStr = format(parseISO(event.start_at), 'yyyy-MM-dd')
+        
+        // 1. Exclude the occurrence
+        const excludeResult = await deleteRecurringOccurrence(realId, hakoId, originalDateStr)
+        if (!excludeResult.success) throw new Error(excludeResult.error)
+        
+        // 2. Create new independent event
+        const createResult = await createCalendarEvent({
+          hako_id: hakoId,
+          title: event.title,
+          description: event.description,
+          start_at: newStart.toISOString(),
+          end_at: newEnd.toISOString(),
+          is_all_day: event.is_all_day,
+          color: event.color,
+          is_private: event.is_private,
+          recurrence_rule: null,
+          recurrence_until: null,
+          excluded_dates: null
+        })
+        if (!createResult.success) throw new Error(createResult.error)
+      } else {
+        // Standard move for non-recurring events
+        const result = await updateCalendarEvent(event.id, hakoId, {
+          start_at: newStart.toISOString(),
+          end_at: newEnd.toISOString()
+        })
+        if (!result.success) throw new Error(result.error)
       }
+      
       // Revalidation in background
-      const now = new Date()
-      const start = startOfMonth(subMonths(now, 1)).toISOString()
-      const end = endOfMonth(addMonths(now, 2)).toISOString()
-      const data = await fetchCalendarEvents(hakoId, start, end)
-      setEvents(data)
+      await loadEvents()
     } catch (error) {
       console.error('Move event failed:', error)
       setEvents(oldEvents) // Rollback on failure
