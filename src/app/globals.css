@@ -27,6 +27,10 @@
   --heading-gradient-to: #9ca3af;
   /* gray-400 */
 
+  /* Calendar Grid */
+  --calendar-grid-hour: rgba(255, 255, 255, 0.3);
+  --calendar-grid-quarter: rgba(255, 255, 255, 0.1);
+
   /* Legacy compat */
   --background: #000000;
   --foreground: #ffffff;
@@ -54,6 +58,10 @@
   /* Light mode brand blue */
   --heading-gradient-from: #0f1419;
   --heading-gradient-to: #536471;
+
+  /* Calendar Grid (Light) */
+  --calendar-grid-hour: rgba(0, 0, 0, 0.25);
+  --calendar-grid-quarter: rgba(0, 0, 0, 0.1);
 
   /* Legacy compat */
   --background: #ffffff;

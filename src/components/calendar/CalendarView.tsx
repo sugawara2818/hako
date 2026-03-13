@@ -617,6 +617,15 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 <div 
                   ref={timelineRef}
                   className="flex min-h-full"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to bottom, var(--calendar-grid-hour) 1px, transparent 1px),
+                      linear-gradient(to bottom, var(--calendar-grid-quarter) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '100% 50px, 100% 12.5px',
+                    backgroundPosition: '0 24px, 0 24px',
+                    backgroundRepeat: 'repeat-y',
+                  }}
                 >
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-6">
@@ -652,23 +661,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                    onAddEvent(clickedTime);
                 }}
               >
-                {/* Grid Lines - Fixed coordinates */}
-                <div className="absolute top-[24px] inset-x-0 bottom-0 pointer-events-none">
-                  <div className="relative h-[1200px]">
-                    {Array.from({ length: 24 * 4 + 1 }).map((_, i) => {
-                      const hourIndex = Math.floor(i / 4);
-                      const minute = (i % 4) * 15;
-                      const isHour = minute === 0;
-                      return (
-                        <div 
-                          key={i} 
-                          className={`absolute left-0 right-0 h-[1px] ${isHour ? 'bg-black/50 dark:bg-white/40' : 'bg-black/20 dark:bg-white/15'}`} 
-                          style={{ top: `${(hourIndex + minute / 60) * 50}px` }} 
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
 
                 {/* Current Time Indicator */}
                 {isToday(selectedDay) && (
