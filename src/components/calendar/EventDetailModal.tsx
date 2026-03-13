@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { X, Clock, AlignLeft, User as UserIcon, Calendar, Edit2, Trash2, MapPin } from 'lucide-react'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, isSameDay } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { CalendarEvent } from '@/core/calendar/actions'
 
