@@ -43,9 +43,15 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       const start = startOfMonth(subMonths(now, 1)).toISOString()
       const end = endOfMonth(addMonths(now, 2)).toISOString()
       const data = await fetchCalendarEvents(hakoId, start, end)
-      // Safety: Strip any virtual metadata from backend data if it exists
-      const cleanEvents = data.map(e => ({ ...e, id: e.realId || e.id, realId: undefined }))
-      setEvents(cleanEvents)
+      // Safety: Strip any virtual metadata and deduplicate by real ID
+      const eventMap = new Map()
+      data.forEach(e => {
+        const id = e.realId || e.id
+        if (!eventMap.has(id)) {
+          eventMap.set(id, { ...e, id, realId: undefined })
+        }
+      })
+      setEvents(Array.from(eventMap.values()))
     } catch (error) {
       console.error('Failed to load events:', error)
     } finally {
@@ -61,8 +67,16 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleMoveEvent = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
     const oldEvents = [...events]
-    const realId = (event as any).realId || event.id
-    const isRecurring = !!(event as any).realId && (event as any).realId !== event.id
+    const realId = event.realId || event.id
+    const isRecurring = !!event.recurrence_rule
+
+    // Only trigger if moved significantly (more than 1 minute)
+    const oldStart = parseISO(event.start_at)
+    const diff = Math.abs(newStart.getTime() - oldStart.getTime())
+    if (diff <= 60 * 1000) { // If difference is 1 minute or less, consider it not moved
+      console.log('Event moved insignificantly, skipping update.');
+      return;
+    }
 
     setEvents(prev => prev.map(e => {
       // Always match by realId if available, and ensure resulting ID is the real one
