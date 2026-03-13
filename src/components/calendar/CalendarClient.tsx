@@ -52,6 +52,26 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     setIsModalOpen(true)
   }
 
+  const handleMoveEvent = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
+    const realId = (event as any).realId || event.id
+    setLoading(true)
+    try {
+      const result = await updateCalendarEvent(realId, hakoId, {
+        start_at: newStart.toISOString(),
+        end_at: newEnd.toISOString()
+      })
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      await loadEvents()
+    } catch (error) {
+      console.error('Move event failed:', error)
+      alert('移動に失敗しました')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleShowDetail = (event: CalendarEvent) => {
     setSelectedEvent(event)
     setIsDetailOpen(true)
@@ -143,6 +163,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         initialEvents={events}
         onAddEvent={handleAddEvent}
         onEditEvent={handleShowDetail}
+        onMoveEvent={handleMoveEvent}
       />
       
       <EventDetailModal

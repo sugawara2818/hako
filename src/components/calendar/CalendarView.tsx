@@ -31,14 +31,20 @@ interface CalendarViewProps {
   initialEvents: CalendarEvent[]
   onAddEvent: (date: Date) => void
   onEditEvent: (event: CalendarEvent) => void
+  onMoveEvent?: (event: CalendarEvent, newStart: Date, newEnd: Date) => void
 }
 
-export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }: CalendarViewProps) {
+export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, onMoveEvent }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const [isDayViewOpen, setIsDayViewOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'year'>('month')
   const [nowPosition, setNowPosition] = useState(0)
+  
+  // Drag and Drop State
+  const [draggingEvent, setDraggingEvent] = useState<CalendarEvent | null>(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [dragCurrentTop, setDragCurrentTop] = useState(0)
   
   // Slide Animation State
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | 'none'>('none')
@@ -534,7 +540,53 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
           })()}
 
           <div className="flex-1 overflow-y-auto relative no-scrollbar">
-            <div className="flex min-h-full">
+            <div 
+              className="flex min-h-full"
+              onMouseMove={(e) => {
+                if (!draggingEvent) return
+                const rect = e.currentTarget.getBoundingClientRect()
+                const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
+                const y = e.clientY - rect.top + scrollTop
+                setDragCurrentTop(y - dragOffset)
+              }}
+              onMouseUp={() => {
+                if (!draggingEvent) return
+                const finalTop = dragCurrentTop
+                const minutes = (finalTop / 50) * 60
+                const newStartDate = new Date(selectedDay)
+                newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
+                
+                const oldStart = parseISO(draggingEvent.start_at)
+                const oldEnd = parseISO(draggingEvent.end_at)
+                const duration = oldEnd.getTime() - oldStart.getTime()
+                const newEndDate = new Date(newStartDate.getTime() + duration)
+                
+                onMoveEvent?.(draggingEvent, newStartDate, newEndDate)
+                setDraggingEvent(null)
+              }}
+              onTouchMove={(e) => {
+                if (!draggingEvent) return
+                const rect = e.currentTarget.getBoundingClientRect()
+                const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
+                const y = e.touches[0].clientY - rect.top + scrollTop
+                setDragCurrentTop(y - dragOffset)
+              }}
+              onTouchEnd={() => {
+                if (!draggingEvent) return
+                const finalTop = dragCurrentTop
+                const minutes = (finalTop / 50) * 60
+                const newStartDate = new Date(selectedDay)
+                newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
+                
+                const oldStart = parseISO(draggingEvent.start_at)
+                const oldEnd = parseISO(draggingEvent.end_at)
+                const duration = oldEnd.getTime() - oldStart.getTime()
+                const newEndDate = new Date(newStartDate.getTime() + duration)
+                
+                onMoveEvent?.(draggingEvent, newStartDate, newEndDate)
+                setDraggingEvent(null)
+              }}
+            >
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-4">
                 {Array.from({ length: 24 }).map((_, hour) => (
@@ -545,7 +597,18 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
               </div>
 
               {/* Timeline Content */}
-              <div className="flex-1 relative">
+              <div 
+                className="flex-1 relative"
+                onClick={(e) => {
+                   if (draggingEvent) return;
+                   const rect = e.currentTarget.getBoundingClientRect();
+                   const y = e.clientY - rect.top;
+                   const minutes = (y / 50) * 60;
+                   const clickedTime = new Date(selectedDay);
+                   clickedTime.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0);
+                   onAddEvent(clickedTime);
+                }}
+              >
                 {/* Hour Lines - High visibility */}
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div 
@@ -610,25 +673,54 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent }:
                       const totalCols = columns.length;
                       const width = 100 / totalCols;
                       const left = pos.left * width;
+                      
+                      const isDragging = draggingEvent?.id === pos.event.id
+                      const displayTop = isDragging ? dragCurrentTop : pos.top + 2
 
                       return (
                         <button
                           key={pos.event.id}
-                          onClick={() => onEditEvent(pos.event)}
-                          className="absolute p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all active:scale-[0.99] group text-left overflow-hidden z-10"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onEditEvent(pos.event)
+                          }}
+                          onMouseDown={(e) => {
+                            // Only drag if it's the user's event or if the user is authorized (simplification for now)
+                            e.stopPropagation()
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const offset = e.clientY - rect.top
+                            setDraggingEvent(pos.event)
+                            setDragOffset(offset)
+                            setDragCurrentTop(pos.top + 2)
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation()
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const offset = e.touches[0].clientY - rect.top
+                            setDraggingEvent(pos.event)
+                            setDragOffset(offset)
+                            setDragCurrentTop(pos.top + 2)
+                          }}
+                          className={`absolute p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl ring-2 ring-white/20' : 'z-10'}`}
                           style={{ 
-                            top: `${pos.top + 2}px`, 
+                            top: `${displayTop}px`, 
                             height: `${pos.height}px`,
-                            left: `${left}%`,
-                            width: `${width}%`,
+                            left: `${isDragging ? '0' : left + '%'}`,
+                            width: `${isDragging ? '100%' : width + '%'}`,
                             borderLeft: `3px solid ${pos.event.color}`,
                             backgroundColor: `${pos.event.color}40`,
-                            boxShadow: `0 2px 10px -2px ${pos.event.color}40`
+                            boxShadow: `0 2px 10px -2px ${pos.event.color}40`,
+                            cursor: 'grab'
                           }}
                         >
-                          <h4 className="text-[10px] font-bold theme-text leading-tight truncate">
+                          <h4 className="text-[10px] font-bold theme-text leading-tight truncate pointer-events-none">
                             {pos.event.title}
                           </h4>
+                          {isDragging && (
+                            <div className="absolute top-0 right-0 p-1">
+                               <div className="text-[8px] font-black bg-white/10 px-1 py-0.5 rounded">MOVING</div>
+                            </div>
+                          )}
                         </button>
                       )
                     })

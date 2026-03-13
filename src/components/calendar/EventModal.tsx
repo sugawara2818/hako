@@ -51,10 +51,19 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
     } else if (initialDate) {
       setTitle('')
       setDescription('')
+      
       const start = new Date(initialDate)
-      start.setHours(9, 0, 0, 0)
       const end = new Date(initialDate)
-      end.setHours(10, 0, 0, 0)
+      
+      // If it's exactly midnight, default to 9:00 - 10:00
+      if (start.getHours() === 0 && start.getMinutes() === 0 && start.getSeconds() === 0) {
+        start.setHours(9, 0, 0, 0)
+        end.setHours(10, 0, 0, 0)
+      } else {
+        // Otherwise use the provided time and default to 1 hour duration
+        end.setHours(start.getHours() + 1, start.getMinutes(), 0, 0)
+      }
+      
       setStartAt(format(start, "yyyy-MM-dd'T'HH:mm"))
       setEndAt(format(end, "yyyy-MM-dd'T'HH:mm"))
       setIsAllDay(false)
