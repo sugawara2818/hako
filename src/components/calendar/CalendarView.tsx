@@ -62,7 +62,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       const now = new Date()
       const startOfDayTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
       const minutesSinceStart = (now.getTime() - startOfDayTime) / (1000 * 60)
-      setNowPosition((minutesSinceStart / 60) * 50)
+      setNowPosition(minutesSinceStart)
     }
     updatePosition()
     const interval = setInterval(updatePosition, 60000)
@@ -82,15 +82,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       // Subtract 24px (pt-6) to align y=0 with 0:00
       const y = clientY - rect.top - 24
       
-      const rawMinutes = ((y - dragOffset) / 50) * 60
+      const rawMinutes = (y - dragOffset)
       const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
-      setDragCurrentTop((snappedMinutes / 60) * 50)
+      setDragCurrentTop(snappedMinutes)
     }
 
     const handleGlobalEnd = () => {
       if (!draggingEvent) return;
-      const finalTop = dragCurrentTop
-      const minutes = (finalTop / 50) * 60
+      const minutes = dragCurrentTop
       const newStartDate = new Date(selectedDay)
       newStartDate.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0)
       
@@ -424,7 +423,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     {/* Time Axis */}
                     <div className="w-14 shrink-0 border-r theme-border pt-4 bg-white/[0.02]">
                         {Array.from({ length: 24 }).map((_, hour) => (
-                            <div key={hour} className="h-[50px] text-[10px] theme-muted font-bold text-center pr-2">
+                            <div key={hour} className="h-[60px] text-[10px] theme-muted font-bold text-center pr-2">
                                 {hour === 0 ? '' : `${hour}:00`}
                             </div>
                         ))}
@@ -436,8 +435,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         {Array.from({ length: 24 }).map((_, hour) => (
                             <div 
                                 key={hour} 
-                                className="absolute left-0 right-0 border-t theme-border opacity-30 h-[50px] pointer-events-none" 
-                                style={{ top: `${hour * 50}px` }} 
+                                className="absolute left-0 right-0 border-t theme-border opacity-30 h-[60px] pointer-events-none" 
+                                style={{ top: `${hour * 60}px` }} 
                             />
                         ))}
 
@@ -466,8 +465,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                             const eDate = parseISO(event.end_at)
                                             const s = sDate.getHours() * 60 + sDate.getMinutes()
                                             const e = eDate.getHours() * 60 + eDate.getMinutes()
-                                            const t = (s / 60) * 50
-                                            const h = Math.max(((e - s) / 60) * 50 - 2, 20)
+                                            const t = s
+                                            const h = Math.max((e - s) - 2, 20)
                                             
                                             return (
                                                 <button
@@ -621,7 +620,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-6 z-10 theme-bg">
                 {Array.from({ length: 24 }).map((_, hour) => (
-                  <div key={hour} className="h-[50px] relative">
+                  <div key={hour} className="h-[60px] relative">
                     <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit">
                         {hour === 0 ? '0:00' : `${hour}:00`}
                     </div>
@@ -641,14 +640,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 style={{
                   backgroundImage: `
                     linear-gradient(to bottom, 
-                      var(--calendar-grid-hour) 0, var(--calendar-grid-hour) 1px, transparent 1px,
-                      transparent 12.5px, var(--calendar-grid-quarter) 12.5px, var(--calendar-grid-quarter) 13.5px, transparent 13.5px,
-                      transparent 25px, var(--calendar-grid-quarter) 25px, var(--calendar-grid-quarter) 26px, transparent 26px,
-                      transparent 37.5px, var(--calendar-grid-quarter) 37.5px, var(--calendar-grid-quarter) 38.5px, transparent 38.5px,
-                      transparent 50px
+                      var(--calendar-grid-hour) 0px, var(--calendar-grid-hour) 1px, transparent 1px,
+                      transparent 15px, var(--calendar-grid-quarter) 15px, var(--calendar-grid-quarter) 16px, transparent 16px,
+                      transparent 30px, var(--calendar-grid-quarter) 30px, var(--calendar-grid-quarter) 31px, transparent 31px,
+                      transparent 45px, var(--calendar-grid-quarter) 45px, var(--calendar-grid-quarter) 46px, transparent 46px,
+                      transparent 60px
                     )
                   `,
-                  backgroundSize: '100% 50px',
+                  backgroundSize: '100% 60px',
                   backgroundPosition: '0 24px',
                   backgroundRepeat: 'repeat-y',
                 }}
@@ -679,7 +678,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 )}
 
                 {/* Events Container */}
-                <div className="relative h-[1200px]">
+                <div className="relative h-[1440px]">
                   {(() => {
                     const dayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
                       .filter(e => !e.is_all_day)
