@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { HakoViewerLayout } from '@/components/hako/hako-viewer-layout'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { UserAvatarUpload } from '@/components/hako/user-avatar-upload'
-import { Hash, BookOpen, User as UserIcon } from 'lucide-react'
+import { Hash, BookOpen, User as UserIcon, ChevronLeft } from 'lucide-react'
+import { ProfileBackButton } from '@/components/hako/profile-back-button'
 import { TimelineFeed } from '@/components/timeline/TimelineFeed'
 import Image from 'next/image'
 
@@ -60,7 +61,8 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     return (
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
         {/* Profile Header */}
-        <div className="max-w-4xl mx-auto px-4 py-12 md:py-16 animate-fade-in">
+        <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 animate-fade-in">
+          <ProfileBackButton />
           <div className="flex flex-col md:flex-row items-center gap-6 mb-12">
             {isOwnProfile ? (
               <UserAvatarUpload 
