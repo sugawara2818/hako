@@ -564,14 +564,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               </span>
             </div>
             <div className="flex-1" />
-            <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-2xl mr-2">
+            <div className="flex bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-2xl mr-2">
               {(['timeline', 'list'] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                     view === v 
-                      ? 'bg-white dark:bg-white/10 theme-text shadow-sm' 
+                      ? 'theme-surface theme-text shadow-sm ring-1 ring-black/5 dark:ring-white/10' 
                       : 'theme-muted hover:theme-text'
                   }`}
                 >
