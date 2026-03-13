@@ -617,28 +617,19 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 <div 
                   ref={timelineRef}
                   className="flex min-h-full"
-                  style={{
-                    backgroundImage: `
-                      linear-gradient(to bottom, var(--calendar-grid-hour) 1px, transparent 1px),
-                      linear-gradient(to bottom, var(--calendar-grid-quarter) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '100% 50px, 100% 12.5px',
-                    backgroundPosition: '0 24px, 0 24px',
-                    backgroundRepeat: 'repeat-y',
-                  }}
                 >
               {/* Time Axis */}
-              <div className="w-14 shrink-0 border-r theme-border pt-6">
+              <div className="w-14 shrink-0 border-r theme-border pt-6 z-10 theme-bg">
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div key={hour} className="h-[50px] relative">
-                    <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2">
+                    <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit">
                         {hour === 0 ? '0:00' : `${hour}:00`}
                     </div>
                   </div>
                 ))}
                 {/* 24:00 label at the bottom */}
                 <div className="h-0 relative">
-                  <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2">
+                  <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit">
                     24:00
                   </div>
                 </div>
@@ -647,6 +638,15 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               {/* Timeline Content */}
               <div 
                 className="flex-1 relative pt-6"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(to bottom, var(--calendar-grid-hour) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--calendar-grid-quarter) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '100% 50px, 100% 12.5px',
+                  backgroundPosition: '0 24px, 0 24px',
+                  backgroundRepeat: 'repeat-y',
+                }}
                 onClick={(e) => {
                    if (draggingEvent) return;
                    const rect = e.currentTarget.getBoundingClientRect();
