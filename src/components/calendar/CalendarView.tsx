@@ -549,7 +549,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const y = e.clientY - rect.top + scrollTop
                 
                 // Snap to 15 minutes
-                const rawMinutes = ((y - dragOffset) / 50) * 60
+                // Subtract 24px (pt-6) offset to align with the grid
+                const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
                 const snappedMinutes = Math.round(rawMinutes / 15) * 15
                 setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
@@ -575,7 +576,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const y = e.touches[0].clientY - rect.top + scrollTop
                 
                 // Snap to 15 minutes
-                const rawMinutes = ((y - dragOffset) / 50) * 60
+                // Subtract 24px (pt-6) offset to align with the grid
+                const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
                 const snappedMinutes = Math.round(rawMinutes / 15) * 15
                 setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
@@ -736,24 +738,26 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               setDragOffset(offset)
                               setDragCurrentTop(pos.top)
                             }}
-                            className={`absolute p-1.5 rounded-md border theme-border shadow-sm group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl ring-2 ring-white/30 transition-none' : 'z-10 hover:opacity-80 transition-all active:scale-[0.98]'}`}
+                            className={`absolute p-1.5 rounded-md border theme-border shadow-sm group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.05] shadow-2xl ring-2 ring-white/50 transition-none' : 'z-10 hover:opacity-80 transition-all active:scale-[0.98]'}`}
                             style={{ 
                               top: `${displayTop}px`, 
                               height: `${pos.height}px`,
-                              left: `${isDragging ? '0' : left + '%'}`,
-                              width: `${isDragging ? '100%' : width + '%'}`,
+                              left: `${left}%`,
+                              width: `${width}%`,
                               borderLeft: `3px solid ${pos.event.color}`,
-                              backgroundColor: `${pos.event.color}40`,
-                              boxShadow: isDragging ? `0 8px 30px -4px ${pos.event.color}60` : `0 2px 10px -2px ${pos.event.color}40`,
+                              backgroundColor: isDragging ? pos.event.color : `${pos.event.color}40`,
+                              color: isDragging ? '#fff' : 'inherit',
+                              boxShadow: isDragging ? `0 20px 50px -12px ${pos.event.color}aa` : `0 2px 10px -2px ${pos.event.color}40`,
                               cursor: isDragging ? 'grabbing' : 'grab',
-                              touchAction: 'none'
+                              touchAction: 'none',
+                              opacity: isDragging ? 1 : undefined
                             }}
                           >
-                            <h4 className="text-[10px] font-bold theme-text leading-tight truncate pointer-events-none">
+                            <h4 className={`text-[10px] font-bold leading-tight truncate pointer-events-none ${isDragging ? 'text-white' : 'theme-text'}`}>
                               {pos.event.title}
                             </h4>
                             {isDragging && (
-                              <div className="absolute inset-0 bg-white/5 animate-pulse pointer-events-none" />
+                              <div className="absolute inset-0 bg-white/10 animate-pulse pointer-events-none" />
                             )}
                           </button>
                         </React.Fragment>
