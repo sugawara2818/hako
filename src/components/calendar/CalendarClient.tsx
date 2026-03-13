@@ -54,21 +54,39 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleMoveEvent = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
     const realId = (event as any).realId || event.id
-    setLoading(true)
+
+    // Optimistic Update
+    const oldEvents = [...events]
+    setEvents(prev => prev.map(e => {
+      if (e.id === event.id) {
+        return {
+          ...e,
+          start_at: newStart.toISOString(),
+          end_at: newEnd.toISOString()
+        }
+      }
+      return e
+    }))
+
     try {
       const result = await updateCalendarEvent(realId, hakoId, {
         start_at: newStart.toISOString(),
         end_at: newEnd.toISOString()
       })
+      
       if (!result.success) {
         throw new Error(result.error)
       }
-      await loadEvents()
+      // Revalidation in background
+      const now = new Date()
+      const start = startOfMonth(subMonths(now, 1)).toISOString()
+      const end = endOfMonth(addMonths(now, 2)).toISOString()
+      const data = await fetchCalendarEvents(hakoId, start, end)
+      setEvents(data)
     } catch (error) {
       console.error('Move event failed:', error)
-      alert('移動に失敗しました')
-    } finally {
-      setLoading(false)
+      setEvents(oldEvents) // Rollback on failure
+      alert('移動に失敗しました。元の位置に戻します。')
     }
   }
 
