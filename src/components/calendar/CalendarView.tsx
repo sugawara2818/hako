@@ -547,7 +547,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const rect = e.currentTarget.getBoundingClientRect()
                 const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
                 const y = e.clientY - rect.top + scrollTop
-                setDragCurrentTop(y - dragOffset)
+                
+                // Snap to 15 minutes
+                const rawMinutes = ((y - dragOffset) / 50) * 60
+                const snappedMinutes = Math.round(rawMinutes / 15) * 15
+                setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
               onMouseUp={() => {
                 if (!draggingEvent) return
@@ -569,7 +573,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const rect = e.currentTarget.getBoundingClientRect()
                 const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
                 const y = e.touches[0].clientY - rect.top + scrollTop
-                setDragCurrentTop(y - dragOffset)
+                
+                // Snap to 15 minutes
+                const rawMinutes = ((y - dragOffset) / 50) * 60
+                const snappedMinutes = Math.round(rawMinutes / 15) * 15
+                setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
               onTouchEnd={() => {
                 if (!draggingEvent) return
@@ -590,8 +598,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               {/* Time Axis */}
               <div className="w-14 shrink-0 border-r theme-border pt-4">
                 {Array.from({ length: 24 }).map((_, hour) => (
-                  <div key={hour} className="h-[50px] text-[10px] theme-muted font-bold text-center pr-2">
-                    {hour === 0 ? '' : `${hour}:00`}
+                  <div key={hour} className="h-[50px] relative">
+                    <div className="absolute -top-2 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2">
+                        {hour === 0 ? '' : `${hour}:00`}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -603,20 +613,29 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                    if (draggingEvent) return;
                    const rect = e.currentTarget.getBoundingClientRect();
                    const y = e.clientY - rect.top;
-                   const minutes = (y / 50) * 60;
+                   
+                   // Snap to 15 minutes
+                   const rawMinutes = (y / 50) * 60;
+                   const snappedMinutes = Math.round(rawMinutes / 15) * 15;
+                   
                    const clickedTime = new Date(selectedDay);
-                   clickedTime.setHours(Math.floor(minutes / 60), Math.round(minutes % 60), 0, 0);
+                   clickedTime.setHours(Math.floor(snappedMinutes / 60), Math.round(snappedMinutes % 60), 0, 0);
                    onAddEvent(clickedTime);
                 }}
               >
-                {/* Hour Lines - High visibility */}
-                {Array.from({ length: 24 }).map((_, hour) => (
-                  <div 
-                    key={hour} 
-                    className="absolute left-0 right-0 border-t theme-border opacity-60 h-[50px] pointer-events-none" 
-                    style={{ top: `${hour * 50}px` }} 
-                  />
-                ))}
+                {/* Grid Lines */}
+                {Array.from({ length: 24 * 4 }).map((_, i) => {
+                  const hour = Math.floor(i / 4);
+                  const minute = (i % 4) * 15;
+                  const isHour = minute === 0;
+                  return (
+                    <div 
+                      key={i} 
+                      className={`absolute left-0 right-0 border-t theme-border pointer-events-none ${isHour ? 'opacity-60' : 'opacity-10 border-dashed'}`} 
+                      style={{ top: `${(hour + minute / 60) * 50}px` }} 
+                    />
+                  );
+                })}
 
                 {/* Current Time Indicator */}
                 {isToday(selectedDay) && (
@@ -653,7 +672,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const start = startDate.getHours() * 60 + startDate.getMinutes()
                       const end = endDate.getHours() * 60 + endDate.getMinutes()
                       const top = (start / 60) * 50
-                      const height = Math.max(((end - start) / 60) * 50 - 2, 20)
+                      const height = Math.max(((end - start) / 60) * 50 - 1, 15) // Slightly adjust for grid alignment
 
                       let colIndex = columns.findIndex(col => 
                         !col.some(e => (start < e.end && end > e.start))
@@ -675,7 +694,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const left = pos.left * width;
                       
                       const isDragging = draggingEvent?.id === pos.event.id
-                      const displayTop = isDragging ? dragCurrentTop : pos.top + 2
+                      const displayTop = isDragging ? dragCurrentTop : pos.top
 
                       return (
                         <button
@@ -685,13 +704,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                             onEditEvent(pos.event)
                           }}
                           onMouseDown={(e) => {
-                            // Only drag if it's the user's event or if the user is authorized (simplification for now)
                             e.stopPropagation()
                             const rect = e.currentTarget.getBoundingClientRect()
                             const offset = e.clientY - rect.top
                             setDraggingEvent(pos.event)
                             setDragOffset(offset)
-                            setDragCurrentTop(pos.top + 2)
+                            setDragCurrentTop(pos.top)
                           }}
                           onTouchStart={(e) => {
                             e.stopPropagation()
@@ -699,7 +717,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                             const offset = e.touches[0].clientY - rect.top
                             setDraggingEvent(pos.event)
                             setDragOffset(offset)
-                            setDragCurrentTop(pos.top + 2)
+                            setDragCurrentTop(pos.top)
                           }}
                           className={`absolute p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl ring-2 ring-white/20' : 'z-10'}`}
                           style={{ 
@@ -716,11 +734,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <h4 className="text-[10px] font-bold theme-text leading-tight truncate pointer-events-none">
                             {pos.event.title}
                           </h4>
-                          {isDragging && (
-                            <div className="absolute top-0 right-0 p-1">
-                               <div className="text-[8px] font-black bg-white/10 px-1 py-0.5 rounded">MOVING</div>
-                            </div>
-                          )}
                         </button>
                       )
                     })
