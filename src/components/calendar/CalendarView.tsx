@@ -789,9 +789,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         </React.Fragment>
                       )
                     })
+                  })()}
                 </div>
               </div>
-            ) : (
+            </div>
+          </div>
+        ) : (
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {(eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
                   .sort((a, b) => a.start_at.localeCompare(b.start_at))
