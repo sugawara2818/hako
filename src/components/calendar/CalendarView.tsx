@@ -464,7 +464,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                             const sDate = parseISO(event.start_at)
                                             const eDate = parseISO(event.end_at)
                                             const s = sDate.getHours() * 60 + sDate.getMinutes()
-                                            const e = eDate.getHours() * 60 + eDate.getMinutes()
+                                            let e = eDate.getHours() * 60 + eDate.getMinutes()
+                                            
+                                            // Handle midnight endings
+                                            if (e === 0 && eDate.getDate() !== sDate.getDate()) {
+                                                e = 1440
+                                            }
+                                            
                                             const t = s
                                             const h = Math.max((e - s) - 2, 20)
                                             
@@ -698,7 +704,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const startDate = parseISO(event.start_at)
                       const endDate = parseISO(event.end_at)
                       const start = startDate.getHours() * 60 + startDate.getMinutes()
-                      const end = endDate.getHours() * 60 + endDate.getMinutes()
+                      let end = endDate.getHours() * 60 + endDate.getMinutes()
+
+                      // Handle midnight endings
+                      if (end === 0 && endDate.getDate() !== startDate.getDate()) {
+                        end = 1440
+                      }
+
                       const top = start
                       const height = Math.max((end - start) - 1, 15)
 
