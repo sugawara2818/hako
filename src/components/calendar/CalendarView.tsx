@@ -653,7 +653,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 }}
               >
                 {/* Grid Lines - Fixed coordinates */}
-                <div className="absolute inset-0 pt-6 pointer-events-none">
+                <div className="absolute top-[24px] inset-x-0 bottom-0 pointer-events-none">
                   <div className="relative h-[1200px]">
                     {Array.from({ length: 24 * 4 + 1 }).map((_, i) => {
                       const hourIndex = Math.floor(i / 4);
@@ -662,7 +662,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       return (
                         <div 
                           key={i} 
-                          className={`absolute left-0 right-0 border-t ${isHour ? 'border-zinc-400 dark:border-white/20' : 'border-zinc-300 dark:border-white/10 border-dashed'}`} 
+                          className={`absolute left-0 right-0 border-t ${isHour ? 'border-black/30 dark:border-white/20' : 'border-black/15 dark:border-white/10 border-dashed'}`} 
                           style={{ top: `${(hourIndex + minute / 60) * 50}px` }} 
                         />
                       );
