@@ -76,11 +76,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
     const handleGlobalMove = (clientY: number) => {
       if (!timelineRef.current) return
       const rect = timelineRef.current.getBoundingClientRect()
-      const scrollTop = timelineRef.current.parentElement?.scrollTop || 0
       
-      // Calculate y relative to the start of the 0:00 line
+      // rect.top is the top of the timeline content IN THE VIEWPORT.
+      // e.clientY - rect.top is the position within the timeline content.
       // Subtract 24px (pt-6) to align y=0 with 0:00
-      const y = clientY - rect.top + scrollTop - 24
+      const y = clientY - rect.top - 24
       
       const rawMinutes = ((y - dragOffset) / 50) * 60
       const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
@@ -757,7 +757,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               setDragCurrentTop(pos.top)
                             }}
                             onTouchStart={(e) => {
-                              e.stopPropagation()
+                              // e.stopPropagation() // Keep propagation to allow clicks if needed, but here we want drag
                               const rect = e.currentTarget.getBoundingClientRect()
                               const offset = e.touches[0].clientY - rect.top
                               setDraggingEvent(pos.event)
