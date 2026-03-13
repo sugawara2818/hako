@@ -139,7 +139,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       if (editingEvent) {
         const realId = editingEvent.realId || editingEvent.id;
         result = await updateCalendarEvent(realId, hakoId, eventData);
-        if (result.success) {
+        if (result?.success) {
           // Update local state immediately with real ID only
           setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, ...eventData, id: realId, realId: undefined } : e));
         }
@@ -148,7 +148,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
           ...eventData,
           hako_id: hakoId
         });
-        if (result.success && result.data) {
+        if (result?.success && result?.data) {
           // Add to local state with real database ID
           setEvents(prev => [...prev, { ...result.data, id: result.data.id, realId: undefined }]);
         }
