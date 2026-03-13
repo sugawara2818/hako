@@ -134,28 +134,29 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleSaveEvent = async (eventData: any) => {
     try {
-      let result: { success: boolean, data?: any, error?: string } | undefined;
+      let finalResult: { success: boolean, data?: any, error?: string } | undefined;
       
       if (editingEvent) {
         const realId = editingEvent.realId || editingEvent.id;
-        result = await updateCalendarEvent(realId, hakoId, eventData);
-        if (result?.success) {
-          // Update local state immediately with real ID only
+        const res = await updateCalendarEvent(realId, hakoId, eventData);
+        if (res.success) {
           setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, ...eventData, id: realId, realId: undefined } : e));
         }
+        finalResult = res;
       } else {
-        result = await createCalendarEvent({
+        const res = await createCalendarEvent({
           ...eventData,
           hako_id: hakoId
         });
-        if (result?.success && result?.data) {
-          // Add to local state with real database ID
-          setEvents(prev => [...prev, { ...result.data, id: result.data.id, realId: undefined }]);
+        if (res.success && res.data) {
+          const newData = res.data;
+          setEvents(prev => [...prev, { ...newData, id: newData.id, realId: undefined }]);
         }
+        finalResult = res;
       }
       
-      if (!result?.success) {
-        throw new Error(result?.error || '保存に失敗しました');
+      if (!finalResult?.success) {
+        throw new Error(finalResult?.error || '保存に失敗しました');
       }
 
       await loadEvents();
