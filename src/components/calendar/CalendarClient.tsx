@@ -134,37 +134,34 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
 
   const handleSaveEvent = async (eventData: any) => {
     try {
-      let result;
+      let result: { success: boolean, data?: any, error?: string } | undefined;
+      
       if (editingEvent) {
         const realId = editingEvent.realId || editingEvent.id;
-        result = await updateCalendarEvent(realId, hakoId, eventData)
+        result = await updateCalendarEvent(realId, hakoId, eventData);
         if (result.success) {
+          // Update local state immediately with real ID only
           setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, ...eventData, id: realId, realId: undefined } : e));
         }
       } else {
         result = await createCalendarEvent({
           ...eventData,
           hako_id: hakoId
-        })
+        });
         if (result.success && result.data) {
+          // Add to local state with real database ID
           setEvents(prev => [...prev, { ...result.data, id: result.data.id, realId: undefined }]);
         }
       }
       
       if (!result?.success) {
-        throw new Error(result?.error || '保存に失敗しました')
+        throw new Error(result?.error || '保存に失敗しました');
       }
 
-      // If updating, ensure state doesn't leak virtual IDs
-      if (editingEvent) {
-        const realId = editingEvent.realId || editingEvent.id;
-        setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, id: realId, ...eventData } : e));
-      }
-
-      await loadEvents()
+      await loadEvents();
     } catch (error) {
-      console.error('Save event failed details:', error)
-      throw error // Re-throw to inform EventModal
+      console.error('Save event failed details:', error);
+      throw error;
     }
   }
 
