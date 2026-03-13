@@ -21,6 +21,8 @@ interface DiaryFormProps {
 export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [existingDates, setExistingDates] = useState<string[]>([])
   const [title, setTitle] = useState(initialData?.title || '')
   const [content, setContent] = useState(initialData?.content || '')
   const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
