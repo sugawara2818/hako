@@ -596,11 +596,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               }}
             >
               {/* Time Axis */}
-              <div className="w-14 shrink-0 border-r theme-border pt-4">
+              <div className="w-14 shrink-0 border-r theme-border pt-6">
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div key={hour} className="h-[50px] relative">
-                    <div className="absolute -top-2 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2">
-                        {hour === 0 ? '' : `${hour}:00`}
+                    <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2">
+                        {hour === 0 ? '0:00' : `${hour}:00`}
                     </div>
                   </div>
                 ))}
@@ -608,11 +608,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
 
               {/* Timeline Content */}
               <div 
-                className="flex-1 relative"
+                className="flex-1 relative pt-6"
                 onClick={(e) => {
                    if (draggingEvent) return;
                    const rect = e.currentTarget.getBoundingClientRect();
-                   const y = e.clientY - rect.top;
+                   const y = e.clientY - rect.top - 24; // Account for pt-6
                    
                    // Snap to 15 minutes
                    const rawMinutes = (y / 50) * 60;
@@ -624,24 +624,28 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 }}
               >
                 {/* Grid Lines */}
-                {Array.from({ length: 24 * 4 }).map((_, i) => {
-                  const hour = Math.floor(i / 4);
-                  const minute = (i % 4) * 15;
-                  const isHour = minute === 0;
-                  return (
-                    <div 
-                      key={i} 
-                      className={`absolute left-0 right-0 border-t theme-border pointer-events-none ${isHour ? 'opacity-60' : 'opacity-10 border-dashed'}`} 
-                      style={{ top: `${(hour + minute / 60) * 50}px` }} 
-                    />
-                  );
-                })}
+                <div className="absolute inset-0 pt-6 pointer-events-none">
+                  <div className="relative h-full">
+                    {Array.from({ length: 24 * 4 }).map((_, i) => {
+                      const hour = Math.floor(i / 4);
+                      const minute = (i % 4) * 15;
+                      const isHour = minute === 0;
+                      return (
+                        <div 
+                          key={i} 
+                          className={`absolute left-0 right-0 border-t theme-border ${isHour ? 'opacity-60' : 'opacity-10 border-dashed'}`} 
+                          style={{ top: `${(hour + minute / 60) * 50}px` }} 
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* Current Time Indicator */}
                 {isToday(selectedDay) && (
                   <div 
                     className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
-                    style={{ top: `${nowPosition}px` }}
+                    style={{ top: `${nowPosition + 24}px` }}
                   >
                     <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1 shadow-lg shadow-blue-500/50" />
                     <div className="flex-1 h-[2px] bg-blue-500 shadow-lg shadow-blue-500/20" />
@@ -672,7 +676,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const start = startDate.getHours() * 60 + startDate.getMinutes()
                       const end = endDate.getHours() * 60 + endDate.getMinutes()
                       const top = (start / 60) * 50
-                      const height = Math.max(((end - start) / 60) * 50 - 1, 15) // Slightly adjust for grid alignment
+                      const height = Math.max(((end - start) / 60) * 50 - 1, 15)
 
                       let colIndex = columns.findIndex(col => 
                         !col.some(e => (start < e.end && end > e.start))
