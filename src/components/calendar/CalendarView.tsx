@@ -701,44 +701,62 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const displayTop = isDragging ? dragCurrentTop : pos.top
 
                       return (
-                        <button
-                          key={pos.event.id}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEditEvent(pos.event)
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation()
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const offset = e.clientY - rect.top
-                            setDraggingEvent(pos.event)
-                            setDragOffset(offset)
-                            setDragCurrentTop(pos.top)
-                          }}
-                          onTouchStart={(e) => {
-                            e.stopPropagation()
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const offset = e.touches[0].clientY - rect.top
-                            setDraggingEvent(pos.event)
-                            setDragOffset(offset)
-                            setDragCurrentTop(pos.top)
-                          }}
-                          className={`absolute p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl ring-2 ring-white/20' : 'z-10'}`}
-                          style={{ 
-                            top: `${displayTop}px`, 
-                            height: `${pos.height}px`,
-                            left: `${isDragging ? '0' : left + '%'}`,
-                            width: `${isDragging ? '100%' : width + '%'}`,
-                            borderLeft: `3px solid ${pos.event.color}`,
-                            backgroundColor: `${pos.event.color}40`,
-                            boxShadow: `0 2px 10px -2px ${pos.event.color}40`,
-                            cursor: 'grab'
-                          }}
-                        >
-                          <h4 className="text-[10px] font-bold theme-text leading-tight truncate pointer-events-none">
-                            {pos.event.title}
-                          </h4>
-                        </button>
+                        <React.Fragment key={pos.event.id}>
+                          {/* Ghost Placeholder */}
+                          {isDragging && (
+                            <div
+                              className="absolute p-1.5 rounded-md border border-dashed border-white/20 bg-white/5 opacity-50 pointer-events-none z-0"
+                              style={{ 
+                                top: `${pos.top}px`, 
+                                height: `${pos.height}px`,
+                                left: `${left}%`,
+                                width: `${width}%`,
+                              }}
+                            />
+                          )}
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onEditEvent(pos.event)
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation()
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const offset = e.clientY - rect.top
+                              setDraggingEvent(pos.event)
+                              setDragOffset(offset)
+                              setDragCurrentTop(pos.top)
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation()
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const offset = e.touches[0].clientY - rect.top
+                              setDraggingEvent(pos.event)
+                              setDragOffset(offset)
+                              setDragCurrentTop(pos.top)
+                            }}
+                            className={`absolute p-1.5 rounded-md border theme-border shadow-sm group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl ring-2 ring-white/30 transition-none' : 'z-10 hover:opacity-80 transition-all active:scale-[0.98]'}`}
+                            style={{ 
+                              top: `${displayTop}px`, 
+                              height: `${pos.height}px`,
+                              left: `${isDragging ? '0' : left + '%'}`,
+                              width: `${isDragging ? '100%' : width + '%'}`,
+                              borderLeft: `3px solid ${pos.event.color}`,
+                              backgroundColor: `${pos.event.color}40`,
+                              boxShadow: isDragging ? `0 8px 30px -4px ${pos.event.color}60` : `0 2px 10px -2px ${pos.event.color}40`,
+                              cursor: isDragging ? 'grabbing' : 'grab',
+                              touchAction: 'none'
+                            }}
+                          >
+                            <h4 className="text-[10px] font-bold theme-text leading-tight truncate pointer-events-none">
+                              {pos.event.title}
+                            </h4>
+                            {isDragging && (
+                              <div className="absolute inset-0 bg-white/5 animate-pulse pointer-events-none" />
+                            )}
+                          </button>
+                        </React.Fragment>
                       )
                     })
                   })()}
