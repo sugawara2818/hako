@@ -662,7 +662,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       return (
                         <div 
                           key={i} 
-                          className={`absolute left-0 right-0 h-[1px] ${isHour ? 'bg-black/30 dark:bg-white/30' : 'bg-black/10 dark:bg-white/10'}`} 
+                          className={`absolute left-0 right-0 h-[1px] ${isHour ? 'bg-black/50 dark:bg-white/40' : 'bg-black/20 dark:bg-white/15'}`} 
                           style={{ top: `${(hourIndex + minute / 60) * 50}px` }} 
                         />
                       );
