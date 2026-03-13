@@ -238,7 +238,10 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       {confirmDelete && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm theme-surface border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div 
+            className="relative w-full max-w-sm theme-surface border theme-border rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-black theme-text mb-2">
               {(confirmDelete as any).isRecurring ? '繰り返し予定の削除' : '予定を削除しますか？'}
             </h3>
