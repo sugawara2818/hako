@@ -11,6 +11,7 @@ import {
   endOfWeek, 
   isSameMonth, 
   isToday,
+  eachDayOfInterval,
   parseISO,
   addDays,
   addWeeks,
@@ -377,7 +378,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               ))}
             </div>
             <div className={`flex-1 grid grid-cols-7 border-b theme-border min-h-0 ${days.length > 35 ? 'grid-rows-6' : 'grid-rows-5'}`}>
-              {days.map((day, i) => {
+              {days.map((day: Date, i: number) => {
                 const dateKey = format(day, 'yyyy-MM-dd')
                 const dayEvents = eventsByDay[dateKey] || []
                 const isCurrentMonth = isSameMonth(day, currentMonth)
