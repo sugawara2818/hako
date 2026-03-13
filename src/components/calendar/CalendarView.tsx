@@ -548,14 +548,15 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
                 const y = e.clientY - rect.top + scrollTop
                 
-                // Snap to 15 minutes
-                // Subtract 24px (pt-6) offset to align with the grid
+                // Snap to 15 minutes and clamp to stay within the day (0:00 - 23:45)
+                // rect.top is the top of the 'flex min-h-full' container, which includes pt-6
                 const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
-                const snappedMinutes = Math.round(rawMinutes / 15) * 15
+                const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
                 setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
               onMouseUp={() => {
                 if (!draggingEvent) return
+                // dragCurrentTop is already snapped and clamped
                 const finalTop = dragCurrentTop
                 const minutes = (finalTop / 50) * 60
                 const newStartDate = new Date(selectedDay)
@@ -575,10 +576,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 const scrollTop = e.currentTarget.parentElement?.scrollTop || 0
                 const y = e.touches[0].clientY - rect.top + scrollTop
                 
-                // Snap to 15 minutes
-                // Subtract 24px (pt-6) offset to align with the grid
+                // Snap to 15 minutes and clamp
                 const rawMinutes = ((y - 24 - dragOffset) / 50) * 60
-                const snappedMinutes = Math.round(rawMinutes / 15) * 15
+                const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
                 setDragCurrentTop((snappedMinutes / 60) * 50)
               }}
               onTouchEnd={() => {
@@ -606,6 +606,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     </div>
                   </div>
                 ))}
+                {/* 24:00 label at the bottom */}
+                <div className="h-0 relative">
+                  <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2">
+                    24:00
+                  </div>
+                </div>
               </div>
 
               {/* Timeline Content */}
@@ -614,29 +620,29 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 onClick={(e) => {
                    if (draggingEvent) return;
                    const rect = e.currentTarget.getBoundingClientRect();
-                   const y = e.clientY - rect.top - 24; // Account for pt-6
+                   const y = e.clientY - rect.top - 24; // Subtract pt-6
                    
-                   // Snap to 15 minutes
+                   // Snap to 15 minutes and clamp
                    const rawMinutes = (y / 50) * 60;
-                   const snappedMinutes = Math.round(rawMinutes / 15) * 15;
+                   const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15));
                    
                    const clickedTime = new Date(selectedDay);
-                   clickedTime.setHours(Math.floor(snappedMinutes / 60), Math.round(snappedMinutes % 60), 0, 0);
+                   clickedTime.setHours(Math.floor(snappedMinutes / 60), snappedMinutes % 60, 0, 0);
                    onAddEvent(clickedTime);
                 }}
               >
-                {/* Grid Lines */}
+                {/* Grid Lines - Fixed coordinates */}
                 <div className="absolute inset-0 pt-6 pointer-events-none">
-                  <div className="relative h-full">
-                    {Array.from({ length: 24 * 4 }).map((_, i) => {
-                      const hour = Math.floor(i / 4);
+                  <div className="relative h-[1200px]">
+                    {Array.from({ length: 24 * 4 + 1 }).map((_, i) => {
+                      const hourIndex = Math.floor(i / 4);
                       const minute = (i % 4) * 15;
                       const isHour = minute === 0;
                       return (
                         <div 
                           key={i} 
                           className={`absolute left-0 right-0 border-t theme-border ${isHour ? 'opacity-60' : 'opacity-10 border-dashed'}`} 
-                          style={{ top: `${(hour + minute / 60) * 50}px` }} 
+                          style={{ top: `${(hourIndex + minute / 60) * 50}px` }} 
                         />
                       );
                     })}
@@ -654,14 +660,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   </div>
                 )}
 
-                {/* Events */}
+                {/* Events Container */}
                 <div className="relative h-[1200px]">
                   {(() => {
                     const dayEvents = (eventsByDay[format(selectedDay, 'yyyy-MM-dd')] || [])
                       .filter(e => !e.is_all_day)
                       .sort((a, b) => a.start_at.localeCompare(b.start_at))
 
-                    // Overlap Handling Logic
                     const eventPositions: Array<{
                       event: CalendarEvent;
                       top: number;
@@ -750,7 +755,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               boxShadow: isDragging ? `0 20px 50px -12px ${pos.event.color}aa` : `0 2px 10px -2px ${pos.event.color}40`,
                               cursor: isDragging ? 'grabbing' : 'grab',
                               touchAction: 'none',
-                              opacity: isDragging ? 1 : undefined
+                              opacity: isDragging ? 0.95 : 1
                             }}
                           >
                             <h4 className={`text-[10px] font-bold leading-tight truncate pointer-events-none ${isDragging ? 'text-white' : 'theme-text'}`}>
