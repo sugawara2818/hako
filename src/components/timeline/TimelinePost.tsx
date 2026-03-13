@@ -349,13 +349,24 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             {showComments && (
               <div className="mt-4 pt-4 border-t border-white/5 animate-fade-in">
                 <form onSubmit={handleAddComment} className="flex gap-3 mb-6">
-                  <input 
-                    type="text" 
+                  <textarea 
                     placeholder="返信をポスト" 
                     value={commentText}
                     onChange={e => setCommentText(e.target.value)}
-                    className="flex-1 bg-black/50 border border-white/10 rounded-full px-4 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    className="flex-1 bg-black/50 border border-white/10 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-hidden"
                     disabled={isSubmittingComment}
+                    rows={1}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = target.scrollHeight + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleAddComment(e as any);
+                      }
+                    }}
                   />
                   <button 
                     type="submit"
@@ -396,13 +407,13 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                                   setEditingCommentId(comment.id)
                                   setEditCommentText(comment.content)
                                 }}
-                                className="text-gray-500 hover:text-blue-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                className="text-gray-500 hover:text-blue-400 md:opacity-0 md:group-hover/comment:opacity-100 transition-opacity"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
                               <button 
                                 onClick={() => handleDeleteComment(comment.id)}
-                                className="text-gray-500 hover:text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                className="text-gray-500 hover:text-red-400 md:opacity-0 md:group-hover/comment:opacity-100 transition-opacity"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>

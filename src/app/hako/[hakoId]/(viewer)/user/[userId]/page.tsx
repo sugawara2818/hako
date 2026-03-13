@@ -57,20 +57,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
 
   const { DiaryFeed } = await import('@/components/diary/DiaryFeed')
 
-  return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={currentUser.email || ''}
-      isOwner={currentMember.role === 'owner'}
-      memberCount={count || 1}
-      displayName={currentMember.display_name}
-      avatarUrl={currentMember.avatar_url || null}
-      features={features}
-      userId={currentUser.id}
-    >
+    return (
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
         {/* Profile Header */}
         <div className="max-w-4xl mx-auto px-4 py-12 md:py-16 animate-fade-in">
@@ -185,6 +172,5 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           </div>
         </div>
       </div>
-    </HakoViewerLayout>
-  )
+    )
 }

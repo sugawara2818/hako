@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Calendar, Lock, Unlock, Loader2, Check, AlertCircle, ChevronLeft, ChevronRight, X, Sparkles } from 'lucide-react'
-import { createDiaryEntry, updateDiaryEntry, fetchUserDiaryDates, generateAITitle } from '@/core/diary/actions'
+import { createDiaryEntry, updateDiaryEntry, fetchUserDiaryDates } from '@/core/diary/actions'
 import { useRouter } from 'next/navigation'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isToday, isFuture, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -21,10 +21,6 @@ interface DiaryFormProps {
 export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [isAiGenerating, setIsAiGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [existingDates, setExistingDates] = useState<string[]>([])
-
   const [title, setTitle] = useState(initialData?.title || '')
   const [content, setContent] = useState(initialData?.content || '')
   const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
@@ -82,27 +78,6 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
     }
   }
 
-  const handleAiGenerateTitle = async () => {
-    if (!content.trim()) {
-      setError('内容を入力してからAIにタイトルを考えてもらいましょう。')
-      return
-    }
-
-    setIsAiGenerating(true)
-    setError(null)
-    try {
-      const response = await generateAITitle(content)
-      if (response.success && response.title) {
-        setTitle(response.title)
-      } else {
-        setError(response.error || 'タイトルの生成に失敗しました')
-      }
-    } catch (err: any) {
-      setError('通信エラーが発生しました。接続を確認してください。')
-    } finally {
-      setIsAiGenerating(false)
-    }
-  }
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 animate-fade-in">
@@ -133,19 +108,6 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
         <div className="relative">
           <div className="flex items-center justify-between mb-2 px-1">
             <label className="block text-[10px] font-black theme-muted uppercase tracking-widest">タイトル (任意)</label>
-            <button
-              type="button"
-              onClick={handleAiGenerateTitle}
-              disabled={isAiGenerating || !content.trim()}
-              className="flex items-center gap-1.5 text-[10px] font-black text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-            >
-              {isAiGenerating ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
-              )}
-              AIに考えてもらう
-            </button>
           </div>
           <input 
             type="text" 

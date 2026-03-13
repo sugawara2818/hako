@@ -130,14 +130,14 @@ export function HakoViewerLayout({
   useEffect(() => {
     const checkNotifications = async () => {
       try {
-        const { latestPost, latestDiary } = await getLatestTimestamps(hakoId)
+        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId } = await getLatestTimestamps(hakoId)
         const lastTimeline = localStorage.getItem(`hako_${hakoId}_last_timeline`)
         const lastDiary = localStorage.getItem(`hako_${hakoId}_last_diary`)
         
-        if (latestPost && (!lastTimeline || new Date(latestPost) > new Date(lastTimeline))) {
+        if (latestPost && latestPostUserId !== userId && (!lastTimeline || new Date(latestPost) > new Date(lastTimeline))) {
             if (!isTimelineActive) setHasNewTimeline(true)
         }
-        if (latestDiary && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
+        if (latestDiary && latestDiaryUserId !== userId && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
             if (!isDiaryActive) setHasNewDiary(true)
         }
       } catch (e) {
@@ -226,7 +226,7 @@ export function HakoViewerLayout({
                     <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
                     タイムライン
                     {hasNewTimeline && (
-                      <span className="absolute top-3 right-4 w-2 h-2 bg-purple-500 rounded-full border-2 theme-surface animate-pulse" />
+                      <span className="absolute top-3 right-4 w-2 h-2 bg-green-500 rounded-full border-2 theme-surface animate-pulse" />
                     )}
                   </Link>
                 )
@@ -244,7 +244,7 @@ export function HakoViewerLayout({
                     <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
                     日記
                     {hasNewDiary && (
-                      <span className="absolute top-3 right-4 w-2 h-2 bg-blue-500 rounded-full border-2 theme-surface animate-pulse" />
+                      <span className="absolute top-3 right-4 w-2 h-2 bg-green-500 rounded-full border-2 theme-surface animate-pulse" />
                     )}
                   </Link>
                 )
