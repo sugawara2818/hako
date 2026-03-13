@@ -251,18 +251,3 @@ export async function reorderHakos(hakoIds: string[]) {
   revalidatePath('/')
   return { success: true }
 }
-
-export async function generateAIHakoDescription(name: string) {
-  try {
-    console.log('Generating AI description for Hako:', name)
-    const description = await aiGenerateDescription(name)
-    if (!description) {
-       console.error('AI generated empty description')
-       return { success: false, error: '紹介文を生成できませんでした。' }
-    }
-    return { success: true, description: description.trim() }
-  } catch (error: any) {
-    console.error('AI Hako Description Generation Error:', error)
-    return { success: false, error: error.message || '紹介文の生成に失敗しました。' }
-  }
-}
