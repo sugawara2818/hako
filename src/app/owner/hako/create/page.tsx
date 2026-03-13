@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createHakoForOwner, generateAIHakoDescription } from '@/core/hako/actions'
+import { createHakoForOwner } from '@/core/hako/actions'
 import { supabase } from '@/lib/supabase/client'
 import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles, Calendar } from 'lucide-react'
 import Link from 'next/link'
@@ -16,7 +16,6 @@ const FEATURE_PIECES = [
 export default function CreateHakoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [hakoName, setHakoName] = useState('')
   const [hakoDescription, setHakoDescription] = useState('')
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['timeline'])
@@ -49,26 +48,6 @@ export default function CreateHakoPage() {
     }
   }
 
-  const handleAiGenerateDescription = async () => {
-    if (!hakoName.trim()) {
-      alert('先に箱の名前を入力してください')
-      return
-    }
-
-    setIsAiGenerating(true)
-    try {
-      const response = await generateAIHakoDescription(hakoName)
-      if (response.success && response.description) {
-        setHakoDescription(response.description)
-      } else {
-        alert('紹介文の生成に失敗しました: ' + (response.error || 'unknown error'))
-      }
-    } catch (e: any) {
-      alert('通信エラーが発生しました: ' + (e.message || 'unknown error'))
-    } finally {
-      setIsAiGenerating(false)
-    }
-  }
 
   return (
     <div className="min-h-screen theme-bg theme-text p-6 font-sans transition-colors duration-300">
@@ -120,19 +99,6 @@ export default function CreateHakoPage() {
                 <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">2</span>
                 箱の紹介文
               </h2>
-              <button
-                type="button"
-                onClick={handleAiGenerateDescription}
-                disabled={isAiGenerating || !hakoName.trim()}
-                className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-              >
-                {isAiGenerating ? (
-                   <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                   <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                )}
-                AIに紹介文を考えてもらう
-              </button>
             </div>
             <textarea
               value={hakoDescription}
