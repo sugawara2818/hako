@@ -657,7 +657,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                    const y = e.clientY - rect.top - 24; // Subtract pt-6
                    
                    // Snap to 15 minutes and clamp
-                   const rawMinutes = (y / 50) * 60;
+                   const rawMinutes = y;
                    const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15));
                    
                    const clickedTime = new Date(selectedDay);
@@ -699,8 +699,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       const endDate = parseISO(event.end_at)
                       const start = startDate.getHours() * 60 + startDate.getMinutes()
                       const end = endDate.getHours() * 60 + endDate.getMinutes()
-                      const top = (start / 60) * 50
-                      const height = Math.max(((end - start) / 60) * 50 - 1, 15)
+                      const top = start
+                      const height = Math.max((end - start) - 1, 15)
 
                       let colIndex = columns.findIndex(col => 
                         !col.some(e => (start < e.end && end > e.start))
