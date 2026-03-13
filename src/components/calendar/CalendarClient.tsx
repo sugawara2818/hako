@@ -29,7 +29,12 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<{ 
+    id: string, 
+    isRecurring: boolean, 
+    realId: string, 
+    date?: string 
+  } | null>(null)
 
   const loadEvents = useCallback(async () => {
     setLoading(true)
@@ -150,8 +155,8 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     if (!confirmDelete) return
     setLoading(true)
     try {
-      const realId = (confirmDelete as any).realId || confirmDelete.id;
-      const occurrenceDate = (confirmDelete as any).date;
+      const realId = confirmDelete.realId;
+      const occurrenceDate = confirmDelete.date;
 
       let result;
       if (type === 'one' && occurrenceDate) {
@@ -182,16 +187,22 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
   }
 
   const handleDeleteEvent = (event: CalendarEvent) => {
+    // Determine the true database ID and whether it's a recurring occurrence
     const isRecurring = !!event.recurrence_rule;
-    const realId = (event as any).realId || event.id;
-    const date = (event as any).realId ? format(parseISO(event.start_at), 'yyyy-MM-dd') : undefined;
+    const realId = event.realId || event.id;
+    
+    // For recurring events, we needs the occurrence date string (yyyy-MM-dd)
+    // For non-recurring multi-day events, we don't strictly need it but we can set it
+    const date = event.realId ? format(parseISO(event.start_at), 'yyyy-MM-dd') : undefined;
+    
+    console.log('handleDeleteEvent called:', { eventId: event.id, realId, isRecurring, date });
     
     setConfirmDelete({ 
         id: event.id, 
         isRecurring, 
         realId,
         date 
-    } as any);
+    });
   }
 
   return (
