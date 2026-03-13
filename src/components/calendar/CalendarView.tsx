@@ -640,11 +640,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 className="flex-1 relative pt-6"
                 style={{
                   backgroundImage: `
-                    linear-gradient(to bottom, var(--calendar-grid-hour) 1px, transparent 1px),
-                    linear-gradient(to bottom, var(--calendar-grid-quarter) 1px, transparent 1px)
+                    linear-gradient(to bottom, 
+                      var(--calendar-grid-hour) 0, var(--calendar-grid-hour) 1px, transparent 1px,
+                      transparent 12.5px, var(--calendar-grid-quarter) 12.5px, var(--calendar-grid-quarter) 13.5px, transparent 13.5px,
+                      transparent 25px, var(--calendar-grid-quarter) 25px, var(--calendar-grid-quarter) 26px, transparent 26px,
+                      transparent 37.5px, var(--calendar-grid-quarter) 37.5px, var(--calendar-grid-quarter) 38.5px, transparent 38.5px,
+                      transparent 50px
+                    )
                   `,
-                  backgroundSize: '100% 50px, 100% 12.5px',
-                  backgroundPosition: '0 24px, 0 24px',
+                  backgroundSize: '100% 50px',
+                  backgroundPosition: '0 24px',
                   backgroundRepeat: 'repeat-y',
                 }}
                 onClick={(e) => {
