@@ -43,7 +43,9 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
       const start = startOfMonth(subMonths(now, 1)).toISOString()
       const end = endOfMonth(addMonths(now, 2)).toISOString()
       const data = await fetchCalendarEvents(hakoId, start, end)
-      setEvents(data)
+      // Safety: Strip any virtual metadata from backend data if it exists
+      const cleanEvents = data.map(e => ({ ...e, id: e.realId || e.id, realId: undefined }))
+      setEvents(cleanEvents)
     } catch (error) {
       console.error('Failed to load events:', error)
     } finally {
@@ -134,13 +136,10 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     try {
       let result;
       if (editingEvent) {
-        const idToUpdate = (editingEvent as any).realId || editingEvent.id;
-        result = await updateCalendarEvent(idToUpdate, hakoId, eventData)
-      } else {
-        result = await createCalendarEvent({
-          ...eventData,
-          hako_id: hakoId
-        })
+        const realId = editingEvent.realId || editingEvent.id;
+        setEvents(prev => prev.map(e => (e.realId || e.id) === realId ? { ...e, ...eventData, id: realId, realId: undefined } : e));
+      } else if (result.success && result.data) {
+        setEvents(prev => [...prev, { ...result.data, id: result.data.id, realId: undefined }]);
       }
       
       if (!result.success) {
