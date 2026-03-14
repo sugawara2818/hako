@@ -28,7 +28,7 @@ export default function GalleryPage() {
     setIsLoading(true)
     try {
       const [imagesData, albumsData] = await Promise.all([
-        getGalleryImages(hakoId, filter === 'albums' ? 'discovery' : 'discovery'),
+        getGalleryImages(hakoId, 'discovery'),
         getAlbums(hakoId)
       ])
       setImages(imagesData)

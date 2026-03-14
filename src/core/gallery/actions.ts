@@ -19,11 +19,9 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       is_gallery,
       album_id,
       profiles:user_id (display_name, avatar_url),
-      hako_members!inner(display_name)
+      hako_members(display_name, hako_id)
     `)
     .eq('hako_id', hakoId)
-    .eq('hako_members.hako_id', hakoId) // Ensure we get the member info for THIS hako
-    .not('image_urls', 'is', null) // Only show posts with images
     .order('created_at', { ascending: false })
 
   if (filter === 'featured') {
@@ -42,7 +40,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
     .filter(post => (post.image_urls && post.image_urls.length > 0) || post.image_url)
     .map(post => {
       const globalProfile = (post.profiles as any) || {}
-      const memberInfo = (post.hako_members as any)?.[0] || {}
+      const memberInfo = ((post.hako_members as any[]) || []).find(m => m.hako_id === hakoId) || {}
       
       return {
         id: post.id,
