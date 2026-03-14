@@ -7,7 +7,8 @@ import { createTimelinePost, deleteTimelinePost } from '@/core/timeline/actions'
 export async function getGalleryImages(hakoId: string, filter: 'featured' | 'discovery' = 'featured') {
   const supabase = await createServerSupabaseClient()
   
-  let query = supabase
+  // Try the most detailed query first
+  const { data, error } = await supabase
     .from('hako_timeline_posts')
     .select(`
       id,
@@ -20,28 +21,64 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       is_timeline,
       album_id,
       profiles:user_id (display_name, avatar_url),
-      hako_members(display_name, hako_id)
+      hako_members(display_name, avatar_url, hako_id)
     `)
     .eq('hako_id', hakoId)
     .order('created_at', { ascending: false })
 
-  if (filter === 'featured') {
-    query = query.eq('is_gallery', true)
-  }
-
-  const { data, error } = await query
-
   if (error) {
-    console.error('getGalleryImages Error:', error)
-    return []
+    console.warn('Detailed getGalleryImages failed, falling back to basic query:', error.message)
+    
+    // Fallback: If columns like is_timeline or album_id are missing, try a basic query
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('hako_timeline_posts')
+      .select(`
+        id,
+        image_urls,
+        image_url,
+        content,
+        created_at,
+        user_id,
+        profiles:user_id (display_name, avatar_url)
+      `)
+      .eq('hako_id', hakoId)
+      .order('created_at', { ascending: false })
+
+    if (fallbackError) {
+      console.error('getGalleryImages Fallback Error:', fallbackError)
+      return []
+    }
+    
+    return (fallbackData || [])
+      .filter(post => (post.image_urls && post.image_urls.length > 0) || post.image_url)
+      .map(post => ({
+        id: post.id,
+        url: (post.image_urls as string[])?.[0] || (post.image_url as string) || '',
+        caption: post.content,
+        createdAt: post.created_at,
+        userName: (post.profiles as any)?.display_name || 'ユーザー',
+        userAvatar: (post.profiles as any)?.avatar_url,
+        isPinned: false,
+        albumId: null
+      }))
   }
 
-  // Filter out posts that effectively have no images (empty array)
+  // Filter out posts based on the filter and presence of images
   return (data || [])
-    .filter(post => (post.image_urls && post.image_urls.length > 0) || post.image_url)
+    .filter(post => {
+      // Basic image check
+      const hasImage = (post.image_urls && post.image_urls.length > 0) || post.image_url
+      if (!hasImage) return false
+      
+      // Filter logic
+      if (filter === 'featured' && !post.is_gallery) return false
+      
+      return true
+    })
     .map(post => {
       const globalProfile = (post.profiles as any) || {}
-      const memberInfo = ((post.hako_members as any[]) || []).find(m => m.hako_id === hakoId) || {}
+      const members = (post.hako_members as any[]) || []
+      const memberInfo = members.find(m => m.hako_id === hakoId) || {}
       
       return {
         id: post.id,
@@ -49,7 +86,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
         caption: post.content,
         createdAt: post.created_at,
         userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
-        userAvatar: globalProfile.avatar_url,
+        userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
         isPinned: post.is_gallery,
         albumId: post.album_id
       }
@@ -85,6 +122,7 @@ export async function createGalleryPost(hakoId: string, imageUrl: string, captio
   
   if (result.success) {
     revalidatePath(`/hako/${hakoId}/gallery`)
+    revalidatePath(`/hako/${hakoId}`)
   }
   
   return result

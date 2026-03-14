@@ -20,7 +20,6 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [shareToTimeline, setShareToTimeline] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Prevent background scroll
@@ -71,31 +70,13 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
         throw new Error(postResult.error)
       }
 
-      setShowSuccess(true)
-      setTimeout(() => {
-        onSuccess()
-      }, 1500)
+      onSuccess()
     } catch (err: any) {
       setError(err.message || '予期せぬエラーが発生しました')
       setIsUploading(false)
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (showSuccess) {
-    return (
-      <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
-        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
-        <div className="relative flex flex-col items-center animate-in zoom-in duration-300">
-          <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-            <Send className="w-12 h-12 text-green-500" />
-          </div>
-          <h2 className="text-2xl font-black text-white mb-2">ギャラリーに追加しました！</h2>
-          <p className="text-gray-400 font-bold">素敵な瞬間を共有してくれてありがとう。</p>
-        </div>
-      </div>
-    )
   }
 
   return (
