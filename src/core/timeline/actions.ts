@@ -139,7 +139,7 @@ export async function createTimelinePost(
         content,
         image_url: imageUrls?.[0] || null, // Fallback for legacy
         image_urls: imageUrls || [],
-        is_gallery: options?.is_gallery || false,
+        is_gallery: options?.is_gallery ?? true,
         is_timeline: options?.is_timeline !== undefined ? options.is_timeline : true
       })
 
