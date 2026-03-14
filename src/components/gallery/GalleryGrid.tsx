@@ -227,7 +227,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                     <button
                       onClick={() => handleDelete(selectedImage.id)}
                       disabled={isDeleting}
-                      className="h-16 theme-surface border theme-border hover:bg-red-500 hover:text-white rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all opacity-60 hover:opacity-100"
+                      className="h-16 theme-surface border border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all opacity-80 hover:opacity-100"
                     >
                       {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                       PERMANENTLY DELETE

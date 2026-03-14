@@ -85,8 +85,8 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
         url: post.image_urls?.[0] || post.image_url || '',
         caption: post.content,
         createdAt: post.created_at,
-        userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
-        userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
+        userName: globalProfile.display_name || memberInfo.display_name || 'ユーザー',
+        userAvatar: globalProfile.avatar_url || memberInfo.avatar_url,
         isPinned: post.is_gallery,
         albumId: post.album_id
       }
