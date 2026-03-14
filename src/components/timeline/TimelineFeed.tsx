@@ -313,7 +313,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
-          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 pb-8 md:pb-12'} mx-auto w-full space-y-3 md:space-y-4`}>
+          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 pb-8 md:pb-12'} mx-auto w-full`}>
             {initialPosts.map((post: any) => (
               <TimelinePost 
                 key={post.id} 
