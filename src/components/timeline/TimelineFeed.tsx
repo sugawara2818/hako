@@ -282,7 +282,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
     <>
     <div 
       ref={feedRef}
-      className="w-full max-w-2xl mx-auto flex flex-col min-h-screen relative animate-fade-in"
+      className="w-full max-w-4xl mx-auto flex flex-col min-h-screen relative animate-fade-in"
       style={{ 
         animationDelay: '0.1s',
         backgroundColor: 'var(--bg)',
@@ -292,8 +292,8 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
     >
       {/* Timeline Header Integrated */}
       {!hideHeader && (
-        <div className="px-4 py-6 md:py-8 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
-          <h1 className="text-xl md:text-2xl font-black heading-gradient">
+        <div className="px-4 md:px-8 py-6 md:py-8 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
+          <h1 className="text-xl md:text-3xl font-black heading-gradient">
             タイムライン
           </h1>
         </div>
@@ -320,7 +320,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
-          <div className={`${isFullWidth ? 'w-full' : 'max-w-2xl px-4 py-8 md:py-12'} mx-auto w-full space-y-8 md:space-y-12`}>
+          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 py-8 md:py-12'} mx-auto w-full space-y-8 md:space-y-12`}>
             {initialPosts.map((post: any) => (
               <TimelinePost 
                 key={post.id} 

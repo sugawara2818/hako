@@ -227,7 +227,7 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
       )}
 
       <div 
-        className={`${isFullWidth ? 'p-0 border-0' : 'p-4 sm:p-5 border-b'} transition-colors`}
+        className={`${isFullWidth ? 'p-0 border-0' : 'p-3 sm:p-6 md:p-8 border-b'} transition-colors`}
         style={{ borderBottomColor: isFullWidth ? 'transparent' : 'var(--border)' }}
         onMouseEnter={e => {
           if (!isFullWidth) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
