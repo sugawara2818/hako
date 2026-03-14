@@ -424,7 +424,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         if (!event) return <div key={slotIndex} className="h-5 md:h-6" />; 
 
                         return (
-                        return (
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
@@ -444,7 +443,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                <span className="truncate drop-shadow-md">{event.title}</span>
                             )}
                           </button>
-                        );
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (

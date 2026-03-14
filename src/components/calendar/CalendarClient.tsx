@@ -173,6 +173,9 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
         throw new Error(finalResult?.error || '保存に失敗しました');
       }
 
+      // Success!
+      setIsModalOpen(false);
+      setEditingEvent(null);
       await loadEvents();
     } catch (error) {
       console.error('Save event failed details:', error);
