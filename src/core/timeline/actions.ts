@@ -143,7 +143,7 @@ export async function createTimelinePost(
 
     if (error) {
       console.error('Post Creation Error:', error)
-      return { success: false, error: '投稿の保存に失敗しました' }
+      return { success: false, error: `投稿の保存に失敗しました: ${error.message} (${error.code})` }
     }
 
     // Revalidate the hako page to show new post
