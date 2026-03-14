@@ -29,17 +29,6 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
   const [isPinning, setIsPinning] = useState(false)
   const [isAddingToAlbum, setIsAddingToAlbum] = useState(false)
 
-  const handlePin = async (postId: string, currentPinned: boolean) => {
-    setIsPinning(true)
-    try {
-      const result = await toggleGalleryPin(postId, hakoId, !currentPinned)
-      if (result.success && selectedImage && selectedImage.id === postId) {
-        setSelectedImage({ ...selectedImage, isPinned: !currentPinned })
-      }
-    } finally {
-      setIsPinning(false)
-    }
-  }
 
   const handleAddToAlbum = async (postId: string, albumId: string) => {
     setIsAddingToAlbum(true)
@@ -109,26 +98,11 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setSelectedImage(null)} />
           
-          <div className="relative w-full max-w-5xl max-h-[95vh] flex flex-col md:flex-row bg-[#080808] border border-white/10 rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
-            {/* Action buttons atop Photo */}
-            <div className="absolute top-6 left-6 flex items-center gap-3 z-10">
-              <button
-                onClick={() => handlePin(selectedImage.id, selectedImage.isPinned)}
-                disabled={isPinning}
-                className={`p-3 rounded-2xl transition-all shadow-xl backdrop-blur-md border ${
-                  selectedImage.isPinned 
-                    ? 'bg-purple-600 text-white border-purple-400' 
-                    : 'bg-black/80 text-white/50 border-white/10 hover:text-white'
-                }`}
-                title={selectedImage.isPinned ? '展示から外す' : '傑作としてギャラリーに展示'}
-              >
-                {isPinning ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
-              </button>
-            </div>
-
+          <div className="relative w-full max-w-5xl max-h-[95vh] flex flex-col md:flex-row theme-bg border theme-border rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
+            {/* Header / Buttons */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 p-2 text-white/50 hover:text-white transition-colors z-[10]"
+              className="absolute top-6 right-6 p-2 theme-text opacity-50 hover:opacity-100 transition-opacity z-[10]"
             >
               <X className="w-6 h-6" />
             </button>
@@ -146,8 +120,8 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
             </div>
 
             {/* Info Section */}
-            <div className="w-full md:w-[400px] flex flex-col border-l border-white/5">
-              <div className="p-6 flex items-center gap-4 border-b border-white/5">
+            <div className="w-full md:w-[400px] flex flex-col border-l theme-border">
+              <div className="p-6 flex items-center gap-4 border-b theme-border">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white overflow-hidden shrink-0 shadow-lg">
                   {selectedImage.userAvatar ? (
                     <Image src={selectedImage.userAvatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
@@ -156,30 +130,30 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-black text-white truncate text-sm">{selectedImage.userName}</span>
+                  <span className="font-black theme-text truncate text-sm">{selectedImage.userName}</span>
                   <div className="flex items-center gap-2">
-                    <CalendarIcon className="w-3 h-3 text-gray-400" />
-                    <span className="text-[10px] font-bold text-gray-500">
+                    <CalendarIcon className="w-3 h-3 theme-muted" />
+                    <span className="text-[10px] font-bold theme-muted">
                       {new Date(selectedImage.createdAt).toLocaleString('ja-JP')}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 text-gray-200">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 theme-text">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">キャプション</label>
+                  <label className="text-[10px] font-black theme-muted uppercase tracking-widest leading-none">キャプション</label>
                   {selectedImage.caption ? (
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedImage.caption}</p>
                   ) : (
-                    <p className="text-xs text-white/20 italic">なし</p>
+                    <p className="text-xs theme-muted italic">なし</p>
                   )}
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">アルバムに追加</label>
+                  <label className="text-[10px] font-black theme-muted uppercase tracking-widest leading-none">アルバムに追加</label>
                   <div className="flex flex-wrap gap-2">
-                    {albums.length === 0 && <p className="text-[10px] text-gray-600">アルバムがまだありません</p>}
+                    {albums.length === 0 && <p className="text-[10px] theme-muted opacity-50">アルバムがまだありません</p>}
                     {albums.map((album) => {
                       const isActive = selectedImage.albumId === album.id
                       return (
@@ -190,7 +164,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                           className={`px-3 py-1.5 rounded-full text-[10px] font-black transition-all border ${
                             isActive 
                               ? 'bg-purple-600 text-white border-purple-400' 
-                              : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20 hover:text-white'
+                              : 'theme-muted hover:theme-text hover:theme-elevated border-transparent'
                           }`}
                         >
                           {album.name}
@@ -201,13 +175,13 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                 </div>
               </div>
 
-              <div className="p-6 bg-white/5 space-y-3">
+              <div className="p-6 theme-surface space-y-3">
                 <div className="flex items-center gap-3">
                   <a
                     href={selectedImage.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 text-xs"
+                    className="flex-1 px-4 py-3 theme-muted hover:theme-text hover:theme-elevated rounded-2xl font-black transition-all flex items-center justify-center gap-2 text-xs border theme-border"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     フルサイズ
@@ -225,7 +199,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                   <button
                     onClick={() => handleDelete(selectedImage.id)}
                     disabled={isDeleting}
-                    className="w-full py-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl"
+                    className="w-full py-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl"
                   >
                     {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                     この投稿を削除

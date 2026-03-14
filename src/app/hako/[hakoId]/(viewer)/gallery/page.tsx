@@ -18,7 +18,7 @@ export default function GalleryPage() {
   const [images, setImages] = useState<any[]>([])
   const [albums, setAlbums] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [filter, setFilter] = useState<'featured' | 'discovery' | 'albums'>('featured')
+  const [filter, setFilter] = useState<'discovery' | 'albums'>('discovery')
   const [showAlbumCreator, setShowAlbumCreator] = useState(false)
   const [showComposer, setShowComposer] = useState(false)
   const [showCinemaMode, setShowCinemaMode] = useState(false)
@@ -28,7 +28,7 @@ export default function GalleryPage() {
     setIsLoading(true)
     try {
       const [imagesData, albumsData] = await Promise.all([
-        getGalleryImages(hakoId, filter === 'albums' ? 'discovery' : filter),
+        getGalleryImages(hakoId, filter === 'albums' ? 'discovery' : 'discovery'),
         getAlbums(hakoId)
       ])
       setImages(imagesData)
@@ -91,19 +91,6 @@ export default function GalleryPage() {
 
         {/* Tab Switcher */}
         <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
-          <button
-            onClick={() => {
-              setFilter('featured')
-              setSelectedAlbumId(null)
-            }}
-            className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-              filter === 'featured' && !selectedAlbumId
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' 
-                : 'text-gray-500 hover:text-white'
-            }`}
-          >
-            傑作選
-          </button>
           <button
             onClick={() => {
               setFilter('discovery')

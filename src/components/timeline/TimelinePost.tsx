@@ -259,12 +259,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             
             {/* Content with Gallery styling */}
             <div className="mt-2 space-y-3">
-              {post.is_gallery && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full w-fit">
-                  <ImageIcon className="w-3 h-3 text-purple-400 font-black" />
-                  <span className="text-[9px] font-black text-purple-400 uppercase tracking-[0.15em]">Gallery Moment</span>
-                </div>
-              )}
               {post.content && (
                 <div className={`text-gray-200 leading-relaxed whitespace-pre-line ${post.is_gallery ? 'text-lg font-medium' : 'text-sm md:text-base'}`}>
                   {post.content}
@@ -351,25 +345,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
 
               <div className="flex-1" />
 
-              {images.length > 0 && (
-                <button 
-                  onClick={() => {
-                    const nextPinned = !post.is_gallery
-                    startTransition(async () => {
-                      await toggleGalleryPin(post.id, post.hako_id, nextPinned)
-                    })
-                  }}
-                  disabled={isPending}
-                  className={`p-2 rounded-full transition-all active:scale-95 ${
-                    post.is_gallery 
-                      ? 'text-purple-400 bg-purple-500/10' 
-                      : 'text-gray-500 hover:text-purple-400 hover:bg-purple-500/10'
-                  }`}
-                  title={post.is_gallery ? '不採用にする' : 'ギャラリーへ展示する'}
-                >
-                  {isPending ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <ImageIcon className="w-[18px] h-[18px]" />}
-                </button>
-              )}
 
               {currentUserId === post.user_id && (
                 <button onClick={handleDelete} className="hover:text-red-400 transition-colors">
@@ -412,12 +387,6 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
 
                 {/* Content */}
                 <div className="space-y-4">
-                  {post.is_gallery && (
-                    <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full w-fit">
-                      <ImageIcon className="w-3 h-3 text-purple-400" />
-                      <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Gallery Moment</span>
-                    </div>
-                  )}
                   {post.content && (
                     <p className={`text-sm leading-relaxed theme-text whitespace-pre-wrap ${post.is_gallery ? 'text-lg font-medium' : ''}`}>
                       {post.content}
