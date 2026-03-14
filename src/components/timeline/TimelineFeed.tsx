@@ -292,7 +292,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
     >
       {/* Timeline Header Integrated */}
       {!hideHeader && (
-        <div className="px-4 md:px-8 py-6 md:py-8 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
+        <div className="px-4 md:px-8 pt-6 md:pt-8 pb-3 md:pb-4 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
           <h1 className="text-xl md:text-3xl font-black heading-gradient">
             タイムライン
           </h1>
@@ -320,7 +320,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
-          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 py-8 md:py-12'} mx-auto w-full space-y-8 md:space-y-12`}>
+          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 pt-2 md:pt-4 pb-8 md:pb-12'} mx-auto w-full space-y-8 md:space-y-12`}>
             {initialPosts.map((post: any) => (
               <TimelinePost 
                 key={post.id} 
