@@ -47,6 +47,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   // 3. Fetch content based on tab for target user
   let initialPosts: any[] = []
   let initialDiaries: any[] = []
+  let galleryImages: any[] = []
   
   if (activeTab === 'timeline') {
     const { getTimelinePosts } = await import('@/core/timeline/actions')
@@ -54,9 +55,14 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   } else if (activeTab === 'diary') {
     const { fetchDiaryEntries } = await import('@/core/diary/actions')
     initialDiaries = await fetchDiaryEntries(hakoId, { userId: targetUserId })
+  } else if (activeTab === 'gallery') {
+    const { getGalleryImages } = await import('@/core/gallery/actions')
+    const allImages = await getGalleryImages(hakoId, 'discovery')
+    galleryImages = allImages.filter((img: any) => img.userId === targetUserId || img.user_id === targetUserId)
   }
 
   const { DiaryFeed } = await import('@/components/diary/DiaryFeed')
+  const { LayoutGrid, Hash, BookOpen } = await import('lucide-react')
 
     return (
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
@@ -124,6 +130,13 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                 日記
               </Link>
             )}
+            <Link
+              href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${activeTab === 'gallery' ? 'border-purple-500 text-purple-400 bg-purple-500/5' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              ギャラリー
+            </Link>
           </div>
 
           {/* Tab Content */}
@@ -167,6 +180,34 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                         <BookOpen className="w-8 h-8 text-gray-600" />
                     </div>
                     <p className="text-gray-500 font-medium">まだ日記がありません</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'gallery' && (
+              <div className="max-w-4xl">
+                {galleryImages.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-1 md:gap-4 animate-in fade-in duration-500">
+                    {galleryImages.map((img: any) => (
+                      <div key={img.id} className="relative aspect-square group cursor-pointer overflow-hidden rounded-lg md:rounded-2xl border theme-border">
+                        <Image 
+                          src={img.url} 
+                          alt="" 
+                          fill 
+                          className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                           <LayoutGrid className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                        <LayoutGrid className="w-8 h-8 text-gray-600" />
+                    </div>
+                    <p className="text-gray-500 font-medium">まだ写真がありません</p>
                   </div>
                 )}
               </div>

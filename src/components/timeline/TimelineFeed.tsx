@@ -27,6 +27,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null)
   const [hasDraft, setHasDraft] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [addToGallery, setAddToGallery] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
@@ -249,7 +250,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         setIsUploadingImage(false)
       }
 
-      const postResult = await createTimelinePost(hakoId, content, imageUrls)
+      const postResult = await createTimelinePost(hakoId, content, imageUrls, { is_gallery: addToGallery })
       
       if (!postResult.success) {
         setError(postResult.error || '投稿の保存に失敗しました')
@@ -448,6 +449,22 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
                 </div>
                 
                 <div className="flex items-center gap-4">
+                  {/* Gallery Toggle */}
+                  {selectedFiles.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setAddToGallery(!addToGallery)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-[11px] font-black uppercase tracking-wider ${
+                        addToGallery 
+                          ? 'bg-purple-500/10 border-purple-500/30 text-purple-400' 
+                          : 'bg-white/5 border-white/10 text-gray-500'
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      {addToGallery ? '共有ギャラリーに追加' : 'ギャラリーに追加しない'}
+                    </button>
+                  )}
+
                   {/* Character Count Circle */}
                   {charCount > 0 && (
                     <div className="flex items-center gap-2">
