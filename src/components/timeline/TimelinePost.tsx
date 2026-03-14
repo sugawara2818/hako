@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Heart, MessageCircle, Repeat2, Bookmark, Share, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
 import { toggleGalleryPin } from '@/core/gallery/actions'
 import { Edit2 } from 'lucide-react'
@@ -97,9 +97,9 @@ function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr)
   const diff = (Date.now() - date.getTime()) / 1000
   if (diff < 60) return "たった今"
-  if (diff < 3600) return `${Math.floor(diff / 60)}分`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}時間`
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}日`
+  if (diff < 3600) return `${Math.floor(diff / 60)}分前`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}時間前`
+  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}日前`
   return date.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })
 }
 
@@ -319,23 +319,7 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between mt-3 max-w-sm text-gray-500">
-              <button 
-                onClick={() => setShowComments(!showComments)}
-                className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-400' : 'hover:text-blue-400'}`}
-              >
-                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
-                  <MessageCircle className={`w-[18px] h-[18px] ${showComments ? 'fill-current' : ''}`} />
-                </div>
-                <span className="text-xs">{post.comments?.length || 0}</span>
-              </button>
-
-              <button className="flex items-center gap-1.5 hover:text-green-400 transition-colors group">
-                <div className="p-2 rounded-full group-hover:bg-green-400/10 transition-colors">
-                  <Repeat2 className="w-[18px] h-[18px]" />
-                </div>
-              </button>
-
+            <div className="flex items-center justify-between mt-1.5 max-w-sm text-gray-500">
               <button 
                 onClick={handleLike}
                 className={`flex items-center gap-1.5 transition-colors group ${isLiked ? 'text-pink-500' : 'hover:text-pink-400'}`}
@@ -346,15 +330,25 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
                 <span className="text-xs">{likesCount}</span>
               </button>
 
-              <button className="flex items-center hover:text-blue-400 transition-colors group line-through opacity-50 cursor-not-allowed">
-                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
-                  <Bookmark className="w-[18px] h-[18px]" />
+              <button className="flex items-center gap-1.5 hover:text-green-400 transition-colors group">
+                <div className="p-2 rounded-full group-hover:bg-green-400/10 transition-colors">
+                  <Repeat2 className="w-[18px] h-[18px]" />
                 </div>
               </button>
 
-              <button className="flex items-center hover:text-blue-400 transition-colors group">
+              <button 
+                onClick={() => setShowComments(!showComments)}
+                className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-400' : 'hover:text-blue-400'}`}
+              >
                 <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
-                  <Share className="w-[18px] h-[18px]" />
+                  <MessageCircle className={`w-[18px] h-[18px] ${showComments ? 'fill-current' : ''}`} />
+                </div>
+                <span className="text-xs">{post.comments?.length || 0}</span>
+              </button>
+
+              <button className="flex items-center hover:text-blue-400 transition-colors group line-through opacity-50 cursor-not-allowed">
+                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
+                  <Bookmark className="w-[18px] h-[18px]" />
                 </div>
               </button>
             </div>
