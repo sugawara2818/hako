@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { X, ExternalLink, Calendar as CalendarIcon, Download, Trash2, Loader2, Image as ImageIcon, FolderPlus, ChevronLeft, Send } from 'lucide-react'
 import { toggleGalleryPin, addPostToAlbum } from '@/core/gallery/actions'
@@ -27,10 +27,10 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
   const [localImages, setLocalImages] = useState<GalleryImage[]>(images)
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
   
-  // Update local images if prop changes
-  if (images !== localImages && images.length !== localImages.length) {
+  // Sync local state when props change
+  useEffect(() => {
     setLocalImages(images)
-  }
+  }, [images])
 
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPinning, setIsPinning] = useState(false)
@@ -57,7 +57,11 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
     try {
       const result = await toggleGalleryPin(selectedImage.id, hakoId, false)
       if (result.success) {
-        // Instant removal from local state
+        // Notify parent to update its state (instant feedback)
+        if (onDelete) {
+          onDelete(selectedImage.id)
+        }
+        // Also update local state just in case parent doesn't re-render immediately
         setLocalImages(prev => prev.filter(img => img.id !== selectedImage.id))
         setSelectedImage(null)
         setShowDeleteConfirm(false)

@@ -20,8 +20,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       is_gallery,
       is_timeline,
       album_id,
-      profiles:user_id (display_name, avatar_url),
-      hako_members(display_name, avatar_url, hako_id)
+      profiles:user_id (display_name, avatar_url)
     `)
     .eq('hako_id', hakoId)
     .eq('is_gallery', true)
@@ -51,18 +50,56 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       return []
     }
     
+    // Separately fetch per-Hako display names & avatars from hako_members for fallback
+    const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
+    try {
+      const { data: hakoMembers, error: memberError } = await supabase
+        .from('hako_members')
+        .select('user_id, display_name, avatar_url')
+        .eq('hako_id', hakoId)
+
+      if (!memberError && hakoMembers) {
+        for (const m of hakoMembers) {
+          memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch hako_members in gallery fallback:', e)
+    }
+
     return (fallbackData || [])
       .filter(post => (post.image_urls && post.image_urls.length > 0) || post.image_url)
-      .map(post => ({
-        id: post.id,
-        url: (post.image_urls as string[])?.[0] || (post.image_url as string) || '',
-        caption: post.content,
-        createdAt: post.created_at,
-        userName: (post.profiles as any)?.display_name || 'ユーザー',
-        userAvatar: (post.profiles as any)?.avatar_url,
-        isPinned: false,
-        albumId: null
-      }))
+      .map(post => {
+        const globalProfile = (post.profiles as any) || {}
+        const memberInfo = memberDataMap[post.user_id] || {}
+        return {
+          id: post.id,
+          url: (post.image_urls as string[])?.[0] || (post.image_url as string) || '',
+          caption: post.content,
+          createdAt: post.created_at,
+          userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
+          userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
+          isPinned: false,
+          albumId: null
+        }
+      })
+  }
+
+  // Separately fetch per-Hako display names & avatars from hako_members
+  const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
+  try {
+    const { data: hakoMembers, error: memberError } = await supabase
+      .from('hako_members')
+      .select('user_id, display_name, avatar_url')
+      .eq('hako_id', hakoId)
+
+    if (!memberError && hakoMembers) {
+      for (const m of hakoMembers) {
+        memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to fetch hako_members in gallery:', e)
   }
 
   // Filter out posts based on the filter and presence of images
@@ -79,8 +116,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
     })
     .map(post => {
       const globalProfile = (post.profiles as any) || {}
-      const members = (post.hako_members as any[]) || []
-      const memberInfo = members.find(m => m.hako_id === hakoId) || {}
+      const memberInfo = memberDataMap[post.user_id] || {}
       
       return {
         id: post.id,

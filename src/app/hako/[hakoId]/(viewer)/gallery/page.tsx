@@ -44,10 +44,10 @@ export default function GalleryPage() {
     fetchData()
   }, [fetchData])
 
-  const handleDelete = async (postId: string) => {
-    await deleteGalleryPost(postId, hakoId)
+  const handleDelete = useCallback(async (postId: string) => {
+    // We only update local state here as the actual unpinning is handled by GalleryGrid
     setImages(prev => prev.filter(img => img.id !== postId))
-  }
+  }, [])
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
