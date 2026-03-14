@@ -292,7 +292,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
     >
       {/* Timeline Header Integrated */}
       {!hideHeader && (
-        <div className="px-4 md:px-8 pt-6 md:pt-8 pb-3 md:pb-4 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
+        <div className="px-4 md:px-8 pt-2 md:pt-3 pb-3 md:pb-4 border-b theme-border theme-bg">
           <h1 className="text-xl md:text-3xl font-black heading-gradient">
             タイムライン
           </h1>
