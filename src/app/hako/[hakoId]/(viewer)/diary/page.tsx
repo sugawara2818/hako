@@ -29,8 +29,8 @@ export default async function DiaryPage({ params }: { params: Promise<{ hakoId: 
 
   return (
     <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
-      <div className="max-w-2xl mx-auto mb-12 animate-fade-in">
-        <h1 className="text-4xl md:text-5xl font-black mb-3 heading-gradient">
+      <div className="max-w-2xl mx-auto mb-6 md:mb-12 animate-fade-in">
+        <h1 className="text-2xl md:text-5xl font-black mb-1 heading-gradient">
           日記
         </h1>
       </div>

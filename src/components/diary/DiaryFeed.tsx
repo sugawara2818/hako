@@ -138,7 +138,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto relative w-full">
-      <div className="flex items-center justify-between mb-4 animate-fade-in px-4 sm:px-0">
+      <div className="flex items-center justify-between mb-2 md:mb-4 animate-fade-in px-4 sm:px-0">
         {isProfileView ? (
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
             <button
@@ -160,18 +160,18 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
           <div /> /* Spacer to keep sort dropdown on the right */
         )}
 
-        <div className="relative">
+        <div className="relative group/sort">
           <select 
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
-            className="appearance-none theme-surface border border-white/10 theme-text text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-blue-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
+            className="appearance-none bg-black/40 border border-white/5 theme-text text-[11px] sm:text-sm font-bold rounded-xl pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 outline-none focus:border-blue-500/30 hover:bg-white/5 transition-all w-auto"
           >
             <option value="date_desc">新しい順 (日付)</option>
             <option value="date_asc">古い順 (日付)</option>
             <option value="created_desc">新しい順 (投稿日)</option>
             <option value="created_asc">古い順 (投稿日)</option>
           </select>
-          <ArrowUpDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
