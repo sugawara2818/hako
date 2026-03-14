@@ -322,48 +322,33 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         onTouchEnd={handleTouchEnd}
         style={{ height: '100%' }}
     >
-      {/* Header - Glassmorphism */}
-      <div className="px-6 py-8 border-b theme-border space-y-8 bg-white/[0.01] backdrop-blur-md">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-4xl font-black theme-text tracking-tighter">
-            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
+      {/* Header - Consolidated Layout */}
+      <div className="px-6 py-6 border-b theme-border bg-white/[0.01] backdrop-blur-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold theme-text tracking-tight">
+            {format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
-          <div className="flex items-center gap-1 bg-white/[0.03] p-1.5 rounded-2xl border theme-border shadow-inner">
-            <button onClick={prevMonth} className="p-2.5 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button onClick={() => setCurrentMonth(new Date())} className="px-4 py-2 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-text font-bold text-sm">
-              今日
-            </button>
-            <button onClick={nextMonth} className="p-2.5 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between px-2">
-            <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border theme-border shadow-inner">
-              {(['month', 'week', 'year'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                    viewMode === mode 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 active:scale-95' 
-                      : 'theme-muted hover:theme-text'
-                  }`}
-                >
-                  {mode === 'month' ? '月' : mode === 'week' ? '週' : '年'}
-                </button>
-              ))}
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-xl">
+              <button onClick={prevMonth} className="px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button onClick={() => setCurrentMonth(new Date())} className="px-4 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-text font-bold text-sm">
+                今日
+              </button>
+              <button onClick={nextMonth} className="px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
-            
+
             <button 
                 onClick={() => onAddEvent(new Date())}
-                className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-90 transition-all"
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all"
             >
-                <Plus className="w-8 h-8 font-black" />
+                <Plus className="w-6 h-6" />
             </button>
+          </div>
         </div>
       </div>
 
@@ -379,7 +364,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
           <div className="flex flex-col h-full">
             <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
               {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
-                <div key={day} className={`py-2 md:py-3 text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-red-400/70' : i === 6 ? 'text-blue-400/70' : 'theme-muted'}`}>
+                <div key={day} className={`py-3 text-center text-[10px] font-bold tracking-widest ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'theme-muted'}`}>
                   {day}
                 </div>
               ))}
@@ -396,41 +381,45 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-10 pointer-events-none' : 'hover:bg-black/[0.01] dark:hover:bg-white/[0.01]'}`}
+                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'pointer-events-none' : 'hover:bg-black/[0.005] dark:hover:bg-white/[0.005]'}`}
                   >
                     <div className="flex items-center p-2">
-                      <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl transition-all ${
-                        isTodayDate ? 'bg-gradient-to-br from-blue-600 to-blue-400 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-500/20' : 
-                        isSelected ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                        i % 7 === 0 ? 'text-red-400/80 font-black' :
-                        i % 7 === 6 ? 'text-blue-400/80 font-black' :
-                        'theme-text opacity-30'
+                      <span className={`text-[11px] font-bold w-7 h-7 flex items-center justify-center rounded-full transition-all ${
+                        isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
+                        isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
+                        !isCurrentMonth ? 'theme-muted opacity-20' :
+                        i % 7 === 0 ? 'text-red-500' :
+                        i % 7 === 6 ? 'text-blue-500' :
+                        'theme-text'
                       }`}>
                         {format(day, 'd')}
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-1 w-full relative">
+                    <div className="flex flex-col gap-0.5 w-full relative">
                       {[0, 1, 2, 3].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
-                        if (!event) return <div key={slotIndex} className="h-5 md:h-6" />; 
+                        if (!event) return <div key={slotIndex} className="h-4 md:h-5" />; 
+
+                        const isContinuous = !event.isStart || !event.isEnd;
 
                         return (
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all hover:brightness-110 active:scale-[0.98] ${
-                              event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
-                            } ${
-                              event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
+                            className={`px-2 text-[10px] truncate font-medium flex items-center transition-all hover:brightness-105 active:scale-[0.98] ${
+                              isContinuous 
+                                ? 'h-[2px] bg-blue-400/40 relative top-1' 
+                                : 'h-6 bg-blue-50 dark:bg-blue-900/10 border-l-[3px] rounded-r-md text-blue-600 dark:text-blue-400'
                             }`}
                             style={{ 
-                              backgroundColor: event.color || '#3b82f6',
+                              borderLeftColor: isContinuous ? 'transparent' : (event.color || '#3b82f6'),
+                              backgroundColor: isContinuous ? undefined : (event.color ? `${event.color}15` : undefined),
+                              color: isContinuous ? 'transparent' : (event.color || undefined),
                               zIndex: 10,
-                              height: '24px',
                             }}
                           >
-                            {(event.isStart || (i % 7 === 0)) && (
+                            {!isContinuous && (event.isStart || (i % 7 === 0)) && (
                                <span className="truncate">{event.title}</span>
                             )}
                           </button>
