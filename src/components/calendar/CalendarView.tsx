@@ -397,7 +397,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     </div>
                     
                     <div className="flex flex-col gap-px sm:gap-0.5 w-full relative">
-                      {[0, 1, 2].map(slotIndex => {
+                      {[0, 1, 2, 3].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
                         if (!event) return <div key={slotIndex} className="h-4 sm:h-5" />; 
 
@@ -423,9 +423,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           </button>
                         );
                       })}
-                      {dayEvents.filter(e => (e.slot ?? 99) > 2).length > 0 && (
+                      {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
                         <div className="text-[8px] sm:text-[9px] theme-muted font-bold px-1 sm:px-2 py-0.5 opacity-60">
-                          +{dayEvents.filter(e => (e.slot ?? 99) > 2).length}
+                          +{dayEvents.filter(e => (e.slot ?? 99) > 3).length}
                         </div>
                       )}
                     </div>
