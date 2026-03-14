@@ -13,9 +13,10 @@ interface TimelineFeedProps {
   currentUserId: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPosts: any[]
+  hideHeader?: boolean
 }
 
-export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFeedProps) {
+export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false }: TimelineFeedProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
@@ -289,11 +290,13 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
       }}
     >
       {/* Timeline Header Integrated */}
-      <div className="px-4 py-6 md:py-8 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
-        <h1 className="text-xl md:text-2xl font-black heading-gradient">
-          タイムライン
-        </h1>
-      </div>
+      {!hideHeader && (
+        <div className="px-4 py-6 md:py-8 border-b theme-border theme-bg sticky top-0 z-20 backdrop-blur-md">
+          <h1 className="text-xl md:text-2xl font-black heading-gradient">
+            タイムライン
+          </h1>
+        </div>
+      )}
 
       {/* Pull down indicator */}
       <div 

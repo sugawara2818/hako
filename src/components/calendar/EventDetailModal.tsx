@@ -57,8 +57,8 @@ export function EventDetailModal({ isOpen, onClose, event, currentUserId, onEdit
 
           {/* Time Section */}
           <div className="flex items-start gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border theme-border">
-            <div className="p-3 bg-purple-500/10 rounded-xl">
-              <Clock className="w-6 h-6 text-purple-400" />
+            <div className="p-3 rounded-xl shadow-lg" style={{ backgroundColor: `${event.color}20` }}>
+              <Clock className="w-6 h-6" style={{ color: event.color }} />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-black theme-text">

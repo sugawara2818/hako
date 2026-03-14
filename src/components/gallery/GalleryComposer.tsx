@@ -158,6 +158,12 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
                 className="w-full theme-surface border theme-border rounded-3xl p-6 theme-text text-lg focus:outline-none focus:border-brand-primary/50 transition-all resize-none min-h-[120px]"
                 maxLength={200}
               />
+              {caption && (
+                <div className="mt-4 p-4 rounded-2xl bg-[#82d9bc]/5 border border-[#82d9bc]/10 animate-in fade-in slide-in-from-top-2">
+                  <span className="text-[10px] font-black theme-muted uppercase tracking-[0.2em] mb-2 block">プレビュー</span>
+                  <p className="text-white text-base leading-relaxed break-words">{caption}</p>
+                </div>
+              )}
             </div>
 
             {/* Share to Timeline Toggle */}

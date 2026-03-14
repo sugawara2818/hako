@@ -128,17 +128,19 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
               日記
             </Link>
           )}
-          <Link
-            href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
-            className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${
-              activeTab === 'gallery' 
-                ? 'border-[#82d9bc] text-[#82d9bc] bg-[#82d9bc]/5' 
-                : 'border-transparent text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            <LucideImageIcon className={`w-4 h-4 ${activeTab === 'gallery' ? 'text-emerald-400' : ''}`} />
-            ギャラリー
-          </Link>
+          {features.includes('gallery') && (
+            <Link
+              href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${
+                activeTab === 'gallery' 
+                  ? 'border-[#82d9bc] text-[#82d9bc] bg-[#82d9bc]/5' 
+                  : 'border-transparent text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <LucideImageIcon className={`w-4 h-4 ${activeTab === 'gallery' ? 'text-emerald-400' : ''}`} />
+              ギャラリー
+            </Link>
+          )}
         </div>
 
         {/* Tab Content */}
@@ -150,6 +152,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                   hakoId={hakoId}
                   currentUserId={currentUser.id}
                   initialPosts={initialPosts}
+                  hideHeader={true}
                 />
               ) : (
                 <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
@@ -164,26 +167,44 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
 
           {activeTab === 'diary' && (
             <div className="max-w-2xl">
-              {initialDiaries.length > 0 ? (
-                <DiaryFeed
-                  hakoId={hakoId}
-                  currentUserId={currentUser.id}
-                  entries={initialDiaries}
-                  isProfileView={true}
-                  onDelete={isOwnProfile ? async (id) => {
-                    'use server'
-                    const { deleteDiaryEntry } = await import('@/core/diary/actions')
-                    await deleteDiaryEntry(id, hakoId)
-                  } : undefined}
-                />
-              ) : (
-                <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
-                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
-                      <BookOpen className="w-8 h-8 text-gray-600" />
-                  </div>
-                  <p className="text-gray-500 font-medium">まだ日記がありません</p>
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+                <div className="space-y-4">
+                  {initialDiaries.length > 0 ? (
+                    <DiaryFeed
+                      hakoId={hakoId}
+                      currentUserId={currentUser.id}
+                      entries={initialDiaries}
+                      isProfileView={true}
+                      onDelete={isOwnProfile ? async (id) => {
+                        'use server'
+                        const { deleteDiaryEntry } = await import('@/core/diary/actions')
+                        await deleteDiaryEntry(id, hakoId)
+                      } : undefined}
+                    />
+                  ) : (
+                    <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                          <BookOpen className="w-8 h-8 text-gray-600" />
+                      </div>
+                      <p className="text-gray-500 font-medium">まだ日記がありません</p>
+                    </div>
+                  )}
                 </div>
-              )}
+                
+                <aside className="hidden lg:block sticky top-24">
+                  {(() => {
+                    const { ProfileDiaryCalendar } = require('@/components/diary/ProfileDiaryCalendar');
+                    return <ProfileDiaryCalendar entries={initialDiaries} />;
+                  })()}
+                </aside>
+                
+                <div className="lg:hidden">
+                  {(() => {
+                    const { ProfileDiaryCalendar } = require('@/components/diary/ProfileDiaryCalendar');
+                    return <ProfileDiaryCalendar entries={initialDiaries} />;
+                  })()}
+                </div>
+              </div>
             </div>
           )}
           

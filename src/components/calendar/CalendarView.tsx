@@ -194,7 +194,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
   }
 
   const eventsByDay = useMemo(() => {
-    // Determine the total range for current view mode
     let rangeStart: Date;
     let rangeEnd: Date;
     
@@ -212,78 +211,88 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         rangeEnd = addMonths(currentMonth, 1);
     }
 
-    const map: Record<string, CalendarEvent[]> = {}
+    const map: Record<string, (CalendarEvent & { slot?: number; isStart?: boolean; isEnd?: boolean })[]> = {}
+    const intervalDays = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
     
-    initialEvents.forEach(event => {
-      // Safety: Ignore virtual items that might have leaked into state. 
-      // Only process "real" database events.
-      if (event.id.includes('_')) return;
+    // Slot tracks: Map<slotIndex, lastBusyDate>
+    const slots: Record<number, string> = {};
 
+    // First, handle all events and sort by start time and duration (longer first for better layout)
+    const sortedEvents = [...initialEvents].filter(e => !e.id.includes('_')).sort((a, b) => {
+      const startA = parseISO(a.start_at).getTime();
+      const startB = parseISO(b.start_at).getTime();
+      if (startA !== startB) return startA - startB;
+      const durationA = parseISO(a.end_at).getTime() - startA;
+      const durationB = parseISO(b.end_at).getTime() - startB;
+      return durationB - durationA; // Longer events first
+    });
+
+    sortedEvents.forEach(event => {
       const startAt = parseISO(event.start_at);
       const endAt = parseISO(event.end_at);
-      const duration = endAt.getTime() - startAt.getTime();
       
+      // Calculate effective ranges
       if (!event.recurrence_rule) {
-        // Multi-day non-recurring events
         let current = startOfDay(startAt);
-        // If it ends exactly at 00:00 on a subsequent day, we don't show it on that day.
         const effectiveEnd = (endAt.getHours() === 0 && endAt.getMinutes() === 0 && !isSameDay(startAt, endAt))
             ? subMinutes(endAt, 1)
             : endAt;
         const lastDay = startOfDay(effectiveEnd);
         
-        while (current <= lastDay && current <= rangeEnd) {
-          if (current >= rangeStart || isSameDay(current, rangeStart)) {
-            const dateKey = format(current, 'yyyy-MM-dd')
+        if (lastDay < rangeStart || current > rangeEnd) return;
+
+        // Slot assignment (for month view consistency)
+        let slot = 0;
+        if (viewMode === 'month') {
+          while (slots[slot] && parseISO(slots[slot]) >= current) {
+            slot++;
+          }
+          slots[slot] = format(lastDay, 'yyyy-MM-dd');
+        }
+
+        let temp = current;
+        while (temp <= lastDay && temp <= rangeEnd) {
+          if (temp >= rangeStart || isSameDay(temp, rangeStart)) {
+            const dateKey = format(temp, 'yyyy-MM-dd')
             if (!map[dateKey]) map[dateKey] = []
             
-            // For display consistency, always use virtual IDs for non-single-day events
-            const isSpansDays = !isSameDay(startAt, lastDay);
-            if (isSpansDays) {
-              map[dateKey].push({
-                ...event,
-                id: `${event.id}_${dateKey}`,
-                realId: event.id
-              });
-            } else {
-              map[dateKey].push(event);
-            }
+            map[dateKey].push({
+              ...event,
+              id: `${event.id}_${dateKey}`,
+              realId: event.id,
+              slot,
+              isStart: isSameDay(temp, startAt),
+              isEnd: isSameDay(temp, lastDay)
+            });
           }
-          current = addDays(current, 1);
+          temp = addDays(temp, 1);
         }
         return;
       }
 
       // Handle recurrence
       let current = new Date(startAt);
-      
-      // Optimization: Skip to range start if possible
-      // (Simplified: always starting from original start for correctness with month/year skips)
-      
+      const duration = endAt.getTime() - startAt.getTime();
       let safetyCounter = 0;
       while (current <= rangeEnd && safetyCounter < 1000) {
         safetyCounter++;
-        
         const dateKey = format(current, 'yyyy-MM-dd');
-        
-        // Respect recurrence_until and excluded_dates
         const isPastUntil = event.recurrence_until && isAfter(current, parseISO(event.recurrence_until));
         const isExcluded = event.excluded_dates && event.excluded_dates.includes(dateKey);
 
         if (!isPastUntil && !isExcluded && (current >= rangeStart || isSameDay(current, rangeStart))) {
           if (!map[dateKey]) map[dateKey] = []
-          
-          const virtualEvent = {
+          map[dateKey].push({
             ...event,
             id: `${event.id}_${dateKey}`,
             realId: event.id,
             start_at: current.toISOString(),
-            end_at: new Date(current.getTime() + duration).toISOString()
-          };
-          map[dateKey].push(virtualEvent);
+            end_at: new Date(current.getTime() + duration).toISOString(),
+            isStart: true, // Recurrence items are usually daily "start" units unless redefined
+            isEnd: true
+          });
         }
         
-        // Advance
         if (event.recurrence_rule === 'daily') current = addDays(current, 1);
         else if (event.recurrence_rule === 'weekly') current = addWeeks(current, 1);
         else if (event.recurrence_rule === 'monthly') current = addMonths(current, 1);
@@ -291,6 +300,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         else break;
       }
     })
+
+    // Final sort within each day by slot
+    Object.keys(map).forEach(key => {
+      map[key].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
+    });
+
     return map
   }, [initialEvents, currentMonth, viewMode])
 
@@ -404,18 +419,28 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     </div>
                     
                     <div className="flex flex-col gap-0.5 overflow-hidden">
-                      {dayEvents.slice(0, 3).map(event => (
+                      {dayEvents.slice(0, 4).map(event => (
                         <div 
                           key={event.id}
-                          className="px-1.5 py-0.5 rounded-sm text-[8px] md:text-[10px] truncate theme-text font-bold"
-                          style={{ backgroundColor: `${event.color}20`, borderLeft: `2px solid ${event.color}` }}
+                          className={`px-1.5 py-0.5 text-[8px] md:text-[10px] truncate theme-text font-bold flex items-center transition-all ${
+                            event.isStart ? 'rounded-l-sm' : 'border-l-0 ml-[-4px]'
+                          } ${
+                            event.isEnd ? 'rounded-r-sm mr-1' : 'border-r-0 mr-[-4px]'
+                          }`}
+                          style={{ 
+                            backgroundColor: `${event.color}25`, 
+                            borderLeft: event.isStart ? `2px solid ${event.color}` : 'none',
+                            opacity: 0.9
+                          }}
                         >
-                          {event.title}
+                          {(event.isStart || (i % 7 === 0)) && (
+                             <span className="truncate">{event.title}</span>
+                          )}
                         </div>
                       ))}
-                      {dayEvents.length > 3 && (
+                      {dayEvents.length > 4 && (
                         <div className="text-[8px] md:text-[10px] theme-muted font-bold pl-1">
-                          他 {dayEvents.length - 3} 件
+                          他 {dayEvents.length - 4} 件
                         </div>
                       )}
                     </div>

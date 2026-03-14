@@ -86,17 +86,17 @@ export default function GalleryPage() {
             <button
                onClick={() => setShowCinemaMode(true)}
                disabled={images.length === 0}
-               className="flex items-center gap-2 px-6 py-3 bg-[#82d9bc] text-gray-700 rounded-2xl font-black text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20 disabled:opacity-50"
+               className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-[#82d9bc] text-gray-700 rounded-2xl font-black text-[10px] md:text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20 disabled:opacity-50"
              >
               <MonitorPlay className="w-4 h-4" />
               シネマ再生
             </button>
             <button
               onClick={() => setShowAlbumCreator(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
+              className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] md:text-xs hover:bg-white/10 active:scale-95 transition-all"
             >
                 <FolderPlus className="w-4 h-4 text-[#82d9bc]" />
-               アルバム作成
+               <span className="md:inline">アルバム作成</span>
              </button>
           </div>
         </div>
