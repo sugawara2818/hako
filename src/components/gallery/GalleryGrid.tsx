@@ -45,12 +45,15 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
   }
 
   const handleDelete = async () => {
-    if (!selectedImage || !onDelete) return
+    if (!selectedImage) return
     setIsDeleting(true)
     try {
-      await onDelete(selectedImage.id)
-      setSelectedImage(null)
-      setShowDeleteConfirm(false)
+      const result = await toggleGalleryPin(selectedImage.id, hakoId, false)
+      if (result.success) {
+        setSelectedImage(null)
+        setShowDeleteConfirm(false)
+        // Note: The parent component should refresh data via revalidatePath or local state filter
+      }
     } finally {
       setIsDeleting(false)
     }
@@ -228,7 +231,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                       className="h-16 theme-surface border border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all opacity-80 hover:opacity-100"
                     >
                       <Trash2 className="w-5 h-5" />
-                      PERMANENTLY DELETE
+                      REMOVE FROM GALLERY
                     </button>
                   )}
                 </div>
@@ -267,40 +270,32 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
         </div>
       )}
 
-      {/* Custom Delete Confirmation Modal */}
+      {/* Custom Delete Confirmation Modal - Matched with Timeline Style */}
       {showDeleteConfirm && selectedImage && (
         <div className="fixed inset-0 z-[700] flex items-center justify-center p-4">
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
             onClick={() => !isDeleting && setShowDeleteConfirm(false)} 
           />
-          <div className="relative w-full max-w-sm theme-bg border theme-border rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-red-500/20">
-               <div className="h-full bg-red-500 animate-draw-line" />
-            </div>
-            
-            <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20">
-               <Trash2 className="w-8 h-8 text-red-500" />
-            </div>
-            
-            <h3 className="text-xl font-black theme-text mb-2">写真を永久に削除</h3>
-            <p className="text-sm theme-muted font-bold leading-relaxed mb-8">
-              この操作は取り消せません。共有ギャラリーとタイムラインからこの写真が完全に削除されます。
+          <div className="relative w-full max-w-[300px] theme-elevated border theme-border rounded-[2rem] p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <p className="text-sm theme-text leading-relaxed mb-6 text-center font-bold">
+              この写真をギャラリーから削除しますか？<br/>
+              <span className="text-[10px] theme-muted font-black opacity-60 uppercase">※タイムラインの投稿は削除されません</span>
             </p>
             
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="w-full py-4 bg-red-500 hover:bg-red-400 text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-red-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isDeleting ? '削除中...' : '削除を確定する'}
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isDeleting ? '処理中...' : 'ギャラリーから削除'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
-                className="w-full py-4 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-black text-sm transition-all disabled:opacity-50"
+                className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-xl font-bold text-sm transition-all disabled:opacity-50"
               >
                 キャンセル
               </button>

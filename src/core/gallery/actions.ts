@@ -24,6 +24,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       hako_members(display_name, avatar_url, hako_id)
     `)
     .eq('hako_id', hakoId)
+    .eq('is_gallery', true)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -42,6 +43,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
         profiles:user_id (display_name, avatar_url)
       `)
       .eq('hako_id', hakoId)
+      .eq('is_gallery', true)
       .order('created_at', { ascending: false })
 
     if (fallbackError) {
