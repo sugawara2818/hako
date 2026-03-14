@@ -422,15 +422,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       {dayEvents.slice(0, 4).map(event => (
                         <div 
                           key={event.id}
-                          className={`px-1.5 h-5 md:h-6 text-[8px] md:text-[10px] truncate theme-text font-black flex items-center transition-all z-10 ${
-                            event.isStart ? 'rounded-l-md ml-0.5' : 'border-l-0 -ml-1'
+                          className={`px-1.5 h-5 md:h-6 text-[8px] md:text-[10px] truncate text-white font-black flex items-center transition-all z-10 ${
+                            event.isStart ? 'rounded-l-lg' : 'rounded-l-none -ml-1 md:-ml-2'
                           } ${
-                            event.isEnd ? 'rounded-r-md mr-0.5' : 'border-r-0 -mr-1'
+                            event.isEnd ? 'rounded-r-lg shadow-sm' : 'rounded-r-none -mr-1 md:-mr-2'
                           }`}
                           style={{ 
-                            backgroundColor: 'rgba(59, 130, 246, 0.9)',
-                            color: 'white',
-                            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                            backgroundColor: event.color ? `${event.color}e6` : 'rgba(59, 130, 246, 0.9)',
+                            borderLeft: event.isStart ? 'none' : `1px solid rgba(255,255,255,0.1)`,
+                            borderRight: event.isEnd ? 'none' : `1px solid rgba(255,255,255,0.1)`,
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                             opacity: 1
                           }}
                         >
@@ -542,9 +543,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                                     style={{ 
                                                         top: `${t + 2}px`, 
                                                         height: `${h}px`,
-                                                        borderLeft: `3px solid #3b82f6`,
-                                                        backgroundColor: `rgba(59, 130, 246, 0.4)`,
-                                                        boxShadow: `0 2px 8px -2px rgba(59, 130, 246, 0.4)`
+                                                        borderLeft: `3px solid ${event.color || '#3b82f6'}`,
+                                                        backgroundColor: event.color ? `${event.color}40` : `rgba(59, 130, 246, 0.4)`,
+                                                        boxShadow: `0 2px 8px -2px ${event.color ? `${event.color}60` : `rgba(59, 130, 246, 0.4)`}`
                                                     }}
                                                 >
                                                     <div className="text-[10px] font-bold theme-text leading-tight truncate">{event.title}</div>
@@ -666,9 +667,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       key={event.id}
                       onClick={() => onEditEvent(event)}
                       className="w-full px-4 py-3 rounded-2xl theme-elevated border theme-border flex items-center gap-3 hover:theme-elevated/80 transition-all shadow-md group"
-                      style={{ borderLeft: `4px solid #3b82f6`, backgroundColor: `rgba(59, 130, 246, 0.15)` }}
+                      style={{ borderLeft: `4px solid ${event.color || '#3b82f6'}`, backgroundColor: event.color ? `${event.color}20` : `rgba(59, 130, 246, 0.15)` }}
                     >
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color || '#3b82f6' }} />
                       <span className="text-sm font-black theme-text truncate">{event.title}</span>
                     </button>
                   ))}
@@ -844,10 +845,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               height: `${pos.height}px`,
                               left: `${left}%`,
                               width: `${width}%`,
-                              borderLeft: `3px solid ${pos.event.color}`,
-                              backgroundColor: isDragging ? pos.event.color : `${pos.event.color}40`,
+                              borderLeft: `4px solid ${pos.event.color || '#3b82f6'}`,
+                              backgroundColor: isDragging ? pos.event.color : (pos.event.color ? `${pos.event.color}40` : `rgba(59, 130, 246, 0.4)`),
                               color: isDragging ? '#fff' : 'inherit',
-                              boxShadow: isDragging ? `0 20px 50px -12px ${pos.event.color}aa` : `0 2px 10px -2px ${pos.event.color}40`,
+                              boxShadow: isDragging ? `0 20px 50px -12px ${pos.event.color}aa` : (pos.event.color ? `0 4px 12px -2px ${pos.event.color}40` : `0 4px 12px -2px rgba(59, 130, 246, 0.3)`),
                               cursor: isDragging ? 'grabbing' : 'grab',
                               touchAction: 'none',
                               opacity: isDragging ? 0.95 : 1
