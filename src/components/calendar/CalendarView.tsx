@@ -323,42 +323,42 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         style={{ height: '100%' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-6 border-b theme-border">
-        <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between px-8 py-8 border-b theme-border bg-white/[0.01]">
+        <div className="flex items-center gap-8">
           <h2 className="text-2xl font-black theme-text tracking-tighter">
             {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
           </h2>
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
-            <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
+            <button onClick={prevMonth} className="p-2.5 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
+            <button onClick={nextMonth} className="p-2.5 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button 
             onClick={() => {
               setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
               setAnimationKey(Date.now())
               setCurrentMonth(new Date())
             }} 
-            className="px-4 py-2 rounded-xl bg-blue-600/10 text-blue-500 font-bold hover:bg-blue-600/20 transition-all active:scale-95 text-xs md:text-sm"
+            className="px-6 py-2.5 rounded-2xl bg-blue-600/10 text-blue-500 font-black hover:bg-blue-600/20 transition-all active:scale-95 text-sm tracking-tight"
           >
             今日
           </button>
           
-          <div className="hidden sm:flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
+          <div className="hidden sm:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
               {[
-                  { id: 'month', label: '月', icon: LayoutGrid },
-                  { id: 'week', label: '週', icon: CalendarRange },
-                  { id: 'year', label: '年', icon: CalendarIcon }
+                  { id: 'month', label: '月' },
+                  { id: 'week', label: '週' },
+                  { id: 'year', label: '年' }
               ].map((mode) => (
                   <button
                       key={mode.id}
                       onClick={() => setViewMode(mode.id as any)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all flex items-center gap-1 ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+                      className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
                   >
                       {mode.label}
                   </button>
@@ -367,9 +367,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
 
           <button 
             onClick={() => onAddEvent(new Date())}
-            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center"
+            className="p-2.5 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-6 h-6" />
           </button>
         </div>
       </div>
@@ -403,12 +403,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-0 border-r border-b border-white/[0.05] transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-5' : 'hover:bg-white/[0.01]'}`}
+                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-5' : 'hover:bg-white/[0.01]'}`}
                   >
-                    <div className="flex items-center p-2">
-                      <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-all ${
-                        isTodayDate ? 'bg-blue-600/20 text-blue-500 ring-1 ring-blue-500/30' : 
-                        isSelected ? 'bg-white/5 theme-text' :
+                    <div className="flex items-center p-2 md:p-3">
+                      <span className={`text-xs md:text-sm font-black w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-all ${
+                        isTodayDate ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 
+                        isSelected ? 'bg-white/10 theme-text' :
                         i % 7 === 0 ? 'text-red-400' :
                         i % 7 === 6 ? 'text-blue-400' :
                         'theme-text opacity-40'
@@ -420,18 +420,18 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     <div className="flex flex-col gap-[2px] w-full relative">
                       {[0, 1, 2, 3].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
-                        if (!event) return <div key={slotIndex} className="h-4 md:h-5" />; 
+                        if (!event) return <div key={slotIndex} className="h-4 md:h-6" />; 
 
                         return (
                           <div 
                             key={event.id}
-                            className={`px-2 h-4 md:h-5 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all ${
-                              event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
+                            className={`px-3 h-4 md:h-6 text-[9px] md:text-[11px] truncate text-white font-bold flex items-center transition-all ${
+                              event.isStart ? 'rounded-l-lg ml-1.5' : '-ml-[1.5px]'
                             } ${
-                              event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
+                              event.isEnd ? 'rounded-r-lg mr-1.5' : '-mr-[1.5px]'
                             }`}
                             style={{ 
-                              backgroundColor: event.color ? `${event.color}f2` : 'rgba(59, 130, 246, 0.95)',
+                              backgroundColor: event.color || '#3b82f6',
                               zIndex: 10
                             }}
                           >
@@ -442,8 +442,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
-                        <div className="text-[8px] theme-muted font-bold px-2 py-1 opacity-40">
-                          + {dayEvents.filter(e => (e.slot ?? 99) > 3).length}
+                        <div className="text-[9px] theme-muted font-black px-3 py-1 opacity-40">
+                          + {dayEvents.filter(e => (e.slot ?? 99) > 3).length}件
                         </div>
                       )}
                     </div>
