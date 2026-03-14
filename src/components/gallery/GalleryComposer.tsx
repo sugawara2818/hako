@@ -19,6 +19,8 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shareToTimeline, setShareToTimeline] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Prevent background scroll
@@ -61,19 +63,39 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
       }
       setIsUploading(false)
 
-      const postResult = await createGalleryPost(hakoId, uploadResult.url, caption.trim())
+      const postResult = await createGalleryPost(hakoId, uploadResult.url, caption.trim(), {
+        is_timeline: shareToTimeline
+      })
       
       if (!postResult.success) {
         throw new Error(postResult.error)
       }
 
-      onSuccess()
+      setShowSuccess(true)
+      setTimeout(() => {
+        onSuccess()
+      }, 1500)
     } catch (err: any) {
       setError(err.message || '予期せぬエラーが発生しました')
       setIsUploading(false)
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
+        <div className="relative flex flex-col items-center animate-in zoom-in duration-300">
+          <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+            <Send className="w-12 h-12 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">ギャラリーに追加しました！</h2>
+          <p className="text-gray-400 font-bold">素敵な瞬間を共有してくれてありがとう。</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -155,6 +177,25 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
                 className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-white text-lg focus:outline-none focus:border-purple-500/50 transition-all resize-none min-h-[120px]"
                 maxLength={200}
               />
+            </div>
+
+            {/* Share to Timeline Toggle */}
+            <div 
+              className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/[0.08] transition-all group"
+              onClick={() => setShareToTimeline(!shareToTimeline)}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border transition-all ${shareToTimeline ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'theme-elevated border-white/5 text-gray-500'}`}>
+                  <Send className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-widest mb-0.5">タイムラインにも共有</h4>
+                  <p className="text-[10px] text-gray-500 font-bold group-hover:text-gray-400 transition-colors">メインフィードにこの投稿を表示させます</p>
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-all relative ${shareToTimeline ? 'bg-purple-600' : 'bg-gray-800'}`}>
+                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${shareToTimeline ? 'left-7' : 'left-1'}`} />
+              </div>
             </div>
 
             {error && (

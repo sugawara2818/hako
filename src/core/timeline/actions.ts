@@ -40,6 +40,7 @@ export async function getTimelinePosts(hakoId: string, options?: { userId?: stri
       )
     `)
     .eq('hako_id', hakoId)
+    .or('is_timeline.eq.true,is_timeline.is.null') // Show posts intended for timeline, or legacy posts
 
   if (options?.userId) {
     query = query.eq('user_id', options.userId)
@@ -123,7 +124,7 @@ export async function createTimelinePost(
   hakoId: string, 
   content: string, 
   imageUrls?: string[], 
-  options?: { is_gallery?: boolean }
+  options?: { is_gallery?: boolean; is_timeline?: boolean }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
@@ -138,7 +139,8 @@ export async function createTimelinePost(
         content,
         image_url: imageUrls?.[0] || null, // Fallback for legacy
         image_urls: imageUrls || [],
-        is_gallery: options?.is_gallery || false
+        is_gallery: options?.is_gallery || false,
+        is_timeline: options?.is_timeline !== undefined ? options.is_timeline : true
       })
 
     if (error) {

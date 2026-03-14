@@ -17,6 +17,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       created_at,
       user_id,
       is_gallery,
+      is_timeline,
       album_id,
       profiles:user_id (display_name, avatar_url),
       hako_members(display_name, hako_id)
@@ -74,9 +75,13 @@ export async function toggleGalleryPin(postId: string, hakoId: string, isPinned:
   return { success: true }
 }
 
-export async function createGalleryPost(hakoId: string, imageUrl: string, caption?: string) {
+export async function createGalleryPost(hakoId: string, imageUrl: string, caption?: string, options?: { is_timeline?: boolean }) {
   // We now use the unified timeline post creation
-  const result = await createTimelinePost(hakoId, caption || '', [imageUrl], { is_gallery: true })
+  // Default is_timeline to false for gallery-specific posts
+  const result = await createTimelinePost(hakoId, caption || '', [imageUrl], { 
+    is_gallery: true,
+    is_timeline: options?.is_timeline || false
+  })
   
   if (result.success) {
     revalidatePath(`/hako/${hakoId}/gallery`)
