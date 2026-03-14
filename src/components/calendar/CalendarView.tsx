@@ -422,9 +422,21 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       {dayEvents.slice(0, 4).map(event => (
                         <div 
                           key={event.id}
-                          className="px-1.5 py-0.5 text-[8px] md:text-[10px] truncate theme-text font-bold rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400"
+                          className={`px-1.5 h-5 md:h-6 text-[8px] md:text-[10px] truncate theme-text font-black flex items-center transition-all z-10 ${
+                            event.isStart ? 'rounded-l-md ml-0.5' : 'border-l-0 -ml-1'
+                          } ${
+                            event.isEnd ? 'rounded-r-md mr-0.5' : 'border-r-0 -mr-1'
+                          }`}
+                          style={{ 
+                            backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                            color: 'white',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                            opacity: 1
+                          }}
                         >
-                          <span className="truncate">{event.title}</span>
+                          {(event.isStart || (i % 7 === 0)) && (
+                             <span className="truncate">{event.title}</span>
+                          )}
                         </div>
                       ))}
                       {dayEvents.length > 4 && (

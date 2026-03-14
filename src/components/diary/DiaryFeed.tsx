@@ -137,28 +137,32 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
   return (
     <div className="space-y-4 max-w-2xl mx-auto relative w-full">
       <div className="flex items-center justify-between mb-4 animate-fade-in px-4 sm:px-0">
-        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-muted hover:theme-text'}`}
-            title="リスト表示"
-          >
-            <BookOpen className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setViewMode('calendar')}
-            className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-muted hover:theme-text'}`}
-            title="カレンダー表示"
-          >
-            <Calendar className="w-5 h-5" />
-          </button>
-        </div>
+        {isProfileView ? (
+          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+              title="リスト表示"
+            >
+              <BookOpen className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+              title="カレンダー表示"
+            >
+              <Calendar className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <div /> /* Spacer to keep sort dropdown on the right */
+        )}
 
         <div className="relative">
           <select 
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
-            className="appearance-none theme-surface border border-white/10 theme-text text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-purple-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
+            className="appearance-none theme-surface border border-white/10 theme-text text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-blue-500/50 hover:bg-white/5 transition-all w-full md:w-auto"
           >
             <option value="date_desc">新しい順 (日付)</option>
             <option value="date_asc">古い順 (日付)</option>

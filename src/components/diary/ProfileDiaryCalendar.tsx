@@ -38,24 +38,18 @@ export function ProfileDiaryCalendar({ entries, hakoId, userId, onDateClick }: P
   }, [currentMonth])
 
   return (
-    <div className="theme-surface border theme-border rounded-3xl p-6 mb-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-blue-400" />
-          </div>
-          <h3 className="text-sm font-black theme-text uppercase tracking-widest">Diary History</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold theme-text mr-2">{format(currentMonth, 'yyyy年 M月', { locale: ja })}</span>
-          <div className="flex gap-1">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:theme-elevated rounded-xl transition-all theme-muted hover:theme-text">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:theme-elevated rounded-xl transition-all theme-muted hover:theme-text">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+    <div className="theme-surface border theme-border rounded-3xl p-6 mb-8 animate-in fade-in duration-500 shadow-xl">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xl font-black theme-text tracking-tight">
+          {format(currentMonth, 'yyyy年 MM月', { locale: ja })}
+        </h3>
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
+          <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:theme-elevated rounded-xl transition-all theme-muted hover:theme-text">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:theme-elevated rounded-xl transition-all theme-muted hover:theme-text">
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -75,23 +69,23 @@ export function ProfileDiaryCalendar({ entries, hakoId, userId, onDateClick }: P
             <div 
               key={dateKey}
               onClick={() => hasEntry && onDateClick?.(dateKey)}
-              className={`aspect-square flex flex-col items-center justify-center rounded-xl transition-all relative ${
-                !isCurrent ? 'opacity-10 pointer-events-none' : 'hover:theme-elevated cursor-pointer'
+              className={`aspect-square flex flex-col items-center justify-center rounded-2xl transition-all relative ${
+                !isCurrent ? 'opacity-10 pointer-events-none' : 'hover:bg-white/5 cursor-pointer'
               } ${
-                hasEntry ? 'bg-blue-500/10 border border-blue-500/30 ring-2 ring-blue-500/20 shadow-lg shadow-blue-500/10' : ''
+                isT ? 'bg-blue-600/15 ring-1 ring-blue-500/20' : ''
               }`}
             >
-              <span className={`text-[10px] font-black ${
-                isT ? 'text-blue-400 underline underline-offset-4 decoration-2' : 
-                hasEntry ? 'text-blue-400' :
+              <span className={`text-sm font-bold ${
+                isT ? 'text-blue-500' : 
+                hasEntry ? 'theme-text opacity-100 font-black' :
                 i % 7 === 0 ? 'text-red-400/60' :
                 i % 7 === 6 ? 'text-blue-400/60' :
-                'theme-text opacity-60'
+                'theme-text opacity-40'
               }`}>
                 {format(day, 'd')}
               </span>
               {hasEntry && (
-                <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50" />
+                <div className={`mt-1 w-1 h-1 rounded-full ${isT ? 'bg-blue-400' : 'bg-blue-500/60'}`} />
               )}
             </div>
           )
