@@ -323,30 +323,30 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         style={{ height: '100%' }}
     >
       {/* Header - Consolidated Layout */}
-      <div className="px-6 py-6 border-b theme-border bg-white/[0.01] backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold theme-text tracking-tight">
+      <div className="px-4 py-4 sm:px-6 sm:py-6 border-b theme-border bg-white/[0.01] backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl sm:text-3xl font-bold theme-text tracking-tight truncate">
             {format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
           
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-xl">
-              <button onClick={prevMonth} className="px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
-                <ChevronLeft className="w-5 h-5" />
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-xl">
+              <button onClick={prevMonth} className="p-1 sm:px-2 sm:py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:w-5" />
               </button>
-              <button onClick={() => setCurrentMonth(new Date())} className="px-4 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-text font-bold text-sm">
+              <button onClick={() => setCurrentMonth(new Date())} className="px-2 sm:px-4 py-1 sm:py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-text font-bold text-[10px] sm:text-sm">
                 今日
               </button>
-              <button onClick={nextMonth} className="px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
-                <ChevronRight className="w-5 h-5" />
+              <button onClick={nextMonth} className="p-1 sm:px-2 sm:py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all theme-muted">
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:w-5" />
               </button>
             </div>
 
             <button 
                 onClick={() => onAddEvent(new Date())}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all shrink-0"
             >
-                <Plus className="w-6 h-6" />
+                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>
@@ -364,7 +364,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
           <div className="flex flex-col h-full">
             <div className="grid grid-cols-7 border-b theme-border bg-white/[0.01]">
               {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
-                <div key={day} className={`py-3 text-center text-[10px] font-bold tracking-widest ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'theme-muted'}`}>
+                <div key={day} className={`py-2 sm:py-3 text-center text-[9px] sm:text-[10px] font-bold tracking-widest ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'theme-muted'}`}>
                   {day}
                 </div>
               ))}
@@ -383,8 +383,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     onClick={() => handleDayClick(day)}
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'pointer-events-none' : 'hover:bg-black/[0.005] dark:hover:bg-white/[0.005]'}`}
                   >
-                    <div className="flex items-center pt-1 px-2 pb-0.5">
-                      <span className={`text-[11px] font-bold w-7 h-7 flex items-center justify-center rounded-full transition-all ${
+                    <div className="flex items-center pt-1 px-1 sm:px-2 pb-0.5">
+                      <span className={`text-[9px] sm:text-[11px] font-bold w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-all ${
                         isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
                         isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
                         !isCurrentMonth ? 'theme-muted opacity-20' :
@@ -396,23 +396,23 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-0.5 w-full relative">
+                    <div className="flex flex-col gap-px sm:gap-0.5 w-full relative">
                       {[0, 1, 2].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
-                        if (!event) return <div key={slotIndex} className="h-5" />; 
+                        if (!event) return <div key={slotIndex} className="h-4 sm:h-5" />; 
 
                         return (
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-2 text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[19px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
-                              event.isStart ? 'border-l-[3px] rounded-l-sm' : ''
+                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[16px] sm:h-[19px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
+                              event.isStart ? 'border-l-[2px] sm:border-l-[3px] rounded-l-sm' : ''
                             } ${
                               event.isEnd ? 'rounded-r-sm' : ''
                             }`}
                             style={{ 
                               borderLeftColor: event.isStart ? (event.color || '#3b82f6') : 'transparent',
-                              backgroundColor: event.color ? `${event.color}15` : undefined,
+                              backgroundColor: event.color ? `${event.color}33` : undefined,
                               color: event.color || undefined,
                               zIndex: 10,
                             }}
@@ -424,8 +424,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 2).length > 0 && (
-                        <div className="text-[9px] theme-muted font-bold px-2 py-0.5 opacity-60">
-                          他 {dayEvents.filter(e => (e.slot ?? 99) > 2).length}件
+                        <div className="text-[8px] sm:text-[9px] theme-muted font-bold px-1 sm:px-2 py-0.5 opacity-60">
+                          +{dayEvents.filter(e => (e.slot ?? 99) > 2).length}
                         </div>
                       )}
                     </div>
@@ -597,28 +597,28 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       {/* Full-Screen Day View Overlay */}
       {isDayViewOpen && (
         <div className="fixed inset-0 z-[150] flex flex-col theme-bg animate-in slide-in-from-bottom duration-300">
-          <div className="flex items-center gap-4 px-6 py-4 border-b theme-border">
+          <div className="flex items-center gap-2 sm:gap-4 px-4 py-3 sm:px-6 sm:py-4 border-b theme-border">
             <button 
               onClick={() => setIsDayViewOpen(false)}
               className="p-2 -ml-2 hover:theme-elevated rounded-xl transition-all theme-text"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <div className="flex flex-col">
-              <span className="text-[10px] font-black theme-muted uppercase tracking-widest">
+              <span className="text-[9px] sm:text-[10px] font-black theme-muted uppercase tracking-widest">
                 {format(selectedDay, 'yyyy年 M月 d日', { locale: ja })}
               </span>
-              <span className="text-xl font-black theme-text">
+              <span className="text-lg sm:text-xl font-black theme-text leading-tight">
                 {format(selectedDay, 'eeee', { locale: ja })}
               </span>
             </div>
             <div className="flex-1" />
-            <div className="flex bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-2xl mr-2">
+            <div className="flex bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-2xl mr-1 sm:mr-2">
               {(['timeline', 'list'] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-sm font-bold transition-all ${
                     view === v 
                       ? 'theme-surface theme-text shadow-sm ring-1 ring-black/5 dark:ring-white/10' 
                       : 'theme-muted hover:theme-text'
@@ -630,9 +630,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
             </div>
             <button 
               onClick={() => onAddEvent(selectedDay)}
-              className="p-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+              className="p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl sm:rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
             >
-              <Plus className="w-6 h-6" />
+              <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
