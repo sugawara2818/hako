@@ -5,6 +5,7 @@ import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User, Ar
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { ProfileDiaryCalendar } from './ProfileDiaryCalendar'
 
@@ -84,6 +85,7 @@ function ConfirmDialog({
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const router = useRouter()
   const [confirmState, setConfirmState] = useState<{
     id: string
     message: string
@@ -188,9 +190,14 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
             hakoId={hakoId} 
             userId={currentUserId} 
             onDateClick={(date) => {
-               // Optional: Auto-filter or jump to date
-               setViewMode('list');
-               // We could also implement a jump/scroll to that date if needed
+               const entry = entries.find(e => e.diary_date === date);
+               if (entry) {
+                 const baseUrl = `/hako/${hakoId}/diary/${entry.id}`;
+                 const query = isProfileView ? `?from=profile&userId=${entry.user_id}` : '';
+                 router.push(`${baseUrl}${query}`);
+               } else {
+                 setViewMode('list');
+               }
             }}
           />
         </div>

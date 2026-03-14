@@ -80,26 +80,12 @@ export default async function DiaryDetailPage({ params }: { params: Promise<{ ha
   }
 
   return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={memberCount}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={hako.features || ['timeline']}
-      userId={user.id}
-    >
-      <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
-        <DiaryDetail 
-          hakoId={hakoId} 
-          currentUserId={user.id} 
-          entry={diary} 
-        />
-      </div>
-    </HakoViewerLayout>
+    <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
+      <DiaryDetail 
+        hakoId={hakoId} 
+        currentUserId={user.id} 
+        entry={diary} 
+      />
+    </div>
   )
 }
