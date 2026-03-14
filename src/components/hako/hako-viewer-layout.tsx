@@ -152,16 +152,26 @@ export function HakoViewerLayout({
   }, [hakoId, isTimelineActive, isDiaryActive])
 
   useEffect(() => {
-    if (isTimelineActive || isDiaryActive) {
-        localStorage.setItem('hako_last_visited_path', pathname)
+    // Determine if the current path is a "Main Hub"
+    const timelinePath = `/hako/${hakoId}`
+    const diaryPath = `/hako/${hakoId}/diary`
+    const calendarPath = `/hako/${hakoId}/calendar`
+    const galleryPath = `/hako/${hakoId}/gallery`
+
+    const isTimelineHub = pathname === timelinePath
+    const isDiaryHub = pathname === diaryPath
+    const isCalendarHub = pathname === calendarPath
+    const isGalleryHub = pathname === galleryPath
+
+    if (isTimelineHub || isDiaryHub || isCalendarHub || isGalleryHub) {
+        localStorage.setItem(`hako_${hakoId}_last_hub`, pathname)
     }
+
     if (isTimelineActive) {
-        localStorage.setItem(`hako_last_visited_path`, pathname)
         localStorage.setItem(`hako_${hakoId}_last_timeline`, new Date().toISOString())
         setHasNewTimeline(false)
     }
     if (isDiaryActive) {
-        localStorage.setItem(`hako_last_visited_path`, pathname)
         localStorage.setItem(`hako_${hakoId}_last_diary`, new Date().toISOString())
         setHasNewDiary(false)
     }
