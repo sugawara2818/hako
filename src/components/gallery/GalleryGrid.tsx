@@ -24,7 +24,14 @@ interface GalleryGridProps {
 }
 
 export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridProps) {
+  const [localImages, setLocalImages] = useState<GalleryImage[]>(images)
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
+  
+  // Update local images if prop changes
+  if (images !== localImages && images.length !== localImages.length) {
+    setLocalImages(images)
+  }
+
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPinning, setIsPinning] = useState(false)
   const [isAddingToAlbum, setIsAddingToAlbum] = useState(false)
@@ -50,9 +57,10 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
     try {
       const result = await toggleGalleryPin(selectedImage.id, hakoId, false)
       if (result.success) {
+        // Instant removal from local state
+        setLocalImages(prev => prev.filter(img => img.id !== selectedImage.id))
         setSelectedImage(null)
         setShowDeleteConfirm(false)
-        // Note: The parent component should refresh data via revalidatePath or local state filter
       }
     } finally {
       setIsDeleting(false)
@@ -61,14 +69,14 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
 
   return (
     <div className="p-4 md:p-8">
-      {images.length === 0 ? (
+      {localImages.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <p className="text-lg font-bold mb-2 text-white/40">写真はまだありません</p>
           <p className="text-sm">タイムラインに投稿された写真がここに集まります。</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {images.map((image) => (
+          {localImages.map((image) => (
             <div
               key={image.id}
               className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group hover:scale-[1.02] transition-all duration-300 border border-white/5 bg-white/5"
