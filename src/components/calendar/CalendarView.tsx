@@ -404,48 +404,49 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'bg-white/[0.03]' : 'hover:bg-white/[0.015]'}`}
+                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col overflow-visible ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}
                   >
-                    <div className="flex items-center justify-between p-1 md:p-2 mb-0.5">
-                      <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-all ${
-                        isTodayDate ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' : 
-                        isSelected ? 'theme-text ring-1 ring-blue-500/50 bg-blue-500/5' :
-                        i % 7 === 0 ? 'text-red-400' :
-                        i % 7 === 6 ? 'text-blue-400' :
-                        'theme-text opacity-70'
+                    <div className="flex items-center justify-between p-1 md:p-1.5 mb-1">
+                      <span className={`text-[10px] md:text-[11px] font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-all duration-300 ${
+                        isTodayDate ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)] scale-110' : 
+                        isSelected ? 'theme-text ring-2 ring-blue-500/40 bg-blue-500/10' :
+                        i % 7 === 0 ? 'text-red-400/90' :
+                        i % 7 === 6 ? 'text-blue-400/90' :
+                        'theme-text opacity-50 font-bold'
                       }`}>
                         {format(day, 'd')}
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-[2px] w-full">
+                    <div className="flex flex-col gap-[2px] w-full relative z-20">
                       {[0, 1, 2, 3].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
-                        if (!event) return <div key={slotIndex} className="h-4 md:h-5" />; // Empty slot spacer
+                        if (!event) return <div key={slotIndex} className="h-4 md:h-5" />; 
 
                         return (
                           <div 
                             key={event.id}
-                            className={`px-1.5 h-4 md:h-5 text-[8px] md:text-[9.5px] truncate text-white font-bold flex items-center transition-all z-10 ${
-                              event.isStart ? 'rounded-l-md ml-1' : ''
+                            className={`px-1.5 h-4 md:h-5 text-[8px] md:text-[9.5px] truncate text-white font-black flex items-center transition-all duration-300 ${
+                              event.isStart ? 'rounded-l-md ml-1.5' : '-ml-[1px]'
                             } ${
-                              event.isEnd ? 'rounded-r-md mr-1' : ''
+                              event.isEnd ? 'rounded-r-md mr-1.5' : '-mr-[1px]'
                             }`}
                             style={{ 
-                              backgroundColor: event.color ? `${event.color}f2` : 'rgba(59, 130, 246, 0.95)',
-                              borderTop: `1px solid rgba(255,255,255,0.08)`,
-                              borderBottom: `1px solid rgba(0,0,0,0.08)`,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                              backgroundColor: event.color || 'rgba(59, 130, 246, 0.95)',
+                              borderTop: `1px solid rgba(255,255,255,0.15)`,
+                              borderBottom: `1px solid rgba(0,0,0,0.1)`,
+                              boxShadow: event.isEnd ? '2px 0 4px rgba(0,0,0,0.1)' : 'none',
+                              zIndex: 20
                             }}
                           >
                             {(event.isStart || (i % 7 === 0)) && (
-                               <span className="truncate drop-shadow-sm">{event.title}</span>
+                               <span className="truncate drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]">{event.title}</span>
                             )}
                           </div>
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
-                        <div className="text-[7px] md:text-[9px] theme-muted font-black px-2 py-0.5">
+                        <div className="text-[7px] md:text-[8px] theme-muted font-black px-2 mt-0.5 opacity-60">
                           + {dayEvents.filter(e => (e.slot ?? 99) > 3).length}
                         </div>
                       )}
