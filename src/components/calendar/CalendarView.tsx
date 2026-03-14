@@ -323,12 +323,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         style={{ height: '100%' }}
     >
       {/* Header */}
-      <div className="px-6 py-8 border-b theme-border space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold theme-text tracking-tighter">
+      <div className="px-6 py-8 border-b theme-border space-y-8 bg-white/[0.01]">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-4xl font-bold theme-text tracking-tighter">
             {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
           </h2>
-          <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1 rounded-2xl border theme-border">
+          <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl border theme-border">
             <button onClick={prevMonth} className="p-2.5 hover:bg-black/[0.05] dark:hover:bg-white/5 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -338,7 +338,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 px-2">
             <button 
               onClick={() => {
                 setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
@@ -350,7 +350,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
               今日
             </button>
 
-            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1 rounded-2xl border theme-border">
+            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl border theme-border">
                 {[
                     { id: 'month', label: '月' },
                     { id: 'week', label: '週' },
@@ -359,7 +359,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     <button
                         key={mode.id}
                         onClick={() => setViewMode(mode.id as any)}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+                        className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
                     >
                         {mode.label}
                     </button>
@@ -368,7 +368,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
             
             <button 
               onClick={() => onAddEvent(new Date())}
-              className="p-3 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/40 active:scale-95 transition-all flex items-center justify-center"
+              className="p-3.5 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center ml-2"
             >
               <Plus className="w-6 h-6" />
             </button>
@@ -407,12 +407,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-10 pointer-events-none' : 'hover:bg-black/[0.01] dark:hover:bg-white/[0.01]'}`}
                   >
                     <div className="flex items-center p-2">
-                      <span className={`text-xs font-bold w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-all ${
+                       <span className={`text-xs font-bold w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-all ${
                         isTodayDate ? 'bg-blue-600 text-white shadow-lg' : 
                         isSelected ? 'bg-blue-600/15 text-blue-500' :
                         i % 7 === 0 ? 'text-red-400' :
                         i % 7 === 6 ? 'text-blue-400' :
-                        'theme-text opacity-30 font-medium'
+                        'theme-text opacity-40 font-bold'
                       }`}>
                         {format(day, 'd')}
                       </span>
@@ -426,7 +426,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         return (
                           <div 
                             key={event.id}
-                            className={`px-3 h-5 md:h-6 text-[10px] md:text-[11px] truncate text-white font-bold flex items-center transition-all ${
+                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all ${
                               event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
                             } ${
                               event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
@@ -434,17 +434,17 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                             style={{ 
                               backgroundColor: event.color || '#3b82f6',
                               zIndex: 10,
-                              height: '24px'
+                              height: '20px'
                             }}
                           >
                             {(event.isStart || (i % 7 === 0)) && (
-                               <span className="truncate drop-shadow-sm">{event.title}</span>
+                               <span className="truncate">{event.title}</span>
                             )}
                           </div>
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
-                        <div className="text-[10px] theme-muted font-bold px-3 py-1 opacity-50">
+                        <div className="text-[9px] theme-muted font-bold px-3 py-1 opacity-50">
                           他 {dayEvents.filter(e => (e.slot ?? 99) > 3).length}件
                         </div>
                       )}
