@@ -319,7 +319,7 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-8 sm:gap-12 mt-1.5 text-gray-500">
+            <div className="flex items-center gap-8 sm:gap-12 mt-0.5 text-gray-500">
               <button 
                 onClick={handleLike}
                 className={`flex items-center gap-1.5 transition-colors group ${isLiked ? 'text-pink-500' : 'hover:text-pink-400'}`}
