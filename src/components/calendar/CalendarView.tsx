@@ -325,40 +325,32 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       {/* Header - Glassmorphism */}
       <div className="px-6 py-8 border-b theme-border space-y-8 bg-white/[0.01] backdrop-blur-md">
         <div className="flex items-center justify-between px-2">
-          <h2 className="text-4xl font-black theme-text tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 M月', { locale: ja })}
+          <h2 className="text-4xl font-black theme-text tracking-tighter">
+            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
           </h2>
-          <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl border theme-border">
-            <button onClick={prevMonth} className="p-2.5 hover:bg-black/[0.05] dark:hover:bg-white/5 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
+          <div className="flex items-center gap-1 bg-white/[0.03] p-1.5 rounded-2xl border theme-border shadow-inner">
+            <button onClick={prevMonth} className="p-2.5 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={nextMonth} className="p-2.5 hover:bg-black/[0.05] dark:hover:bg-white/5 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
+            <button onClick={() => setCurrentMonth(new Date())} className="px-4 py-2 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-text font-bold text-sm">
+              今日
+            </button>
+            <button onClick={nextMonth} className="p-2.5 hover:theme-elevated rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 px-2">
-            <button 
-              onClick={() => {
-                setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
-                setAnimationKey(Date.now())
-                setCurrentMonth(new Date())
-              }} 
-              className="px-8 py-3 rounded-2xl bg-gradient-to-r from-blue-600/10 to-blue-400/10 text-blue-400 font-black hover:from-blue-600/20 hover:to-blue-400/20 transition-all active:scale-95 text-xs uppercase tracking-widest border border-blue-500/20 shadow-lg shadow-blue-500/5"
-            >
-              今日
-            </button>
-
+        <div className="flex items-center justify-between px-2">
             <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border theme-border shadow-inner">
               {(['month', 'week', 'year'] as const).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+                  className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${
                     viewMode === mode 
-                      ? 'bg-gradient-to-br from-blue-600 to-blue-400 text-white shadow-lg shadow-blue-500/25 active:scale-95' 
-                      : 'theme-muted hover:theme-text hover:bg-white/5 opacity-40 hover:opacity-100'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 active:scale-95' 
+                      : 'theme-muted hover:theme-text'
                   }`}
                 >
                   {mode === 'month' ? '月' : mode === 'week' ? '週' : '年'}
@@ -368,7 +360,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
             
             <button 
                 onClick={() => onAddEvent(new Date())}
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all hover:scale-110 active:scale-90"
+                className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-90 transition-all"
             >
                 <Plus className="w-8 h-8 font-black" />
             </button>
@@ -427,7 +419,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-black flex items-center transition-all hover:brightness-110 active:scale-[0.98] ${
+                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all hover:brightness-110 active:scale-[0.98] ${
                               event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
                             } ${
                               event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
@@ -436,11 +428,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               backgroundColor: event.color || '#3b82f6',
                               zIndex: 10,
                               height: '24px',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                             }}
                           >
                             {(event.isStart || (i % 7 === 0)) && (
-                               <span className="truncate drop-shadow-md">{event.title}</span>
+                               <span className="truncate">{event.title}</span>
                             )}
                           </button>
                         );
