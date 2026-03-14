@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Share, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
 import { toggleGalleryPin } from '@/core/gallery/actions'
 import { Edit2 } from 'lucide-react'
@@ -97,9 +97,9 @@ function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr)
   const diff = (Date.now() - date.getTime()) / 1000
   if (diff < 60) return "たった今"
-  if (diff < 3600) return `${Math.floor(diff / 60)}分前`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}時間前`
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}日前`
+  if (diff < 3600) return `${Math.floor(diff / 60)}分`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}時間`
+  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}日`
   return date.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })
 }
 
