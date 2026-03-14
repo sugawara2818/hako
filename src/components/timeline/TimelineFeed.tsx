@@ -449,20 +449,26 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  {/* Gallery Toggle */}
+                  {/* Gallery Switch UI */}
                   {selectedFiles.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setAddToGallery(!addToGallery)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-[11px] font-black uppercase tracking-wider ${
-                        addToGallery 
-                          ? 'bg-purple-500/10 border-purple-500/30 text-purple-400' 
-                          : 'bg-white/5 border-white/10 text-gray-500'
-                      }`}
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      {addToGallery ? '共有ギャラリーに追加' : 'ギャラリーに追加しない'}
-                    </button>
+                    <div className="flex items-center gap-3 py-1 px-3 rounded-2xl bg-white/5 border border-white/10">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">
+                        共有ギャラリーに追加
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setAddToGallery(!addToGallery)}
+                        className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none ${
+                          addToGallery ? 'bg-emerald-500' : 'bg-gray-700'
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 transform ${
+                            addToGallery ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
                   )}
 
                   {/* Character Count Circle */}

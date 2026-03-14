@@ -79,6 +79,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
           createdAt: post.created_at,
           userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
           userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
+          userId: post.user_id,
           isPinned: false,
           albumId: null
         }
@@ -125,6 +126,7 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
         createdAt: post.created_at,
         userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
         userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
+        userId: post.user_id,
         isPinned: post.is_gallery,
         albumId: post.album_id
       }

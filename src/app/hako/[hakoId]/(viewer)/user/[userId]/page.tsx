@@ -62,7 +62,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   }
 
   const { DiaryFeed } = await import('@/components/diary/DiaryFeed')
-  const { LayoutGrid, Hash, BookOpen } = await import('lucide-react')
+  const { Image: LucideImageIcon, Hash, BookOpen } = await import('lucide-react')
 
     return (
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar">
@@ -132,9 +132,13 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             )}
             <Link
               href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
-              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${activeTab === 'gallery' ? 'border-purple-500 text-purple-400 bg-purple-500/5' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${
+                activeTab === 'gallery' 
+                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5' 
+                  : 'border-transparent text-gray-500 hover:text-gray-300'
+              }`}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LucideImageIcon className={`w-4 h-4 ${activeTab === 'gallery' ? 'text-emerald-400' : ''}`} />
               ギャラリー
             </Link>
           </div>
@@ -197,7 +201,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                           className="object-cover transition-transform duration-500 group-hover:scale-110" 
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                           <LayoutGrid className="w-6 h-6 text-white" />
+                           <LucideImageIcon className="w-6 h-6 text-white" />
                         </div>
                       </div>
                     ))}
@@ -205,7 +209,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                 ) : (
                   <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
-                        <LayoutGrid className="w-8 h-8 text-gray-600" />
+                        <LucideImageIcon className="w-8 h-8 text-gray-600" />
                     </div>
                     <p className="text-gray-500 font-medium">まだ写真がありません</p>
                   </div>
