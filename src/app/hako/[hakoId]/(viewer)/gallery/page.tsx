@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { getGalleryImages, deleteGalleryPost, getAlbums } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { AlbumCreator } from '@/components/gallery/AlbumCreator'
+import { GalleryComposer } from '@/components/gallery/GalleryComposer'
 import { useParams, useRouter } from 'next/navigation'
 import { GalleryCinemaMode } from '@/components/gallery/GalleryCinemaMode'
 
@@ -19,6 +20,7 @@ export default function GalleryPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<'featured' | 'discovery' | 'albums'>('featured')
   const [showAlbumCreator, setShowAlbumCreator] = useState(false)
+  const [showComposer, setShowComposer] = useState(false)
   const [showCinemaMode, setShowCinemaMode] = useState(false)
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null)
 
@@ -50,7 +52,7 @@ export default function GalleryPage() {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 px-6 py-8 md:px-10 border-b theme-border bg-black/20 backdrop-blur-md sticky top-0 z-30">
+      <div className="shrink-0 px-6 py-8 md:px-10 border-b theme-border theme-bg sticky top-0 z-30">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-black heading-gradient">
@@ -62,6 +64,13 @@ export default function GalleryPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowComposer(true)}
+              className="flex items-center gap-2 px-4 md:px-6 py-3 bg-white text-black rounded-2xl font-black text-xs hover:bg-gray-200 active:scale-95 transition-all shadow-xl shadow-white/5"
+            >
+              <Camera className="w-4 h-4" />
+              <span className="hidden md:inline">写真を投稿</span>
+            </button>
             <button
               onClick={() => setShowCinemaMode(true)}
               disabled={images.length === 0}
@@ -200,6 +209,17 @@ export default function GalleryPage() {
           onClose={() => setShowAlbumCreator(false)}
           onSuccess={() => {
             setShowAlbumCreator(false)
+            fetchData()
+          }}
+        />
+      )}
+
+      {showComposer && (
+        <GalleryComposer
+          hakoId={hakoId}
+          onClose={() => setShowComposer(false)}
+          onSuccess={() => {
+            setShowComposer(false)
             fetchData()
           }}
         />

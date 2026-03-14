@@ -287,6 +287,20 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
         borderRight: '1px solid var(--border)'
       }}
     >
+      {/* Timeline Header Integrated */}
+      <div className="px-4 py-6 md:py-8 border-b theme-border theme-bg flex items-center justify-between sticky top-0 z-20 backdrop-blur-md">
+        <h1 className="text-xl md:text-2xl font-black heading-gradient">
+          タイムライン
+        </h1>
+        <button 
+          onClick={() => setIsComposerOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-xs shadow-lg shadow-purple-900/40 transition-all active:scale-95"
+        >
+          <Camera className="w-4 h-4" />
+          <span>ポストする</span>
+        </button>
+      </div>
+
       {/* Pull down indicator */}
       <div 
         className="overflow-hidden transition-all duration-200 flex items-center justify-center text-purple-400"
