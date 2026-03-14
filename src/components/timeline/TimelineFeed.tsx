@@ -5,7 +5,7 @@ import { createTimelinePost } from '@/core/timeline/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { TimelinePost } from './TimelinePost'
 import Image from 'next/image' // Added this import
-import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus, Trash2 } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, X, ArrowDown, Plus, Trash2, Heart, MessageCircle, MoreVertical, Camera } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface TimelineFeedProps {

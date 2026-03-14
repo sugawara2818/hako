@@ -2,21 +2,23 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createTimelinePost, deleteTimelinePost } from '@/core/timeline/actions'
 
 export async function getGalleryImages(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   
   const { data, error } = await supabase
-    .from('hako_gallery_posts')
+    .from('hako_timeline_posts')
     .select(`
       id,
-      image_url,
-      caption,
+      image_urls,
+      content,
       created_at,
       user_id,
       profiles:user_id (display_name, avatar_url)
     `)
     .eq('hako_id', hakoId)
+    .eq('is_gallery', true)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -28,8 +30,8 @@ export async function getGalleryImages(hakoId: string) {
     const memberInfo = (post.profiles as any) || {}
     return {
       id: post.id,
-      url: post.image_url,
-      caption: post.caption,
+      url: post.image_urls?.[0] || '', // Gallery posts usually have one main image
+      caption: post.content,
       createdAt: post.created_at,
       userName: memberInfo.display_name || 'ユーザー',
       userAvatar: memberInfo.avatar_url
@@ -38,43 +40,23 @@ export async function getGalleryImages(hakoId: string) {
 }
 
 export async function createGalleryPost(hakoId: string, imageUrl: string, caption?: string) {
-  try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    const { error } = await supabase
-      .from('hako_gallery_posts')
-      .insert({
-        hako_id: hakoId,
-        user_id: user.id,
-        image_url: imageUrl,
-        caption: caption || null
-      })
-
-    if (error) throw error
-
+  // We now use the unified timeline post creation
+  const result = await createTimelinePost(hakoId, caption || '', [imageUrl], { is_gallery: true })
+  
+  if (result.success) {
     revalidatePath(`/hako/${hakoId}/gallery`)
-    return { success: true }
-  } catch (err: any) {
-    console.error('Gallery Post Creation Error:', err)
-    return { success: false, error: '投稿に失敗しました。' }
   }
+  
+  return result
 }
 
 export async function deleteGalleryPost(postId: string, hakoId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { error } = await supabase
-    .from('hako_gallery_posts')
-    .delete()
-    .eq('id', postId)
-    .eq('user_id', user.id)
-
-  if (error) throw error
-
-  revalidatePath(`/hako/${hakoId}/gallery`)
-  return true
+  // We use the unified timeline post deletion
+  const result = await deleteTimelinePost(postId, hakoId)
+  
+  if (result) {
+    revalidatePath(`/hako/${hakoId}/gallery`)
+  }
+  
+  return result
 }

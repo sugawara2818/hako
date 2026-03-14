@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User } from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
 import { Edit2 } from 'lucide-react'
 import { ImageLightbox } from './ImageLightbox'
@@ -78,6 +78,7 @@ interface PostProps {
     content: string
     image_url: string | null
     image_urls?: string[]
+    is_gallery?: boolean
     created_at: string
     likes_count: number
     is_liked: boolean
@@ -255,8 +256,19 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
               <span className="text-gray-500 text-[10px] md:text-xs">· {formatRelativeTime(post.created_at)}</span>
             </div>
             
-            <div className="mt-2 text-gray-200 text-sm md:text-base leading-relaxed whitespace-pre-line">
-              {post.content}
+            {/* Content with Gallery styling */}
+            <div className="mt-2 space-y-3">
+              {post.is_gallery && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full w-fit">
+                  <ImageIcon className="w-3 h-3 text-purple-400 font-black" />
+                  <span className="text-[9px] font-black text-purple-400 uppercase tracking-[0.15em]">Gallery Moment</span>
+                </div>
+              )}
+              {post.content && (
+                <div className={`text-gray-200 leading-relaxed whitespace-pre-line ${post.is_gallery ? 'text-lg font-medium' : 'text-sm md:text-base'}`}>
+                  {post.content}
+                </div>
+              )}
             </div>
 
             {/* X-style Adaptive Image Grid */}
@@ -377,7 +389,19 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
                   </button>
                 </form>
 
+                {/* Content */}
                 <div className="space-y-4">
+                  {post.is_gallery && (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full w-fit">
+                      <ImageIcon className="w-3 h-3 text-purple-400" />
+                      <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Gallery Moment</span>
+                    </div>
+                  )}
+                  {post.content && (
+                    <p className={`text-sm leading-relaxed theme-text whitespace-pre-wrap ${post.is_gallery ? 'text-lg font-medium' : ''}`}>
+                      {post.content}
+                    </p>
+                  )}
                   {post.comments?.length === 0 && (
                     <p className="text-gray-500 text-xs text-center py-2">まだコメントはありません</p>
                   )}

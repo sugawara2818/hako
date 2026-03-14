@@ -119,7 +119,12 @@ export async function getTimelinePosts(hakoId: string, options?: { userId?: stri
 }
 
 // Create a new timeline post
-export async function createTimelinePost(hakoId: string, content: string, imageUrls?: string[]): Promise<{ success: boolean; error?: string }> {
+export async function createTimelinePost(
+  hakoId: string, 
+  content: string, 
+  imageUrls?: string[], 
+  options?: { is_gallery?: boolean }
+): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -132,7 +137,8 @@ export async function createTimelinePost(hakoId: string, content: string, imageU
         user_id: user.id,
         content,
         image_url: imageUrls?.[0] || null, // Fallback for legacy
-        image_urls: imageUrls || []
+        image_urls: imageUrls || [],
+        is_gallery: options?.is_gallery || false
       })
 
     if (error) {
