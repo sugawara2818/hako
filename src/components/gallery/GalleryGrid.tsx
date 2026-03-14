@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { X, ExternalLink, Calendar as CalendarIcon, Download, Trash2, Loader2, Image as ImageIcon, FolderPlus } from 'lucide-react'
+import { X, ExternalLink, Calendar as CalendarIcon, Download, Trash2, Loader2, Image as ImageIcon, FolderPlus, ChevronLeft, Send } from 'lucide-react'
 import { toggleGalleryPin, addPostToAlbum } from '@/core/gallery/actions'
 
 interface GalleryImage {
@@ -28,6 +28,8 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPinning, setIsPinning] = useState(false)
   const [isAddingToAlbum, setIsAddingToAlbum] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showFullSize, setShowFullSize] = useState(false)
 
 
   const handleAddToAlbum = async (postId: string, albumId: string) => {
@@ -42,14 +44,13 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
     }
   }
 
-  const handleDelete = async (postId: string) => {
-    if (!window.confirm('この投稿を削除しますか？')) return
+  const handleDelete = async () => {
+    if (!selectedImage || !onDelete) return
     setIsDeleting(true)
     try {
-      if (onDelete) {
-        await onDelete(postId)
-        setSelectedImage(null)
-      }
+      await onDelete(selectedImage.id)
+      setSelectedImage(null)
+      setShowDeleteConfirm(false)
     } finally {
       setIsDeleting(false)
     }
@@ -205,15 +206,13 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                 {/* Primary Actions Block */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-10">
                   <div className="flex gap-3">
-                    <a
-                      href={selectedImage.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setShowFullSize(true)}
                       className="flex-1 h-16 theme-elevated hover:theme-surface theme-text rounded-3xl font-black transition-all flex items-center justify-center gap-3 text-sm border theme-border shadow-xl group"
                     >
                       <ExternalLink className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       FULL SIZE
-                    </a>
+                    </button>
                     <a
                       href={selectedImage.url}
                       download
@@ -225,16 +224,86 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
 
                   {onDelete && (
                     <button
-                      onClick={() => handleDelete(selectedImage.id)}
-                      disabled={isDeleting}
+                      onClick={() => setShowDeleteConfirm(true)}
                       className="h-16 theme-surface border border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all opacity-80 hover:opacity-100"
                     >
-                      {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                      <Trash2 className="w-5 h-5" />
                       PERMANENTLY DELETE
                     </button>
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Internal Full Size View */}
+      {showFullSize && selectedImage && (
+        <div className="fixed inset-0 z-[600] theme-bg flex flex-col animate-in fade-in duration-300">
+          <div className="h-16 border-b theme-border flex items-center px-4 shrink-0 shadow-sm sticky top-0 bg-inherit z-10 backdrop-blur-md bg-opacity-80">
+            <button
+              onClick={() => setShowFullSize(false)}
+              className="p-2 -ml-2 theme-text hover:theme-elevated rounded-full transition-all flex items-center gap-3 font-black px-4 group"
+            >
+              <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+              <span>詳細に戻る</span>
+            </button>
+          </div>
+          <div className="flex-1 bg-black flex items-center justify-center overflow-auto p-4 md:p-8">
+             <div className="relative min-w-full min-h-full flex items-center justify-center">
+                <Image
+                  src={selectedImage.url}
+                  alt=""
+                  width={4000}
+                  height={3000}
+                  className="max-w-none w-auto h-auto cursor-zoom-out"
+                  onClick={() => setShowFullSize(false)}
+                  priority
+                  unoptimized
+                />
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {showDeleteConfirm && selectedImage && (
+        <div className="fixed inset-0 z-[700] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => !isDeleting && setShowDeleteConfirm(false)} 
+          />
+          <div className="relative w-full max-w-sm theme-bg border theme-border rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-red-500/20">
+               <div className="h-full bg-red-500 animate-draw-line" />
+            </div>
+            
+            <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20">
+               <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+            
+            <h3 className="text-xl font-black theme-text mb-2">写真を永久に削除</h3>
+            <p className="text-sm theme-muted font-bold leading-relaxed mb-8">
+              この操作は取り消せません。共有ギャラリーとタイムラインからこの写真が完全に削除されます。
+            </p>
+            
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="w-full py-4 bg-red-500 hover:bg-red-400 text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-red-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {isDeleting ? '削除中...' : '削除を確定する'}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="w-full py-4 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-black text-sm transition-all disabled:opacity-50"
+              >
+                キャンセル
+              </button>
             </div>
           </div>
         </div>
