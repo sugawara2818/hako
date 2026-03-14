@@ -97,6 +97,7 @@ export default async function HakoSpacePage({ params }: { params: Promise<{ hako
         hakoId={hakoId}
         currentUserId={user.id}
         initialPosts={initialPosts}
+        features={features}
       />
     </div>
   )

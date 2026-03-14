@@ -15,9 +15,10 @@ interface TimelineFeedProps {
   initialPosts: any[]
   hideHeader?: boolean
   isFullWidth?: boolean
+  features?: string[]
 }
 
-export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false, isFullWidth = false }: TimelineFeedProps) {
+export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false, isFullWidth = false, features = ['timeline'] }: TimelineFeedProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
@@ -450,7 +451,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
                 
                 <div className="flex items-center gap-4">
                   {/* Gallery Switch UI */}
-                  {selectedFiles.length > 0 && (
+                  {selectedFiles.length > 0 && features.includes('gallery') && (
                     <div className="flex items-center gap-3 py-1 px-3 rounded-2xl bg-white/5 border border-white/10">
                       <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">
                         共有ギャラリーに追加
