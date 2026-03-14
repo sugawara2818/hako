@@ -237,7 +237,7 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
         }}        
       >
         {/* Header */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3">
           <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="shrink-0 group/avatar">
             {post.profiles?.avatar_url ? (
               <Image 
@@ -263,12 +263,8 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
             </div>
             
             {/* Content with Gallery styling */}
-            <div className="mt-2 space-y-3">
-              {post.content && (
-                <div className="text-gray-200 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                  {post.content}
-                </div>
-              )}
+            <div className="mt-0.5 whitespace-pre-line text-[15px] theme-text leading-normal">
+              {post.content}
             </div>
 
             {/* X-style Adaptive Image Grid */}
@@ -323,39 +319,44 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-6 mt-4 text-gray-500 text-sm select-none">
+            <div className="flex items-center justify-between mt-3 max-w-sm text-gray-500">
+              <button 
+                onClick={() => setShowComments(!showComments)}
+                className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-400' : 'hover:text-blue-400'}`}
+              >
+                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
+                  <MessageCircle className={`w-[18px] h-[18px] ${showComments ? 'fill-current' : ''}`} />
+                </div>
+                <span className="text-xs">{post.comments?.length || 0}</span>
+              </button>
+
+              <button className="flex items-center gap-1.5 hover:text-green-400 transition-colors group">
+                <div className="p-2 rounded-full group-hover:bg-green-400/10 transition-colors">
+                  <Repeat2 className="w-[18px] h-[18px]" />
+                </div>
+              </button>
+
               <button 
                 onClick={handleLike}
                 className={`flex items-center gap-1.5 transition-colors group ${isLiked ? 'text-pink-500' : 'hover:text-pink-400'}`}
               >
-                <Heart className={`w-[18px] h-[18px] transition-transform group-active:scale-95 ${isLiked ? 'fill-current' : ''}`} />
-                <span>{likesCount}</span>
+                <div className="p-2 rounded-full group-hover:bg-pink-400/10 transition-colors">
+                  <Heart className={`w-[18px] h-[18px] ${isLiked ? 'fill-current' : ''}`} />
+                </div>
+                <span className="text-xs">{likesCount}</span>
               </button>
 
-              <button className="flex items-center gap-1.5 hover:text-green-400 transition-colors group">
-                <Repeat2 className="w-[18px] h-[18px] transition-transform group-active:scale-95" />
+              <button className="flex items-center hover:text-blue-400 transition-colors group line-through opacity-50 cursor-not-allowed">
+                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
+                  <Bookmark className="w-[18px] h-[18px]" />
+                </div>
               </button>
 
-              <button 
-                onClick={() => setShowComments(!showComments)}
-                className={`flex items-center gap-1.5 hover:text-blue-400 transition-colors group ${showComments ? 'text-blue-400' : ''}`}
-              >
-                <MessageCircle className={`w-[18px] h-[18px] transition-transform group-active:scale-95 ${showComments ? 'fill-current/20' : ''}`} />
-                <span>{post.comments?.length || 0}</span>
+              <button className="flex items-center hover:text-blue-400 transition-colors group">
+                <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
+                  <Share className="w-[18px] h-[18px]" />
+                </div>
               </button>
-
-              <button className="flex items-center gap-1.5 hover:text-purple-400 transition-colors group line-through opacity-50 cursor-not-allowed">
-                <Bookmark className="w-[18px] h-[18px]" />
-              </button>
-
-              <div className="flex-1" />
-
-
-              {currentUserId === post.user_id && (
-                <button onClick={handleDelete} className="hover:text-red-400 transition-colors">
-                  <Trash2 className="w-[18px] h-[18px]" />
-                </button>
-              )}
             </div>
 
             {/* Comments Section */}
