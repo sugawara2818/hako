@@ -10,7 +10,7 @@ export function ProfileBackButton() {
 
   return (
     <button
-      onClick={() => router.push(`/hako/${hakoId}`)}
+      onClick={() => router.back()}
       className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold group"
     >
       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">

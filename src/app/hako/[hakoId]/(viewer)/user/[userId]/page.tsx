@@ -113,6 +113,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           {features.includes('timeline') && (
             <Link
               href={`/hako/${hakoId}/user/${targetUserId}?tab=timeline`}
+              replace
               className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${activeTab === 'timeline' ? 'border-purple-500 text-purple-400 bg-purple-500/5' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               <Hash className="w-4 h-4" />
@@ -122,6 +123,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           {features.includes('diary') && (
             <Link
               href={`/hako/${hakoId}/user/${targetUserId}?tab=diary`}
+              replace
               className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${activeTab === 'diary' ? 'border-blue-500 text-blue-400 bg-blue-500/5' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               <BookOpen className="w-4 h-4" />
@@ -131,6 +133,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           {features.includes('gallery') && (
             <Link
               href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
+              replace
               className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${
                 activeTab === 'gallery' 
                   ? 'border-[#82d9bc] text-[#82d9bc] bg-[#82d9bc]/5' 
