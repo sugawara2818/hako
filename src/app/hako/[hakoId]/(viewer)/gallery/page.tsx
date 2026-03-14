@@ -84,10 +84,10 @@ export default function GalleryPage() {
               <span className="hidden md:inline">写真を投稿</span>
             </button>
             <button
-              onClick={() => setShowCinemaMode(true)}
-              disabled={images.length === 0}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs hover:bg-emerald-500 active:scale-95 transition-all shadow-xl shadow-emerald-900/40 disabled:opacity-50"
-            >
+               onClick={() => setShowCinemaMode(true)}
+               disabled={images.length === 0}
+               className="flex items-center gap-2 px-6 py-3 bg-[#82d9bc] text-gray-700 rounded-2xl font-black text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20 disabled:opacity-50"
+             >
               <MonitorPlay className="w-4 h-4" />
               シネマ再生
             </button>
@@ -95,9 +95,9 @@ export default function GalleryPage() {
               onClick={() => setShowAlbumCreator(true)}
               className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
             >
-              <FolderPlus className="w-4 h-4 text-emerald-400" />
-              アルバム作成
-            </button>
+                <FolderPlus className="w-4 h-4 text-[#82d9bc]" />
+               アルバム作成
+             </button>
           </div>
         </div>
 
@@ -109,10 +109,10 @@ export default function GalleryPage() {
               setSelectedAlbumId(null)
             }}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-              filter === 'discovery' && !selectedAlbumId
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' 
-                : 'text-gray-500 hover:text-white'
-            }`}
+               filter === 'discovery' && !selectedAlbumId
+                 ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                 : 'text-gray-500 hover:text-white'
+             }`}
           >
             新着写真
           </button>
@@ -120,7 +120,7 @@ export default function GalleryPage() {
             onClick={() => setFilter('albums')}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
               filter === 'albums' 
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' 
+                ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
                 : 'text-gray-500 hover:text-white'
             }`}
           >
@@ -133,11 +133,11 @@ export default function GalleryPage() {
           <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
             {[2, 3, 4, 5, 6].map(num => (
               <button
-                key={num}
+                 key={num}
                 onClick={() => saveColumns(num)}
                 className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all flex items-center justify-center ${
                   columns === num 
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-900/30' 
+                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
                     : 'text-gray-500 hover:text-white'
                 }`}
               >
@@ -150,14 +150,14 @@ export default function GalleryPage() {
 
         {/* Selected Album Indicator */}
         {selectedAlbumId && (
-          <div className="mt-6 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="mt-6 flex items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-2xl px-6 py-4 animate-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-4">
-               <Library className="w-5 h-5 text-emerald-400" />
+               <Library className="w-5 h-5 text-[#82d9bc]" />
                <div>
                   <h4 className="text-white font-black text-sm">
                     {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
                   </h4>
-                  <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Viewing Collection</p>
+                  <p className="text-[10px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
                </div>
             </div>
             <button 
@@ -173,8 +173,8 @@ export default function GalleryPage() {
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar custom-scrollbar">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-emerald-500/50" />
-            <p className="text-xs font-black theme-muted uppercase tracking-widest">Memories are loading...</p>
+             <Loader2 className="w-10 h-10 animate-spin text-[#82d9bc]/50" />
+             <p className="text-xs font-black theme-muted uppercase tracking-widest">Memories are loading...</p>
           </div>
         ) : filter === 'albums' ? (
           <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -198,7 +198,7 @@ export default function GalleryPage() {
                       <Image src={album.cover_url} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-black">
-                        <Library className="w-12 h-12 text-emerald-500/40" />
+                        <Library className="w-12 h-12 text-[#82d9bc]/40" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">

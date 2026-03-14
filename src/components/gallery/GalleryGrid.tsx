@@ -103,8 +103,8 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
               {image.isPinned && (
-                <div className="absolute top-2 right-2 p-1 bg-emerald-500 rounded-lg shadow-lg">
-                  <ImageIcon className="w-3 h-3 text-white" />
+                <div className="absolute top-2 right-2 p-1 bg-[#82d9bc] rounded-lg shadow-lg">
+                  <ImageIcon className="w-3 h-3 text-gray-700" />
                 </div>
               )}
               {image.caption && (
@@ -131,7 +131,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
             </button>
             
             <div className="flex items-center gap-3 pr-2">
-               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center font-bold text-white text-[10px] shadow-lg overflow-hidden border theme-border">
+               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#82d9bc] to-teal-400 flex items-center justify-center font-bold text-gray-700 text-[10px] shadow-lg overflow-hidden border theme-border">
                   {selectedImage.userAvatar ? (
                     <Image src={selectedImage.userAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
                   ) : (
@@ -168,10 +168,10 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
               <div className="px-6 md:px-12 space-y-10">
                 
                 {/* Meta & Caption Block */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-full w-fit border border-emerald-500/10">
-                    <CalendarIcon className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
+                 <div className="space-y-6">
+                   <div className="flex items-center gap-3 px-4 py-2 bg-[#82d9bc]/5 rounded-full w-fit border border-[#82d9bc]/10">
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#82d9bc]" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#82d9bc]">
                       Captured on {new Date(selectedImage.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                   </div>
@@ -193,7 +193,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
                 <div className="space-y-6 pt-6 border-t theme-border">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl theme-elevated flex items-center justify-center border theme-border">
-                      <FolderPlus className="w-5 h-5 text-emerald-400" />
+                      <FolderPlus className="w-5 h-5 text-[#82d9bc]" />
                     </div>
                     <div>
                       <h4 className="text-xs font-black theme-text uppercase tracking-widest">Collections</h4>
@@ -214,8 +214,8 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
                             disabled={isAddingToAlbum || isActive}
                             className={`px-6 py-3 rounded-2xl text-[10px] font-black transition-all border shadow-lg ${
                               isActive 
-                                ? 'bg-emerald-600 text-white border-emerald-400 shadow-emerald-900/30' 
-                                : 'theme-surface theme-text border-theme-border hover:theme-elevated hover:border-emerald-500/50 hover:scale-[1.02]'
+                                ? 'bg-[#82d9bc] text-gray-700 border-[#82d9bc] shadow-[#82d9bc]/20' 
+                                : 'theme-surface theme-text border-theme-border hover:theme-elevated hover:border-[#82d9bc]/50 hover:scale-[1.02]'
                             }`}
                           >
                             {album.name}
@@ -239,7 +239,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
                     <a
                       href={selectedImage.url}
                       download
-                      className="w-16 h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-3xl transition-all shadow-xl shadow-emerald-900/40 flex items-center justify-center shrink-0 group"
+                      className="w-16 h-16 bg-[#82d9bc] hover:opacity-90 text-gray-700 rounded-3xl transition-all shadow-xl shadow-[#82d9bc]/20 flex items-center justify-center shrink-0 group"
                     >
                       <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </a>

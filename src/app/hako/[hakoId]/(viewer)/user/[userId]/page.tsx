@@ -132,7 +132,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             href={`/hako/${hakoId}/user/${targetUserId}?tab=gallery`}
             className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${
               activeTab === 'gallery' 
-                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5' 
+                ? 'border-[#82d9bc] text-[#82d9bc] bg-[#82d9bc]/5' 
                 : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >

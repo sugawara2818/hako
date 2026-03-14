@@ -459,7 +459,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts }: TimelineFe
                         type="button"
                         onClick={() => setAddToGallery(!addToGallery)}
                         className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none ${
-                          addToGallery ? 'bg-emerald-500' : 'bg-gray-700'
+                          addToGallery ? 'bg-[#82d9bc]' : 'bg-gray-700'
                         }`}
                       >
                         <div

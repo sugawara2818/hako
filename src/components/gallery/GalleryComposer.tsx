@@ -174,7 +174,7 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
                   <p className="text-[10px] theme-muted font-bold group-hover:theme-text transition-colors">メインフィードにこの投稿を表示させます</p>
                 </div>
               </div>
-              <div className={`w-12 h-6 rounded-full transition-all relative ${shareToTimeline ? 'bg-brand-primary' : 'bg-gray-300 dark:bg-gray-800'}`}>
+              <div className={`w-12 h-6 rounded-full transition-all relative ${shareToTimeline ? 'bg-[#82d9bc]' : 'bg-gray-300 dark:bg-gray-800'}`}>
                 <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${shareToTimeline ? 'left-7' : 'left-1'}`} />
               </div>
             </div>
@@ -190,7 +190,7 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
                 <button
                   type="submit"
                   disabled={!selectedFile || isSubmitting}
-                  className="w-full py-5 bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 rounded-3xl font-black shadow-2xl shadow-emerald-900/40 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg"
+                  className="w-full py-5 bg-[#82d9bc] text-gray-700 hover:opacity-90 disabled:opacity-50 rounded-3xl font-black shadow-2xl shadow-[#82d9bc]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg"
                 >
                   {!isSubmitting && <Send className="w-5 h-5" />}
                   {isSubmitting ? '処理中...' : 'ギャラリーへ追加'}
