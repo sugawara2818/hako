@@ -323,55 +323,54 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         style={{ height: '100%' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 md:px-8 md:py-6 border-b theme-border bg-white/[0.01]">
-        <div className="flex items-center gap-4 md:gap-8">
-          <h2 className="text-xl md:text-2xl font-bold theme-text tracking-tight">
-            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 M月', { locale: ja })}
+      <div className="flex items-center justify-between px-6 py-6 border-b theme-border">
+        <div className="flex items-center gap-6">
+          <h2 className="text-2xl font-black theme-text tracking-tighter">
+            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
           </h2>
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
-            <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-lg transition-all active:scale-95 theme-muted hover:theme-text">
+          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
+            <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button 
-              onClick={() => {
-                setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
-                setAnimationKey(Date.now())
-                setCurrentMonth(new Date())
-              }} 
-              className="px-4 py-1.5 text-xs font-bold theme-muted hover:theme-text transition-all active:scale-95"
-            >
-              今日
-            </button>
-            <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-lg transition-all active:scale-95 theme-muted hover:theme-text">
+            <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-xl transition-all theme-muted hover:theme-text">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              setSlideDirection(isAfter(new Date(), currentMonth) ? 'right' : 'left')
+              setAnimationKey(Date.now())
+              setCurrentMonth(new Date())
+            }} 
+            className="px-4 py-2 rounded-xl bg-blue-600/10 text-blue-500 font-bold hover:bg-blue-600/20 transition-all active:scale-95 text-xs md:text-sm"
+          >
+            今日
+          </button>
+          
+          <div className="hidden sm:flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
+              {[
+                  { id: 'month', label: '月', icon: LayoutGrid },
+                  { id: 'week', label: '週', icon: CalendarRange },
+                  { id: 'year', label: '年', icon: CalendarIcon }
+              ].map((mode) => (
+                  <button
+                      key={mode.id}
+                      onClick={() => setViewMode(mode.id as any)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all flex items-center gap-1 ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+                  >
+                      {mode.label}
+                  </button>
+              ))}
+          </div>
 
-        <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border mr-2">
-                {[
-                    { id: 'month', label: '月', icon: LayoutGrid },
-                    { id: 'week', label: '週', icon: CalendarRange },
-                    { id: 'year', label: '年', icon: CalendarIcon }
-                ].map((mode) => (
-                    <button
-                        key={mode.id}
-                        onClick={() => setViewMode(mode.id as any)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
-                    >
-                        <mode.icon className="w-3.5 h-3.5" />
-                        {mode.label}
-                    </button>
-                ))}
-            </div>
-            
-            <button 
-              onClick={() => onAddEvent(new Date())}
-              className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-blue-500/20 active:scale-95 transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">予定を追加</span>
-            </button>
+          <button 
+            onClick={() => onAddEvent(new Date())}
+            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -404,12 +403,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-10' : ''} ${isSelected ? 'bg-blue-500/[0.03]' : 'hover:bg-white/[0.01]'}`}
+                    className={`min-h-0 border-r border-b border-white/[0.05] transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-5' : 'hover:bg-white/[0.01]'}`}
                   >
-                    <div className="flex items-center p-1.5 md:p-2 mb-0.5">
-                      <span className={`text-[10px] md:text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-all duration-200 ${
-                        isTodayDate ? 'bg-blue-600 text-white font-black' : 
-                        isSelected ? 'bg-blue-500/10 text-blue-500' :
+                    <div className="flex items-center p-2">
+                      <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-all ${
+                        isTodayDate ? 'bg-blue-600/20 text-blue-500 ring-1 ring-blue-500/30' : 
+                        isSelected ? 'bg-white/5 theme-text' :
                         i % 7 === 0 ? 'text-red-400' :
                         i % 7 === 6 ? 'text-blue-400' :
                         'theme-text opacity-40'
@@ -426,15 +425,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         return (
                           <div 
                             key={event.id}
-                            className={`px-2 h-4 md:h-5 text-[8px] md:text-[9.5px] truncate text-white font-medium flex items-center transition-all ${
-                              event.isStart ? 'rounded-l-sm ml-1' : '-ml-[1px]'
+                            className={`px-2 h-4 md:h-5 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all ${
+                              event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
                             } ${
-                              event.isEnd ? 'rounded-r-sm mr-1' : '-mr-[1px]'
+                              event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
                             }`}
                             style={{ 
-                              backgroundColor: event.color || '#3b82f6',
-                              zIndex: 10,
-                              mixBlendMode: 'normal'
+                              backgroundColor: event.color ? `${event.color}f2` : 'rgba(59, 130, 246, 0.95)',
+                              zIndex: 10
                             }}
                           >
                             {(event.isStart || (i % 7 === 0)) && (
@@ -444,8 +442,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
-                        <div className="text-[7px] md:text-[8px] theme-muted font-medium px-2 py-0.5 opacity-50">
-                          他 {dayEvents.filter(e => (e.slot ?? 99) > 3).length}件
+                        <div className="text-[8px] theme-muted font-bold px-2 py-1 opacity-40">
+                          + {dayEvents.filter(e => (e.slot ?? 99) > 3).length}
                         </div>
                       )}
                     </div>
@@ -542,13 +540,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                                                 <button
                                                     key={event.id}
                                                     onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                                                    className="absolute left-1 right-1 p-1.5 rounded-md border theme-border shadow-sm hover:opacity-80 transition-all overflow-hidden z-10 text-left group"
+                                                    className="absolute p-2 rounded-lg border theme-border group text-left overflow-hidden transition-all hover:opacity-80 active:scale-[0.98]"
                                                     style={{ 
                                                         top: `${t + 2}px`, 
                                                         height: `${h}px`,
-                                                        borderLeft: `3px solid ${event.color || '#3b82f6'}`,
-                                                        backgroundColor: event.color ? `${event.color}40` : `rgba(59, 130, 246, 0.4)`,
-                                                        boxShadow: `0 2px 8px -2px ${event.color ? `${event.color}60` : `rgba(59, 130, 246, 0.4)`}`
+                                                        borderLeft: `4px solid ${event.color || '#3b82f6'}`,
+                                                        backgroundColor: event.color ? `${event.color}15` : `rgba(59, 130, 246, 0.1)`,
                                                     }}
                                                 >
                                                     <div className="text-[10px] font-bold theme-text leading-tight truncate">{event.title}</div>
@@ -669,11 +666,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     <button
                       key={event.id}
                       onClick={() => onEditEvent(event)}
-                      className="w-full px-4 py-3 rounded-2xl theme-elevated border theme-border flex items-center gap-3 hover:theme-elevated/80 transition-all shadow-md group"
-                      style={{ borderLeft: `4px solid ${event.color || '#3b82f6'}`, backgroundColor: event.color ? `${event.color}20` : `rgba(59, 130, 246, 0.15)` }}
+                      className="w-full px-4 py-3 rounded-2xl theme-surface border theme-border flex items-center gap-3 hover:bg-white/5 transition-all group"
+                      style={{ borderLeft: `4px solid ${event.color || '#3b82f6'}`, backgroundColor: event.color ? `${event.color}10` : `rgba(59, 130, 246, 0.05)` }}
                     >
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color || '#3b82f6' }} />
-                      <span className="text-sm font-black theme-text truncate">{event.title}</span>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: event.color || '#3b82f6' }} />
+                      <span className="text-sm font-bold theme-text truncate">{event.title}</span>
                     </button>
                   ))}
                 </div>
@@ -743,8 +740,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
                     style={{ top: `${nowPosition + 24}px` }}
                   >
-                    <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1 shadow-lg shadow-blue-500/50" />
-                    <div className="flex-1 h-[2px] bg-blue-500 shadow-lg shadow-blue-500/20" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 -ml-0.5" />
+                    <div className="flex-1 h-[1.5px] bg-blue-500/50" />
                   </div>
                 )}
 
@@ -842,19 +839,18 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               setDragOffset(offset)
                               setDragCurrentTop(pos.top)
                             }}
-                            className={`absolute p-1.5 rounded-md border theme-border shadow-sm group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.05] shadow-2xl ring-2 ring-white/50 transition-none' : 'z-10 hover:opacity-80 transition-all active:scale-[0.98]'}`}
+                            className={`absolute p-2 rounded-lg border theme-border group text-left overflow-hidden ${isDragging ? 'z-[100] scale-[1.02] shadow-2xl transition-none' : 'z-10 hover:opacity-80 transition-all active:scale-[0.98]'}`}
                             style={{ 
                               top: `${displayTop}px`, 
                               height: `${pos.height}px`,
                               left: `${left}%`,
                               width: `${width}%`,
                               borderLeft: `4px solid ${pos.event.color || '#3b82f6'}`,
-                              backgroundColor: isDragging ? pos.event.color : (pos.event.color ? `${pos.event.color}40` : `rgba(59, 130, 246, 0.4)`),
+                              backgroundColor: isDragging ? pos.event.color : (pos.event.color ? `${pos.event.color}15` : `rgba(59, 130, 246, 0.1)`),
                               color: isDragging ? '#fff' : 'inherit',
-                              boxShadow: isDragging ? `0 20px 50px -12px ${pos.event.color}aa` : (pos.event.color ? `0 4px 12px -2px ${pos.event.color}40` : `0 4px 12px -2px rgba(59, 130, 246, 0.3)`),
                               cursor: isDragging ? 'grabbing' : 'grab',
                               touchAction: 'none',
-                              opacity: isDragging ? 0.95 : 1
+                              opacity: isDragging ? 0.9 : 1
                             }}
                           >
                             <h4 className={`text-[10px] font-bold leading-tight truncate pointer-events-none ${isDragging ? 'text-white' : 'theme-text'}`}>
