@@ -153,7 +153,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                   currentUserId={currentUser.id}
                   initialPosts={initialPosts}
                   hideHeader={true}
-                  isFullWidth={true}
+                  isFullWidth={false}
                 />
               ) : (
                 <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">
