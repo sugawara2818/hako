@@ -179,7 +179,16 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
 
       {viewMode === 'calendar' ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <ProfileDiaryCalendar entries={entries} hakoId={hakoId} userId={currentUserId} />
+          <ProfileDiaryCalendar 
+            entries={entries} 
+            hakoId={hakoId} 
+            userId={currentUserId} 
+            onDateClick={(date) => {
+               // Optional: Auto-filter or jump to date
+               setViewMode('list');
+               // We could also implement a jump/scroll to that date if needed
+            }}
+          />
         </div>
       ) : (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">

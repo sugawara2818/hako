@@ -168,7 +168,6 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
 
           {activeTab === 'diary' && (
             <div className="max-w-2xl">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
                 <div className="space-y-4">
                   {initialDiaries.length > 0 ? (
                     <DiaryFeed
@@ -191,22 +190,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                     </div>
                   )}
                 </div>
-                
-                <aside className="hidden lg:block sticky top-24">
-                  {(() => {
-                    const { ProfileDiaryCalendar } = require('@/components/diary/ProfileDiaryCalendar');
-                    return <ProfileDiaryCalendar entries={initialDiaries} />;
-                  })()}
-                </aside>
-                
-                <div className="lg:hidden">
-                  {(() => {
-                    const { ProfileDiaryCalendar } = require('@/components/diary/ProfileDiaryCalendar');
-                    return <ProfileDiaryCalendar entries={initialDiaries} />;
-                  })()}
-                </div>
               </div>
-            </div>
           )}
           
           {activeTab === 'gallery' && (

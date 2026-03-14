@@ -21,9 +21,10 @@ interface ProfileDiaryCalendarProps {
   entries: any[]
   hakoId: string
   userId: string
+  onDateClick?: (date: string) => void
 }
 
-export function ProfileDiaryCalendar({ entries, hakoId, userId }: ProfileDiaryCalendarProps) {
+export function ProfileDiaryCalendar({ entries, hakoId, userId, onDateClick }: ProfileDiaryCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const entryDates = useMemo(() => {
@@ -73,10 +74,11 @@ export function ProfileDiaryCalendar({ entries, hakoId, userId }: ProfileDiaryCa
           return (
             <div 
               key={dateKey}
+              onClick={() => hasEntry && onDateClick?.(dateKey)}
               className={`aspect-square flex flex-col items-center justify-center rounded-xl transition-all relative ${
-                !isCurrent ? 'opacity-10 pointer-events-none' : 'hover:theme-elevated'
+                !isCurrent ? 'opacity-10 pointer-events-none' : 'hover:theme-elevated cursor-pointer'
               } ${
-                hasEntry ? 'bg-blue-500/10 border border-blue-500/30' : ''
+                hasEntry ? 'bg-blue-500/10 border border-blue-500/30 ring-2 ring-blue-500/20 shadow-lg shadow-blue-500/10' : ''
               }`}
             >
               <span className={`text-[10px] font-black ${
