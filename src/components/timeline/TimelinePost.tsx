@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
 import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
+import { toggleGalleryPin } from '@/core/gallery/actions'
 import { Edit2 } from 'lucide-react'
 import { ImageLightbox } from './ImageLightbox'
 import Image from 'next/image'
@@ -349,6 +350,26 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
               </button>
 
               <div className="flex-1" />
+
+              {images.length > 0 && (
+                <button 
+                  onClick={() => {
+                    const nextPinned = !post.is_gallery
+                    startTransition(async () => {
+                      await toggleGalleryPin(post.id, post.hako_id, nextPinned)
+                    })
+                  }}
+                  disabled={isPending}
+                  className={`p-2 rounded-full transition-all active:scale-95 ${
+                    post.is_gallery 
+                      ? 'text-purple-400 bg-purple-500/10' 
+                      : 'text-gray-500 hover:text-purple-400 hover:bg-purple-500/10'
+                  }`}
+                  title={post.is_gallery ? '不採用にする' : 'ギャラリーへ展示する'}
+                >
+                  {isPending ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <ImageIcon className="w-[18px] h-[18px]" />}
+                </button>
+              )}
 
               {currentUserId === post.user_id && (
                 <button onClick={handleDelete} className="hover:text-red-400 transition-colors">
