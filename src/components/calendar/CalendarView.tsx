@@ -212,94 +212,123 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
     }
 
     const map: Record<string, (CalendarEvent & { slot?: number; isStart?: boolean; isEnd?: boolean })[]> = {}
-    const intervalDays = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
     
-    // Slot tracks: Map<slotIndex, lastBusyDate>
+    // Slot tracks: Map<slotIndex, lastBusyDate> (Used for month view continuity)
     const slots: Record<number, string> = {};
 
-    // First, handle all events and sort by start time and duration (longer first for better layout)
-    const sortedEvents = [...initialEvents].filter(e => !e.id.includes('_')).sort((a, b) => {
-      const startA = parseISO(a.start_at).getTime();
-      const startB = parseISO(b.start_at).getTime();
-      if (startA !== startB) return startA - startB;
-      const durationA = parseISO(a.end_at).getTime() - startA;
-      const durationB = parseISO(b.end_at).getTime() - startB;
-      return durationB - durationA; // Longer events first
+    // 1. Generate instances (occurrences) for all events within the range
+    const instances: (CalendarEvent & { isStart?: boolean; isEnd?: boolean; originalStart?: Date; originalEnd?: Date })[] = [];
+
+    initialEvents.filter(e => !e.id.includes('_')).forEach(event => {
+        const startAt = parseISO(event.start_at);
+        const endAt = parseISO(event.end_at);
+        
+        if (!event.recurrence_rule) {
+            // Non-recurring case
+            const effectiveEnd = (endAt.getHours() === 0 && endAt.getMinutes() === 0 && !isSameDay(startAt, endAt))
+                ? subMinutes(endAt, 1)
+                : endAt;
+            
+            if (startOfDay(effectiveEnd) < rangeStart || startOfDay(startAt) > rangeEnd) return;
+            
+            instances.push({
+                ...event,
+                originalStart: startAt,
+                originalEnd: effectiveEnd,
+                isStart: true,
+                isEnd: true
+            });
+            return;
+        }
+
+        // Recursive case
+        let current = new Date(startAt);
+        const duration = endAt.getTime() - startAt.getTime();
+        let safetyCounter = 0;
+        
+        while (current <= rangeEnd && safetyCounter < 1000) {
+            safetyCounter++;
+            const dateKey = format(current, 'yyyy-MM-dd');
+            const instanceEnd = new Date(current.getTime() + duration);
+            
+            const isPastUntil = event.recurrence_until && isAfter(current, parseISO(event.recurrence_until));
+            const isExcluded = event.excluded_dates && event.excluded_dates.includes(dateKey);
+
+            if (!isPastUntil && !isExcluded) {
+                const effectiveEnd = (instanceEnd.getHours() === 0 && instanceEnd.getMinutes() === 0 && !isSameDay(current, instanceEnd))
+                    ? subMinutes(instanceEnd, 1)
+                    : instanceEnd;
+
+                if (startOfDay(effectiveEnd) >= rangeStart && startOfDay(current) <= rangeEnd) {
+                    instances.push({
+                        ...event,
+                        start_at: current.toISOString(),
+                        end_at: instanceEnd.toISOString(),
+                        originalStart: current,
+                        originalEnd: effectiveEnd,
+                        isStart: true,
+                        isEnd: true
+                    });
+                }
+            }
+            
+            if (event.recurrence_rule === 'daily') current = addDays(current, 1);
+            else if (event.recurrence_rule === 'weekly') current = addWeeks(current, 1);
+            else if (event.recurrence_rule === 'monthly') current = addMonths(current, 1);
+            else if (event.recurrence_rule === 'yearly') current = addYears(current, 1);
+            else break;
+        }
     });
 
-    sortedEvents.forEach(event => {
-      const startAt = parseISO(event.start_at);
-      const endAt = parseISO(event.end_at);
-      
-      // Calculate effective ranges
-      if (!event.recurrence_rule) {
-        let current = startOfDay(startAt);
-        const effectiveEnd = (endAt.getHours() === 0 && endAt.getMinutes() === 0 && !isSameDay(startAt, endAt))
-            ? subMinutes(endAt, 1)
-            : endAt;
-        const lastDay = startOfDay(effectiveEnd);
-        
-        if (lastDay < rangeStart || current > rangeEnd) return;
+    // 2. Sort all instances by start time and duration
+    instances.sort((a, b) => {
+        const startA = a.originalStart!.getTime();
+        const startB = b.originalStart!.getTime();
+        if (startA !== startB) return startA - startB;
+        const durationA = a.originalEnd!.getTime() - startA;
+        const durationB = b.originalEnd!.getTime() - startB;
+        return durationB - durationA; // Longer events first
+    });
 
-        // Slot assignment (for month view consistency)
+    // 3. Process sorted instances and assign to days + slots
+    instances.forEach(instance => {
+        const start = startOfDay(instance.originalStart!);
+        const end = startOfDay(instance.originalEnd!);
+        
         let slot = 0;
         if (viewMode === 'month') {
-          while (slots[slot] && parseISO(slots[slot]) >= current) {
-            slot++;
-          }
-          slots[slot] = format(lastDay, 'yyyy-MM-dd');
+            const slotStart = start < rangeStart ? rangeStart : start;
+            while (slots[slot] && parseISO(slots[slot]) >= slotStart) {
+                slot++;
+            }
+            slots[slot] = format(end, 'yyyy-MM-dd');
         }
 
-        let temp = current;
-        while (temp <= lastDay && temp <= rangeEnd) {
-          if (temp >= rangeStart || isSameDay(temp, rangeStart)) {
-            const dateKey = format(temp, 'yyyy-MM-dd')
-            if (!map[dateKey]) map[dateKey] = []
-            
-            map[dateKey].push({
-              ...event,
-              id: `${event.id}_${dateKey}`,
-              realId: event.id,
-              slot,
-              isStart: isSameDay(temp, startAt),
-              isEnd: isSameDay(temp, lastDay)
-            });
-          }
-          temp = addDays(temp, 1);
+        let temp = start;
+        while (temp <= end && temp <= rangeEnd) {
+            if (temp >= rangeStart || isSameDay(temp, rangeStart)) {
+                const dateKey = format(temp, 'yyyy-MM-dd')
+                if (!map[dateKey]) map[dateKey] = []
+                
+                map[dateKey].push({
+                    ...instance,
+                    id: `${instance.id}_${dateKey}`,
+                    realId: instance.id,
+                    slot,
+                    isStart: isSameDay(temp, instance.originalStart!),
+                    isEnd: isSameDay(temp, instance.originalEnd!)
+                });
+            }
+            temp = addDays(temp, 1);
         }
-        return;
-      }
+    });
 
-      // Handle recurrence
-      let current = new Date(startAt);
-      const duration = endAt.getTime() - startAt.getTime();
-      let safetyCounter = 0;
-      while (current <= rangeEnd && safetyCounter < 1000) {
-        safetyCounter++;
-        const dateKey = format(current, 'yyyy-MM-dd');
-        const isPastUntil = event.recurrence_until && isAfter(current, parseISO(event.recurrence_until));
-        const isExcluded = event.excluded_dates && event.excluded_dates.includes(dateKey);
+    // Final sort within each day by slot
+    Object.keys(map).forEach(key => {
+        map[key].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
+    });
 
-        if (!isPastUntil && !isExcluded && (current >= rangeStart || isSameDay(current, rangeStart))) {
-          if (!map[dateKey]) map[dateKey] = []
-          map[dateKey].push({
-            ...event,
-            id: `${event.id}_${dateKey}`,
-            realId: event.id,
-            start_at: current.toISOString(),
-            end_at: new Date(current.getTime() + duration).toISOString(),
-            isStart: true, // Recurrence items are usually daily "start" units unless redefined
-            isEnd: true
-          });
-        }
-        
-        if (event.recurrence_rule === 'daily') current = addDays(current, 1);
-        else if (event.recurrence_rule === 'weekly') current = addWeeks(current, 1);
-        else if (event.recurrence_rule === 'monthly') current = addMonths(current, 1);
-        else if (event.recurrence_rule === 'yearly') current = addYears(current, 1);
-        else break;
-      }
-    })
+    return map
 
     // Final sort within each day by slot
     Object.keys(map).forEach(key => {
@@ -383,8 +412,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     onClick={() => handleDayClick(day)}
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'pointer-events-none' : 'hover:bg-black/[0.005] dark:hover:bg-white/[0.005]'}`}
                   >
-                    <div className="flex items-center pt-1 px-1 sm:px-2 pb-0.5">
-                      <span className={`text-[10px] sm:text-[12px] font-bold w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all ${
+                    <div className="flex items-center pt-0.5 px-1 sm:px-2 pb-0.5">
+                      <span className={`text-[9px] sm:text-[11px] font-black w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-all ${
                         isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
                         isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
                         !isCurrentMonth ? 'theme-muted opacity-20' :
@@ -396,7 +425,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-px sm:gap-0.5 w-full relative">
+                    <div className="flex flex-col gap-0.5 sm:gap-1 w-full relative">
                       {[0, 1, 2, 3].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
                         if (!event) return <div key={slotIndex} className="h-4 sm:h-5" />; 
@@ -405,7 +434,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[16px] sm:h-[19px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
+                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[18px] sm:h-[22px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
                               event.isStart ? 'border-l-[2px] sm:border-l-[3px] rounded-l-sm' : ''
                             } ${
                               event.isEnd ? 'rounded-r-sm' : ''
