@@ -23,6 +23,18 @@ export default function GalleryPage() {
   const [showComposer, setShowComposer] = useState(false)
   const [showCinemaMode, setShowCinemaMode] = useState(false)
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null)
+  const [columns, setColumns] = useState(4)
+
+  // Load column preference
+  useEffect(() => {
+    const saved = localStorage.getItem(`gallery_columns_${hakoId}`)
+    if (saved) setColumns(parseInt(saved))
+  }, [hakoId])
+
+  const saveColumns = (val: number) => {
+    setColumns(val)
+    localStorage.setItem(`gallery_columns_${hakoId}`, val.toString())
+  }
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -74,7 +86,7 @@ export default function GalleryPage() {
             <button
               onClick={() => setShowCinemaMode(true)}
               disabled={images.length === 0}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl font-black text-xs hover:bg-purple-500 active:scale-95 transition-all shadow-xl shadow-purple-900/40 disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs hover:bg-emerald-500 active:scale-95 transition-all shadow-xl shadow-emerald-900/40 disabled:opacity-50"
             >
               <MonitorPlay className="w-4 h-4" />
               シネマ再生
@@ -83,7 +95,7 @@ export default function GalleryPage() {
               onClick={() => setShowAlbumCreator(true)}
               className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
             >
-              <FolderPlus className="w-4 h-4 text-purple-400" />
+              <FolderPlus className="w-4 h-4 text-emerald-400" />
               アルバム作成
             </button>
           </div>
@@ -98,7 +110,7 @@ export default function GalleryPage() {
             }}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
               filter === 'discovery' && !selectedAlbumId
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' 
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' 
                 : 'text-gray-500 hover:text-white'
             }`}
           >
@@ -108,7 +120,7 @@ export default function GalleryPage() {
             onClick={() => setFilter('albums')}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
               filter === 'albums' 
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' 
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' 
                 : 'text-gray-500 hover:text-white'
             }`}
           >
@@ -116,16 +128,36 @@ export default function GalleryPage() {
           </button>
         </div>
 
+        {/* Column Switcher (Local ONLY) */}
+        {!selectedAlbumId && filter === 'discovery' && (
+          <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
+            {[2, 3, 4, 5, 6].map(num => (
+              <button
+                key={num}
+                onClick={() => saveColumns(num)}
+                className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all flex items-center justify-center ${
+                  columns === num 
+                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-900/30' 
+                    : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+            <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40">Columns</span>
+          </div>
+        )}
+
         {/* Selected Album Indicator */}
         {selectedAlbumId && (
-          <div className="mt-6 flex items-center justify-between bg-purple-500/10 border border-purple-500/20 rounded-2xl px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="mt-6 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-6 py-4 animate-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-4">
-               <Library className="w-5 h-5 text-purple-400" />
+               <Library className="w-5 h-5 text-emerald-400" />
                <div>
                   <h4 className="text-white font-black text-sm">
                     {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
                   </h4>
-                  <p className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Viewing Collection</p>
+                  <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Viewing Collection</p>
                </div>
             </div>
             <button 
@@ -141,7 +173,7 @@ export default function GalleryPage() {
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar custom-scrollbar">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-purple-500/50" />
+            <Loader2 className="w-10 h-10 animate-spin text-emerald-500/50" />
             <p className="text-xs font-black theme-muted uppercase tracking-widest">Memories are loading...</p>
           </div>
         ) : filter === 'albums' ? (
@@ -165,8 +197,8 @@ export default function GalleryPage() {
                     {album.cover_url ? (
                       <Image src={album.cover_url} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900/40 to-black">
-                        <Library className="w-12 h-12 text-purple-500/40" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-black">
+                        <Library className="w-12 h-12 text-emerald-500/40" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
@@ -185,6 +217,7 @@ export default function GalleryPage() {
               albums={albums}
               hakoId={hakoId} 
               onDelete={handleDelete}
+              columns={columns}
             />
           </div>
         )}

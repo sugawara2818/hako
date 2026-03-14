@@ -21,9 +21,10 @@ interface GalleryGridProps {
   albums: any[]
   hakoId: string
   onDelete?: (id: string) => void
+  columns?: number
 }
 
-export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridProps) {
+export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: GalleryGridProps) {
   const [localImages, setLocalImages] = useState<GalleryImage[]>(images)
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
   
@@ -79,35 +80,42 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
           <p className="text-sm">タイムラインに投稿された写真がここに集まります。</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {localImages.map((image) => (
-            <div
-              key={image.id}
-              className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group hover:scale-[1.02] transition-all duration-300 border border-white/5 bg-white/5"
-              onClick={() => setSelectedImage(image)}
-            >
-              <Image
-                src={image.url}
-                alt=""
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
-                {image.isPinned && (
-                  <div className="absolute top-2 right-2 p-1 bg-purple-500 rounded-lg shadow-lg">
-                    <ImageIcon className="w-3 h-3 text-white" />
-                  </div>
-                )}
-                {image.caption && (
-                  <p className="text-[10px] text-white/80 line-clamp-1 mb-1 font-medium">{image.caption}</p>
-                )}
-                <p className="text-[10px] font-black text-white truncate">{image.userName}</p>
-              </div>
+      <div 
+        className={`grid gap-3 ${!columns ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' : ''}`}
+        style={{ 
+          gridTemplateColumns: columns 
+            ? `repeat(${columns}, minmax(0, 1fr))` 
+            : undefined 
+        }}
+      >
+        {localImages.map((image) => (
+          <div
+            key={image.id}
+            className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group hover:scale-[1.02] transition-all duration-300 border border-white/5 bg-white/5"
+            onClick={() => setSelectedImage(image)}
+          >
+            <Image
+              src={image.url}
+              alt=""
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+              {image.isPinned && (
+                <div className="absolute top-2 right-2 p-1 bg-emerald-500 rounded-lg shadow-lg">
+                  <ImageIcon className="w-3 h-3 text-white" />
+                </div>
+              )}
+              {image.caption && (
+                <p className="text-[10px] text-white/80 line-clamp-1 mb-1 font-medium">{image.caption}</p>
+              )}
+              <p className="text-[10px] font-black text-white truncate">{image.userName}</p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
+    )}
 
       {/* Lightbox - Premium Immersive Style (Scrollable Stack) */}
       {selectedImage && (
@@ -123,7 +131,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
             </button>
             
             <div className="flex items-center gap-3 pr-2">
-               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white text-[10px] shadow-lg overflow-hidden border theme-border">
+               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center font-bold text-white text-[10px] shadow-lg overflow-hidden border theme-border">
                   {selectedImage.userAvatar ? (
                     <Image src={selectedImage.userAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
                   ) : (
@@ -161,9 +169,9 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                 
                 {/* Meta & Caption Block */}
                 <div className="space-y-6">
-                  <div className="flex items-center gap-3 px-4 py-2 bg-purple-500/5 rounded-full w-fit border border-purple-500/10">
-                    <CalendarIcon className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
+                  <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-full w-fit border border-emerald-500/10">
+                    <CalendarIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
                       Captured on {new Date(selectedImage.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                   </div>
@@ -185,7 +193,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                 <div className="space-y-6 pt-6 border-t theme-border">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl theme-elevated flex items-center justify-center border theme-border">
-                      <FolderPlus className="w-5 h-5 text-purple-400" />
+                      <FolderPlus className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
                       <h4 className="text-xs font-black theme-text uppercase tracking-widest">Collections</h4>
@@ -206,8 +214,8 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                             disabled={isAddingToAlbum || isActive}
                             className={`px-6 py-3 rounded-2xl text-[10px] font-black transition-all border shadow-lg ${
                               isActive 
-                                ? 'bg-purple-600 text-white border-purple-400 shadow-purple-900/30' 
-                                : 'theme-surface theme-text border-theme-border hover:theme-elevated hover:border-purple-500/50 hover:scale-[1.02]'
+                                ? 'bg-emerald-600 text-white border-emerald-400 shadow-emerald-900/30' 
+                                : 'theme-surface theme-text border-theme-border hover:theme-elevated hover:border-emerald-500/50 hover:scale-[1.02]'
                             }`}
                           >
                             {album.name}
@@ -231,7 +239,7 @@ export function GalleryGrid({ images, albums, hakoId, onDelete }: GalleryGridPro
                     <a
                       href={selectedImage.url}
                       download
-                      className="w-16 h-16 bg-purple-600 hover:bg-purple-500 text-white rounded-3xl transition-all shadow-xl shadow-purple-900/40 flex items-center justify-center shrink-0 group"
+                      className="w-16 h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-3xl transition-all shadow-xl shadow-emerald-900/40 flex items-center justify-center shrink-0 group"
                     >
                       <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </a>

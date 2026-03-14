@@ -193,7 +193,12 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                 images={userGalleryImages} 
                 albums={albums} 
                 hakoId={hakoId}
-                onDelete={undefined} // GalleryGrid internal handles based on user mapping if needed, but per-profile we keep it simple
+                columns={3}
+                onDelete={isOwnProfile ? async (id: string) => {
+                  'use server'
+                  const { toggleGalleryPin } = await import('@/core/gallery/actions')
+                  await toggleGalleryPin(id, hakoId, false)
+                } : undefined}
               />
             </div>
           )}
