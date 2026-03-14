@@ -322,11 +322,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         onTouchEnd={handleTouchEnd}
         style={{ height: '100%' }}
     >
-      {/* Header */}
-      <div className="px-6 py-8 border-b theme-border space-y-8 bg-white/[0.01]">
+      {/* Header - Glassmorphism */}
+      <div className="px-6 py-8 border-b theme-border space-y-8 bg-white/[0.01] backdrop-blur-md">
         <div className="flex items-center justify-between px-2">
-          <h2 className="text-4xl font-bold theme-text tracking-tighter">
-            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 MM月', { locale: ja })}
+          <h2 className="text-4xl font-black theme-text tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
           <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl border theme-border">
             <button onClick={prevMonth} className="p-2.5 hover:bg-black/[0.05] dark:hover:bg-white/5 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
@@ -345,32 +345,32 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 setAnimationKey(Date.now())
                 setCurrentMonth(new Date())
               }} 
-              className="px-8 py-3 rounded-2xl bg-blue-500/10 text-blue-500 font-bold hover:bg-blue-500/20 transition-all active:scale-95 text-sm"
+              className="px-8 py-3 rounded-2xl bg-gradient-to-r from-blue-600/10 to-blue-400/10 text-blue-400 font-black hover:from-blue-600/20 hover:to-blue-400/20 transition-all active:scale-95 text-xs uppercase tracking-widest border border-blue-500/20 shadow-lg shadow-blue-500/5"
             >
               今日
             </button>
 
-            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl border theme-border">
-                {[
-                    { id: 'month', label: '月' },
-                    { id: 'week', label: '週' },
-                    { id: 'year', label: '年' }
-                ].map((mode) => (
-                    <button
-                        key={mode.id}
-                        onClick={() => setViewMode(mode.id as any)}
-                        className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${viewMode === mode.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
-                    >
-                        {mode.label}
-                    </button>
-                ))}
+            <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border theme-border shadow-inner">
+              {(['month', 'week', 'year'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+                    viewMode === mode 
+                      ? 'bg-gradient-to-br from-blue-600 to-blue-400 text-white shadow-lg shadow-blue-500/25 active:scale-95' 
+                      : 'theme-muted hover:theme-text hover:bg-white/5 opacity-40 hover:opacity-100'
+                  }`}
+                >
+                  {mode === 'month' ? '月' : mode === 'week' ? '週' : '年'}
+                </button>
+              ))}
             </div>
             
             <button 
-              onClick={() => onAddEvent(new Date())}
-              className="p-3.5 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center ml-2"
+                onClick={() => onAddEvent(new Date())}
+                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all hover:scale-110 active:scale-90"
             >
-              <Plus className="w-6 h-6" />
+                <Plus className="w-8 h-8 font-black" />
             </button>
         </div>
       </div>
@@ -407,12 +407,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-10 pointer-events-none' : 'hover:bg-black/[0.01] dark:hover:bg-white/[0.01]'}`}
                   >
                     <div className="flex items-center p-2">
-                       <span className={`text-xs font-bold w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-all ${
-                        isTodayDate ? 'bg-blue-600 text-white shadow-lg' : 
-                        isSelected ? 'bg-blue-600/15 text-blue-500' :
-                        i % 7 === 0 ? 'text-red-400' :
-                        i % 7 === 6 ? 'text-blue-400' :
-                        'theme-text opacity-40 font-bold'
+                      <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl transition-all ${
+                        isTodayDate ? 'bg-gradient-to-br from-blue-600 to-blue-400 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-500/20' : 
+                        isSelected ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                        i % 7 === 0 ? 'text-red-400/80 font-black' :
+                        i % 7 === 6 ? 'text-blue-400/80 font-black' :
+                        'theme-text opacity-30'
                       }`}>
                         {format(day, 'd')}
                       </span>
@@ -424,9 +424,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                         if (!event) return <div key={slotIndex} className="h-5 md:h-6" />; 
 
                         return (
-                          <div 
+                        return (
+                          <button 
                             key={event.id}
-                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-bold flex items-center transition-all ${
+                            onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
+                            className={`px-3 text-[9px] md:text-[10px] truncate text-white font-black flex items-center transition-all hover:brightness-110 active:scale-[0.98] ${
                               event.isStart ? 'rounded-l-lg ml-1' : '-ml-[1px]'
                             } ${
                               event.isEnd ? 'rounded-r-lg mr-1' : '-mr-[1px]'
@@ -434,13 +436,15 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                             style={{ 
                               backgroundColor: event.color || '#3b82f6',
                               zIndex: 10,
-                              height: '20px'
+                              height: '24px',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                             }}
                           >
                             {(event.isStart || (i % 7 === 0)) && (
-                               <span className="truncate">{event.title}</span>
+                               <span className="truncate drop-shadow-md">{event.title}</span>
                             )}
-                          </div>
+                          </button>
+                        );
                         );
                       })}
                       {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
