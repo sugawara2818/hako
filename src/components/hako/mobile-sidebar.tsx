@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar, Image as ImageIcon } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
@@ -136,6 +136,23 @@ export function MobileSidebar({
                 >
                   <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
                   カレンダー
+                </Link>
+              )
+            }
+            if (featureId === 'gallery') {
+              return (
+                <Link 
+                  key="gallery"
+                  href={`/hako/${hakoId}/gallery`} 
+                  onClick={onClose} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    pathname.includes(`/hako/${hakoId}/gallery`)
+                      ? 'bg-white/10 text-white border-white/5' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <ImageIcon className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
+                  ギャラリー
                 </Link>
               )
             }

@@ -3,7 +3,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -261,6 +261,21 @@ export function HakoViewerLayout({
                   >
                     <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
                     カレンダー
+                  </Link>
+                )
+              }
+              if (featureId === 'gallery') {
+                return (
+                  <Link
+                    key="gallery"
+                    href={`/hako/${hakoId}/gallery`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/gallery`)
+                        ? 'theme-surface theme-text border theme-border shadow-sm'
+                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                      }`}
+                  >
+                    <ImageIcon className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
+                    ギャラリー
                   </Link>
                 )
               }
