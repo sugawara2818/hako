@@ -387,11 +387,6 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
 
                 {/* Content */}
                 <div className="space-y-4">
-                  {post.content && (
-                    <p className={`text-sm leading-relaxed theme-text whitespace-pre-wrap ${post.is_gallery ? 'text-lg font-medium' : ''}`}>
-                      {post.content}
-                    </p>
-                  )}
                   {post.comments?.length === 0 && (
                     <p className="text-gray-500 text-xs text-center py-2">まだコメントはありません</p>
                   )}
