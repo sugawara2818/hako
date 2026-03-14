@@ -383,7 +383,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     onClick={() => handleDayClick(day)}
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'pointer-events-none' : 'hover:bg-black/[0.005] dark:hover:bg-white/[0.005]'}`}
                   >
-                    <div className="flex items-center pt-2 px-2 pb-1">
+                    <div className="flex items-center pt-1 px-2 pb-0.5">
                       <span className={`text-[11px] font-bold w-7 h-7 flex items-center justify-center rounded-full transition-all ${
                         isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
                         isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
@@ -397,7 +397,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     </div>
                     
                     <div className="flex flex-col gap-0.5 w-full relative">
-                      {[0, 1].map(slotIndex => {
+                      {[0, 1, 2].map(slotIndex => {
                         const event = dayEvents.find(e => e.slot === slotIndex);
                         if (!event) return <div key={slotIndex} className="h-5" />; 
 
@@ -405,7 +405,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-2 text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[20px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
+                            className={`px-2 text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[19px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
                               event.isStart ? 'border-l-[3px] rounded-l-sm' : ''
                             } ${
                               event.isEnd ? 'rounded-r-sm' : ''
@@ -423,9 +423,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           </button>
                         );
                       })}
-                      {dayEvents.filter(e => (e.slot ?? 99) > 1).length > 0 && (
+                      {dayEvents.filter(e => (e.slot ?? 99) > 2).length > 0 && (
                         <div className="text-[9px] theme-muted font-bold px-2 py-0.5 opacity-60">
-                          他 {dayEvents.filter(e => (e.slot ?? 99) > 1).length}件
+                          他 {dayEvents.filter(e => (e.slot ?? 99) > 2).length}件
                         </div>
                       )}
                     </div>
