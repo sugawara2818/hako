@@ -329,13 +329,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
     });
 
     return map
-
-    // Final sort within each day by slot
-    Object.keys(map).forEach(key => {
-      map[key].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
-    });
-
-    return map
   }, [initialEvents, currentMonth, viewMode])
 
   const handleDayClick = (day: Date) => {
