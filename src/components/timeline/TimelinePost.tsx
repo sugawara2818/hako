@@ -260,7 +260,7 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
             {/* Content with Gallery styling */}
             <div className="mt-2 space-y-3">
               {post.content && (
-                <div className={`text-gray-200 leading-relaxed whitespace-pre-line ${post.is_gallery ? 'text-lg font-medium' : 'text-sm md:text-base'}`}>
+                <div className="text-gray-200 leading-relaxed whitespace-pre-line text-sm md:text-base">
                   {post.content}
                 </div>
               )}

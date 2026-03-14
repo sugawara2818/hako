@@ -187,14 +187,14 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
             )}
 
             <div className="pb-10 pt-4 px-1 md:px-0">
-              <button
-                type="submit"
-                disabled={!selectedFile || isSubmitting}
-                className="w-full py-5 bg-foreground text-background hover:opacity-90 disabled:opacity-50 theme-elevated rounded-3xl font-black shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg"
-              >
-                {!isSubmitting && <Send className="w-5 h-5" />}
-                {isSubmitting ? '処理中...' : 'ギャラリーへ追加'}
-              </button>
+                <button
+                  type="submit"
+                  disabled={!selectedFile || isSubmitting}
+                  className="w-full py-5 bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 rounded-3xl font-black shadow-2xl shadow-emerald-900/40 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg"
+                >
+                  {!isSubmitting && <Send className="w-5 h-5" />}
+                  {isSubmitting ? '処理中...' : 'ギャラリーへ追加'}
+                </button>
             </div>
           </form>
         </div>
