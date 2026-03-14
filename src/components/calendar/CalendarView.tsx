@@ -422,15 +422,16 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       {dayEvents.slice(0, 4).map(event => (
                         <div 
                           key={event.id}
-                          className={`px-1.5 py-0.5 text-[8px] md:text-[10px] truncate theme-text font-bold flex items-center transition-all ${
-                            event.isStart ? 'rounded-l-sm' : 'border-l-0 ml-[-4px]'
+                          className={`px-1.5 h-5 md:h-6 text-[8px] md:text-[10px] truncate theme-text font-black flex items-center transition-all z-10 ${
+                            event.isStart ? 'rounded-l-md ml-0.5' : 'border-l-0 -ml-1'
                           } ${
-                            event.isEnd ? 'rounded-r-sm mr-1' : 'border-r-0 mr-[-4px]'
+                            event.isEnd ? 'rounded-r-md mr-0.5' : 'border-r-0 -mr-1'
                           }`}
                           style={{ 
-                            backgroundColor: `${event.color}25`, 
-                            borderLeft: event.isStart ? `2px solid ${event.color}` : 'none',
-                            opacity: 0.9
+                            backgroundColor: event.color,
+                            color: 'white',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                            opacity: 1
                           }}
                         >
                           {(event.isStart || (i % 7 === 0)) && (
@@ -664,10 +665,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     <button
                       key={event.id}
                       onClick={() => onEditEvent(event)}
-                      className="w-full px-3 py-1.5 rounded-lg theme-elevated border theme-border flex items-center gap-2 hover:theme-elevated/80 transition-all shadow-sm"
-                      style={{ borderLeft: `3px solid ${event.color}`, backgroundColor: `${event.color}15` }}
+                      className="w-full px-4 py-3 rounded-2xl theme-elevated border theme-border flex items-center gap-3 hover:theme-elevated/80 transition-all shadow-md group"
+                      style={{ borderLeft: `4px solid ${event.color}`, backgroundColor: `${event.color}30` }}
                     >
-                      <span className="text-xs font-bold theme-text truncate">{event.title}</span>
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color }} />
+                      <span className="text-sm font-black theme-text truncate">{event.title}</span>
                     </button>
                   ))}
                 </div>

@@ -146,13 +146,14 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {activeTab === 'timeline' && (
-            <div className="max-w-2xl">
+            <div className="w-full">
               {initialPosts.length > 0 ? (
                 <TimelineFeed
                   hakoId={hakoId}
                   currentUserId={currentUser.id}
                   initialPosts={initialPosts}
                   hideHeader={true}
+                  isFullWidth={true}
                 />
               ) : (
                 <div className="py-20 text-center space-y-4 theme-surface rounded-3xl border theme-border">

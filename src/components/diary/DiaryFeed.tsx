@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import Image from 'next/image'
+import { ProfileDiaryCalendar } from './ProfileDiaryCalendar'
 
 interface DiaryEntry {
   id: string
@@ -82,6 +83,7 @@ function ConfirmDialog({
 
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [confirmState, setConfirmState] = useState<{
     id: string
     message: string
@@ -133,8 +135,25 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
   }
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto relative">
-      <div className="flex items-center justify-end mb-4 animate-fade-in">
+    <div className="space-y-4 max-w-2xl mx-auto relative w-full">
+      <div className="flex items-center justify-between mb-4 animate-fade-in px-4 sm:px-0">
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-muted hover:theme-text'}`}
+            title="リスト表示"
+          >
+            <BookOpen className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'theme-muted hover:theme-text'}`}
+            title="カレンダー表示"
+          >
+            <Calendar className="w-5 h-5" />
+          </button>
+        </div>
+
         <div className="relative">
           <select 
             value={sortMode}
@@ -157,16 +176,25 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
           onCancel={() => setConfirmState(null)}
         />
       )}
-      {sortedEntries.map((entry) => (
-        <DiaryItem 
-          key={entry.id} 
-          entry={entry} 
-          isAuthor={entry.user_id === currentUserId} 
-          hakoId={hakoId}
-          onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
-          isProfileView={isProfileView}
-        />
-      ))}
+
+      {viewMode === 'calendar' ? (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <ProfileDiaryCalendar entries={entries} hakoId={hakoId} userId={currentUserId} />
+        </div>
+      ) : (
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          {sortedEntries.map((entry) => (
+            <DiaryItem 
+              key={entry.id} 
+              entry={entry} 
+              isAuthor={entry.user_id === currentUserId} 
+              hakoId={hakoId}
+              onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
+              isProfileView={isProfileView}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

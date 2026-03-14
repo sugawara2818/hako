@@ -19,9 +19,11 @@ import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 
 interface ProfileDiaryCalendarProps {
   entries: any[]
+  hakoId: string
+  userId: string
 }
 
-export function ProfileDiaryCalendar({ entries }: ProfileDiaryCalendarProps) {
+export function ProfileDiaryCalendar({ entries, hakoId, userId }: ProfileDiaryCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const entryDates = useMemo(() => {

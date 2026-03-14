@@ -90,6 +90,7 @@ interface PostProps {
     }[]
   }
   currentUserId: string
+  isFullWidth?: boolean
 }
 
 function formatRelativeTime(dateStr: string) {
@@ -102,7 +103,7 @@ function formatRelativeTime(dateStr: string) {
   return date.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })
 }
 
-export function TimelinePost({ post, currentUserId }: PostProps) {
+export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostProps) {
   const [isPending, startTransition] = useTransition()
   
   // Images to display
@@ -226,10 +227,14 @@ export function TimelinePost({ post, currentUserId }: PostProps) {
       )}
 
       <div 
-        className="p-4 sm:p-5 border-b transition-colors"
-        style={{ borderBottomColor: 'var(--border)' }}
-        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-elevated)')}
-        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}        
+        className={`${isFullWidth ? 'p-0 border-0' : 'p-4 sm:p-5 border-b'} transition-colors`}
+        style={{ borderBottomColor: isFullWidth ? 'transparent' : 'var(--border)' }}
+        onMouseEnter={e => {
+          if (!isFullWidth) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+        }}
+        onMouseLeave={e => {
+          if (!isFullWidth) e.currentTarget.style.backgroundColor = '';
+        }}        
       >
         {/* Header */}
         <div className="flex items-start gap-4">

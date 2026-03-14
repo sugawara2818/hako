@@ -14,9 +14,10 @@ interface TimelineFeedProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPosts: any[]
   hideHeader?: boolean
+  isFullWidth?: boolean
 }
 
-export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false }: TimelineFeedProps) {
+export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false, isFullWidth = false }: TimelineFeedProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
@@ -319,13 +320,16 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
-          initialPosts.map(post => (
-            <TimelinePost 
-              key={post.id} 
-              post={post} 
-              currentUserId={currentUserId} 
-            />
-          ))
+          <div className={`${isFullWidth ? 'w-full' : 'max-w-2xl px-4 py-8 md:py-12'} mx-auto w-full space-y-8 md:space-y-12`}>
+            {initialPosts.map((post: any) => (
+              <TimelinePost 
+                key={post.id} 
+                post={post} 
+                currentUserId={currentUserId}
+                isFullWidth={isFullWidth}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
