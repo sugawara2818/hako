@@ -384,7 +384,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                     className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'pointer-events-none' : 'hover:bg-black/[0.005] dark:hover:bg-white/[0.005]'}`}
                   >
                     <div className="flex items-center pt-1 px-1 sm:px-2 pb-0.5">
-                      <span className={`text-[9px] sm:text-[11px] font-bold w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-all ${
+                      <span className={`text-[10px] sm:text-[12px] font-bold w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all ${
                         isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
                         isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
                         !isCurrentMonth ? 'theme-muted opacity-20' :
