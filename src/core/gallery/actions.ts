@@ -18,9 +18,11 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
       user_id,
       is_gallery,
       album_id,
-      profiles:user_id (display_name, avatar_url)
+      profiles:user_id (display_name, avatar_url),
+      hako_members!inner(display_name)
     `)
     .eq('hako_id', hakoId)
+    .eq('hako_members.hako_id', hakoId) // Ensure we get the member info for THIS hako
     .not('image_urls', 'is', null) // Only show posts with images
     .order('created_at', { ascending: false })
 
@@ -39,14 +41,16 @@ export async function getGalleryImages(hakoId: string, filter: 'featured' | 'dis
   return (data || [])
     .filter(post => (post.image_urls && post.image_urls.length > 0) || post.image_url)
     .map(post => {
-      const memberInfo = (post.profiles as any) || {}
+      const globalProfile = (post.profiles as any) || {}
+      const memberInfo = (post.hako_members as any)?.[0] || {}
+      
       return {
         id: post.id,
         url: post.image_urls?.[0] || post.image_url || '',
         caption: post.content,
         createdAt: post.created_at,
-        userName: memberInfo.display_name || 'ユーザー',
-        userAvatar: memberInfo.avatar_url,
+        userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
+        userAvatar: globalProfile.avatar_url,
         isPinned: post.is_gallery,
         albumId: post.album_id
       }
