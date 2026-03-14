@@ -323,13 +323,13 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         style={{ height: '100%' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.02]">
-        <div className="flex items-center gap-2 md:gap-4">
-          <h2 className="text-lg md:text-2xl font-black theme-text">
+      <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b theme-border bg-white/[0.04] backdrop-blur-md">
+        <div className="flex items-center gap-3 md:gap-5">
+          <h2 className="text-xl md:text-2xl font-black theme-text tracking-tight">
             {viewMode === 'year' ? format(currentMonth, 'yyyy年') : format(currentMonth, 'yyyy年 M月', { locale: ja })}
           </h2>
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border theme-border">
-            <button onClick={prevMonth} className="p-1.5 hover:theme-elevated rounded-lg transition-colors theme-muted hover:theme-text">
+          <div className="flex items-center gap-0.5 bg-white/5 p-1 rounded-2xl border theme-border shadow-inner">
+            <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button 
@@ -338,11 +338,11 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 setAnimationKey(Date.now())
                 setCurrentMonth(new Date())
               }} 
-              className="px-3 py-1 text-xs font-bold theme-muted hover:theme-text transition-colors"
+              className="px-4 py-1.5 text-xs font-black theme-muted hover:theme-text hover:bg-white/5 rounded-xl transition-all active:scale-95"
             >
               今日
             </button>
-            <button onClick={nextMonth} className="p-1.5 hover:theme-elevated rounded-lg transition-colors theme-muted hover:theme-text">
+            <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-xl transition-all active:scale-95 theme-muted hover:theme-text">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -404,12 +404,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   <div 
                     key={day.toString()} 
                     onClick={() => handleDayClick(day)}
-                    className={`min-h-0 p-1 md:p-2 border-r border-b theme-border transition-all cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'theme-elevated' : 'hover:theme-elevated/50'}`}
+                    className={`min-h-0 border-r border-b theme-border transition-colors cursor-pointer group relative flex flex-col ${!isCurrentMonth ? 'opacity-20' : ''} ${isSelected ? 'bg-white/[0.03]' : 'hover:bg-white/[0.015]'}`}
                   >
-                    <div className="flex items-center justify-between mb-0.5 md:mb-1">
-                      <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
-                        isTodayDate ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 
-                        isSelected ? 'theme-text ring-1 ring-blue-500/50' :
+                    <div className="flex items-center justify-between p-1 md:p-2 mb-0.5">
+                      <span className={`text-[10px] md:text-xs font-black w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-all ${
+                        isTodayDate ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' : 
+                        isSelected ? 'theme-text ring-1 ring-blue-500/50 bg-blue-500/5' :
                         i % 7 === 0 ? 'text-red-400' :
                         i % 7 === 6 ? 'text-blue-400' :
                         'theme-text opacity-70'
@@ -418,31 +418,35 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-0.5 overflow-hidden">
-                      {dayEvents.slice(0, 4).map(event => (
-                        <div 
-                          key={event.id}
-                          className={`px-1.5 h-5 md:h-6 text-[8px] md:text-[10px] truncate text-white font-black flex items-center transition-all z-10 ${
-                            event.isStart ? 'rounded-l-lg' : 'rounded-l-none -ml-1 md:-ml-2'
-                          } ${
-                            event.isEnd ? 'rounded-r-lg shadow-sm' : 'rounded-r-none -mr-1 md:-mr-2'
-                          }`}
-                          style={{ 
-                            backgroundColor: event.color ? `${event.color}e6` : 'rgba(59, 130, 246, 0.9)',
-                            borderLeft: event.isStart ? 'none' : `1px solid rgba(255,255,255,0.1)`,
-                            borderRight: event.isEnd ? 'none' : `1px solid rgba(255,255,255,0.1)`,
-                            textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                            opacity: 1
-                          }}
-                        >
-                          {(event.isStart || (i % 7 === 0)) && (
-                             <span className="truncate">{event.title}</span>
-                          )}
-                        </div>
-                      ))}
-                      {dayEvents.length > 4 && (
-                        <div className="text-[8px] md:text-[10px] theme-muted font-bold pl-1">
-                          他 {dayEvents.length - 4} 件
+                    <div className="flex flex-col gap-[2px] w-full">
+                      {[0, 1, 2, 3].map(slotIndex => {
+                        const event = dayEvents.find(e => e.slot === slotIndex);
+                        if (!event) return <div key={slotIndex} className="h-4 md:h-5" />; // Empty slot spacer
+
+                        return (
+                          <div 
+                            key={event.id}
+                            className={`px-1.5 h-4 md:h-5 text-[8px] md:text-[9.5px] truncate text-white font-bold flex items-center transition-all z-10 ${
+                              event.isStart ? 'rounded-l-md ml-1' : ''
+                            } ${
+                              event.isEnd ? 'rounded-r-md mr-1' : ''
+                            }`}
+                            style={{ 
+                              backgroundColor: event.color ? `${event.color}f2` : 'rgba(59, 130, 246, 0.95)',
+                              borderTop: `1px solid rgba(255,255,255,0.08)`,
+                              borderBottom: `1px solid rgba(0,0,0,0.08)`,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                            }}
+                          >
+                            {(event.isStart || (i % 7 === 0)) && (
+                               <span className="truncate drop-shadow-sm">{event.title}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {dayEvents.filter(e => (e.slot ?? 99) > 3).length > 0 && (
+                        <div className="text-[7px] md:text-[9px] theme-muted font-black px-2 py-0.5">
+                          + {dayEvents.filter(e => (e.slot ?? 99) > 3).length}
                         </div>
                       )}
                     </div>
