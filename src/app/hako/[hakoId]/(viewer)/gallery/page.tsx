@@ -87,8 +87,6 @@ export default function GalleryPage() {
   }
 
   const handleDeleteAlbum = async (albumId: string) => {
-    if (!confirm('このアルバムを削除しますか？\n（アルバム内の写真は消えません）')) return
-    
     try {
       const result = await deleteAlbum(albumId, hakoId)
       if (result.success) {
