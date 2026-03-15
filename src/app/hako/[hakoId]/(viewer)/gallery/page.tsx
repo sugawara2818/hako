@@ -351,9 +351,17 @@ export default function GalleryPage() {
                         <Library className="w-12 h-12 text-[#82d9bc]/40" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-                      <h4 className="text-sm font-black text-white mb-0.5 truncate">{album.name}</h4>
-                      {album.description && <p className="text-[10px] text-gray-400 line-clamp-1 opacity-60 font-bold">{album.description}</p>}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-6 flex flex-col justify-end">
+                      <h4 className="text-base font-black text-white mb-1 drop-shadow-md truncate">{album.name}</h4>
+                      <div className="flex items-center gap-2 opacity-80">
+                         {album.userAvatar && (
+                           <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20">
+                             <Image src={album.userAvatar} alt="" width={16} height={16} className="w-full h-full object-cover" />
+                           </div>
+                         )}
+                         <p className="text-[10px] text-white font-black uppercase tracking-wider">{album.userName}</p>
+                      </div>
+                      {album.description && <p className="text-[9px] text-white/50 line-clamp-1 mt-1 font-bold">{album.description}</p>}
                     </div>
                   </div>
                 ))}

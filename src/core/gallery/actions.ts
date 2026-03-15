@@ -183,7 +183,10 @@ export async function getAlbums(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('hako_gallery_albums')
-    .select('*')
+    .select(`
+      *,
+      profiles:user_id (display_name, avatar_url)
+    `)
     .eq('hako_id', hakoId)
     .order('created_at', { ascending: false })
 
@@ -191,7 +194,34 @@ export async function getAlbums(hakoId: string) {
     console.error('getAlbums Error:', error)
     return []
   }
-  return data || []
+
+  // Separately fetch per-Hako display names & avatars from hako_members
+  const memberDataMap: Record<string, { display_name?: string | null, avatar_url?: string | null }> = {}
+  try {
+    const { data: hakoMembers, error: memberError } = await supabase
+      .from('hako_members')
+      .select('user_id, display_name, avatar_url')
+      .eq('hako_id', hakoId)
+
+    if (!memberError && hakoMembers) {
+      for (const m of hakoMembers) {
+        memberDataMap[m.user_id] = { display_name: m.display_name, avatar_url: m.avatar_url }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to fetch hako_members in getAlbums:', e)
+  }
+
+  return (data || []).map(album => {
+    const globalProfile = (album.profiles as any) || {}
+    const memberInfo = memberDataMap[album.user_id] || {}
+    
+    return {
+      ...album,
+      userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
+      userAvatar: memberInfo.avatar_url || globalProfile.avatar_url
+    }
+  })
 }
 
 export async function createAlbum(hakoId: string, name: string, description?: string) {
