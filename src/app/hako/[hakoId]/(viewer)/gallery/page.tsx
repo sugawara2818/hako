@@ -75,7 +75,8 @@ export default function GalleryPage() {
   }
 
   const handleBatchAddToAlbum = async (albumId: string) => {
-    if (selectedIds.length === 0) return
+    // Only block empty selections if we are NOT in an existing album context (where empty means removal)
+    if (!selectedAlbumId && selectedIds.length === 0) return
     setIsBatchAdding(true)
     try {
       const result = selectedAlbumId 
