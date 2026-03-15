@@ -454,7 +454,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
                   {/* Gallery Switch UI */}
                   {selectedFiles.length > 0 && features.includes('gallery') && (
                     <div className="flex items-center gap-2 py-1.5 px-3 rounded-2xl bg-white/5 border border-white/10 shrink-0">
-                      <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wider text-gray-400">
+                      <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">
                         ギャラリー
                       </span>
                       <button

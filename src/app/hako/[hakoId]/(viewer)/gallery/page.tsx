@@ -236,7 +236,7 @@ export default function GalleryPage() {
                 </button>
               )}
               <div>
-                <h1 className="text-2xl md:text-3xl font-black heading-gradient">
+                <h1 className="text-2xl md:text-3xl font-black heading-gradient whitespace-nowrap">
                   {selectedAlbumId 
                     ? (albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム') 
                     : 'ギャラリー'
