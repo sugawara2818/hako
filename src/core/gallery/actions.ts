@@ -209,15 +209,36 @@ export async function getAlbums(hakoId: string) {
     console.warn('Failed to fetch hako_members in getAlbums:', e)
   }
 
-  return (data || []).map(album => {
+  const albumsWithMetadata = await Promise.all((data || []).map(async (album) => {
+    const globalProfile = (album.profiles as any) || {}
     const memberInfo = memberDataMap[album.user_id] || {}
+    
+    // Fetch top 4 photos for this album
+    const { data: previewPhotos } = await supabase
+      .from('hako_timeline_posts')
+      .select('url')
+      .eq('album_id', album.id)
+      .eq('is_gallery', true)
+      .order('created_at', { ascending: false })
+      .limit(4)
+
+    // Fetch total count of photos
+    const { count } = await supabase
+      .from('hako_timeline_posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('album_id', album.id)
+      .eq('is_gallery', true)
     
     return {
       ...album,
-      userName: memberInfo.display_name || 'ユーザー',
-      userAvatar: memberInfo.avatar_url
+      userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
+      userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
+      previewPhotos: (previewPhotos || []).map(p => p.url),
+      totalCount: count || 0
     }
-  })
+  }))
+
+  return albumsWithMetadata
 }
 
 export async function createAlbum(hakoId: string, name: string, description?: string) {

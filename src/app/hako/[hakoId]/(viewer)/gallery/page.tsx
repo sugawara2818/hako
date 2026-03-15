@@ -342,30 +342,50 @@ export default function GalleryPage() {
                       setSelectedAlbumId(album.id)
                       setFilter('discovery')
                     }}
-                    className="relative aspect-square group cursor-pointer overflow-hidden rounded-2xl border border-white/5 bg-white/5 hover:border-[#82d9bc]/30 hover:scale-[1.02] transition-all duration-300"
+                    className="flex flex-col gap-3 group cursor-pointer"
                   >
-                    {album.cover_url ? (
-                      <Image src={album.cover_url} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#82d9bc]/20 via-black to-slate-950 flex items-center justify-center">
-                        <div className="w-20 h-20 rounded-full bg-[#82d9bc]/5 blur-3xl" />
-                        <Library className="w-10 h-10 text-[#82d9bc]/20 animate-pulse" />
+                    <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/5 bg-white/5 hover:border-[#82d9bc]/30 hover:scale-[1.02] transition-all duration-300">
+                      {album.previewPhotos && album.previewPhotos.length > 0 ? (
+                        <div className={`grid h-full w-full gap-0.5 ${
+                          album.previewPhotos.length === 1 ? 'grid-cols-1' :
+                          album.previewPhotos.length === 2 ? 'grid-cols-2' :
+                          'grid-cols-2 grid-rows-2'
+                        }`}>
+                          {album.previewPhotos.length === 3 ? (
+                            <>
+                              <div className="row-span-2 relative">
+                                <Image src={album.previewPhotos[0]} alt="" fill className="object-cover" />
+                              </div>
+                              <div className="relative">
+                                <Image src={album.previewPhotos[1]} alt="" fill className="object-cover" />
+                              </div>
+                              <div className="relative">
+                                <Image src={album.previewPhotos[2]} alt="" fill className="object-cover" />
+                              </div>
+                            </>
+                          ) : (
+                            album.previewPhotos.map((url: string, idx: number) => (
+                              <div key={idx} className="relative">
+                                <Image src={url} alt="" fill className="object-cover" />
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-gray-100/5 flex items-center justify-center">
+                          <Library className="w-8 h-8 text-white/10" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex flex-col">
+                        <h4 className="text-sm font-black text-white group-hover:text-[#82d9bc] transition-colors truncate max-w-[140px]">
+                          {album.name}
+                        </h4>
+                        <p className="text-[10px] text-white/40 font-bold">{album.totalCount || 0}</p>
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10" />
-                    <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
-                      <h4 className="text-lg font-black !text-white mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate leading-tight">
-                        {album.name}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                         {album.userAvatar && (
-                           <div className="w-5 h-5 rounded-full overflow-hidden border border-white/30 shadow-sm">
-                             <Image src={album.userAvatar} alt="" width={20} height={20} className="w-full h-full object-cover" />
-                           </div>
-                         )}
-                         <p className="text-[11px] !text-white/90 font-black uppercase tracking-wider drop-shadow-md">
-                           {album.userName}
-                         </p>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Plus className="w-4 h-4 text-[#82d9bc]" />
                       </div>
                     </div>
                   </div>
