@@ -252,7 +252,8 @@ export default function GalleryPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {!selectedAlbumId && (
+              <div className="flex items-center gap-2">
               
               <button
                 onClick={() => setShowComposer(true)}
