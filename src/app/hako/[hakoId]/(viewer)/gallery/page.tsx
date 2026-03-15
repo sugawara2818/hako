@@ -140,20 +140,20 @@ export default function GalleryPage() {
                   {filteredImages.every(img => selectedIds.includes(img.id)) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                   すべて選択
                 </button>
-                <button
-                  onClick={() => {
-                    if (selectedAlbumId) {
-                      handleBatchAddToAlbum(selectedAlbumId)
-                    } else {
-                      setShowAlbumPicker(true)
-                    }
-                  }}
-                  disabled={selectedIds.length === 0 || isBatchAdding}
-                  className="px-10 py-3 bg-gray-800 text-white rounded-2xl text-xs font-black hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl shadow-black/20"
-                >
-                  {isBatchAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <FolderPlus className="w-5 h-5" />}
-                  追加を確定
-                </button>
+                  <button
+                    onClick={() => {
+                      if (selectedAlbumId) {
+                        handleBatchAddToAlbum(selectedAlbumId)
+                      } else {
+                        setShowAlbumPicker(true)
+                      }
+                    }}
+                    disabled={selectedIds.length === 0 || isBatchAdding}
+                    className="px-10 py-3 bg-white text-gray-900 rounded-2xl text-xs font-black hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl shadow-black/10"
+                  >
+                    {isBatchAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <FolderPlus className="w-5 h-5" />}
+                    追加を確定
+                  </button>
               </div>
             </div>
           </div>
@@ -303,7 +303,9 @@ export default function GalleryPage() {
                   onClick={() => {
                     setFilter('discovery')
                     setIsSelectionMode(true)
-                    setSelectedIds([])
+                    // Pre-select photos already in this album
+                    const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
+                    setSelectedIds(existingIds)
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
                 >
