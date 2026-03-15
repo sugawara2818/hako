@@ -308,3 +308,20 @@ export async function updateTimelineComment(commentId: string, hakoId: string, c
   revalidatePath(`/hako/${hakoId}`)
   return true
 }
+// Update a timeline post
+export async function updateTimelinePost(postId: string, hakoId: string, content: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { error } = await supabase
+    .from('hako_timeline_posts')
+    .update({ content })
+    .eq('id', postId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+
+  revalidatePath(`/hako/${hakoId}`)
+  return true
+}

@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon } from 'lucide-react'
-import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment } from '@/core/timeline/actions'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Loader2, AlertTriangle, X, User, Image as ImageIcon, Edit2 } from 'lucide-react'
+import { toggleLike, deleteTimelinePost, deleteTimelineComment, addTimelineComment, updateTimelineComment, updateTimelinePost } from '@/core/timeline/actions'
 import { toggleGalleryPin } from '@/core/gallery/actions'
-import { Edit2 } from 'lucide-react'
 import { ImageLightbox } from './ImageLightbox'
 import Image from 'next/image'
 
@@ -130,6 +129,11 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
   const [editCommentText, setEditCommentText] = useState('')
   const [isUpdatingComment, setIsUpdatingComment] = useState(false)
 
+  // Post edit state
+  const [isEditingPost, setIsEditingPost] = useState(false)
+  const [editPostText, setEditPostText] = useState(post.content)
+  const [isUpdatingPost, setIsUpdatingPost] = useState(false)
+
   // Custom confirm dialog state
   const [confirmState, setConfirmState] = useState<{
     message: string
@@ -165,6 +169,20 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
         setIsDeleting(false)
       }
     })
+  }
+
+  const handleUpdatePost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editPostText.trim() || isUpdatingPost) return
+    setIsUpdatingPost(true)
+    try {
+      await updateTimelinePost(post.id, post.hako_id, editPostText)
+      setIsEditingPost(false)
+    } catch (e) {
+      console.error("Post update failed", e)
+    } finally {
+      setIsUpdatingPost(false)
+    }
   }
 
   const handleAddComment = async (e: React.FormEvent) => {
@@ -255,16 +273,71 @@ export function TimelinePost({ post, currentUserId, isFullWidth = false }: PostP
           </Link>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="font-bold text-white text-sm hover:underline truncate max-w-[120px] sm:max-w-none">
-                {post.hako_members?.[0]?.display_name || post.profiles?.display_name || 'ユーザー'}
-              </Link>
-              <span className="text-gray-500 text-[10px] md:text-xs">· {formatRelativeTime(post.created_at)}</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link href={`/hako/${post.hako_id}/user/${post.user_id}`} className="font-bold text-white text-sm hover:underline truncate max-w-[120px] sm:max-w-none">
+                  {post.hako_members?.[0]?.display_name || post.profiles?.display_name || 'ユーザー'}
+                </Link>
+                <span className="text-gray-500 text-[10px] md:text-xs">· {formatRelativeTime(post.created_at)}</span>
+              </div>
+
+              {/* Post Actions (Owner only) */}
+              {currentUserId === post.user_id && !isEditingPost && (
+                <div className="flex items-center gap-3 md:opacity-0 md:group-hover/post:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => setIsEditingPost(true)}
+                    className="text-gray-500 hover:text-blue-400 transition-colors"
+                    title="編集"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={handleDelete}
+                    className="text-gray-500 hover:text-red-400 transition-colors"
+                    title="削除"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
             
             {/* Content with Gallery styling */}
-            <div className="mt-0.5 whitespace-pre-line text-[15px] theme-text leading-normal">
-              {post.content}
+            <div className="mt-0.5">
+              {isEditingPost ? (
+                <form onSubmit={handleUpdatePost} className="mt-2">
+                  <textarea
+                    value={editPostText}
+                    onChange={e => setEditPostText(e.target.value)}
+                    className="w-full bg-black/30 border border-purple-500/50 rounded-2xl p-4 text-[15px] theme-text focus:outline-none focus:ring-1 focus:ring-purple-500 mb-2 resize-none leading-normal"
+                    rows={Math.max(2, editPostText.split('\n').length)}
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-3 pb-2">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setIsEditingPost(false)
+                        setEditPostText(post.content)
+                      }}
+                      className="px-4 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                    >
+                      キャンセル
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={!editPostText.trim() || isUpdatingPost}
+                      className="px-6 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-xs font-bold disabled:opacity-50 transition-colors shadow-lg shadow-purple-900/20"
+                    >
+                      {isUpdatingPost ? '保存中...' : '保存'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="whitespace-pre-line text-[15px] theme-text leading-normal">
+                  {post.content}
+                </div>
+              )}
             </div>
 
             {/* X-style Adaptive Image Grid */}
