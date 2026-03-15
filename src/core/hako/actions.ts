@@ -57,7 +57,7 @@ export async function fetchHakoMembers(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('hako_members')
-    .select('role, user_id, users(email)')
+    .select('role, user_id, joined_at, display_name, avatar_url')
     .eq('hako_id', hakoId)
     .order('joined_at', { ascending: true })
 

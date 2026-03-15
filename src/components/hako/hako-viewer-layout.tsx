@@ -3,7 +3,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon, Users } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -291,6 +291,18 @@ export function HakoViewerLayout({
               }
               return null
             })}
+            
+            <Link
+              key="members"
+              href={`/hako/${hakoId}/members`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname === `/hako/${hakoId}/members`
+                  ? 'theme-surface theme-text border theme-border shadow-sm'
+                  : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                }`}
+            >
+              <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
+              メンバー
+            </Link>
           </div>
 
           {isOwner && (

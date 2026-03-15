@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar, Image as ImageIcon } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar, Image as ImageIcon, Users } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
@@ -158,6 +158,20 @@ export function MobileSidebar({
             }
             return null
           })}
+          
+          <Link 
+            key="members"
+            href={`/hako/${hakoId}/members`} 
+            onClick={onClose} 
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+              pathname === `/hako/${hakoId}/members`
+                ? 'bg-white/10 text-white border-white/5' 
+                : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+            }`}
+          >
+            <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
+            メンバー
+          </Link>
         </div>
 
         {isOwner && (
