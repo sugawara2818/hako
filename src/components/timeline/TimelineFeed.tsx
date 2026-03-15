@@ -424,7 +424,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
 
               {error && <p className="text-red-400 text-sm">{error}</p>}
               
-              <div className="flex items-center justify-between border-t border-white/10 pt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-white/10 pt-4 gap-4">
                 <div className="flex items-center gap-1">
                   <input
                     ref={fileInputRef}
@@ -449,23 +449,23 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
                   </button>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center justify-end gap-3 md:gap-4">
                   {/* Gallery Switch UI */}
                   {selectedFiles.length > 0 && features.includes('gallery') && (
-                    <div className="flex items-center gap-3 py-1 px-3 rounded-2xl bg-white/5 border border-white/10">
-                      <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">
-                        共有ギャラリーに追加
+                    <div className="flex items-center gap-2 md:gap-3 py-1.5 px-3 rounded-2xl bg-white/5 border border-white/10 shrink-0">
+                      <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wider text-gray-400">
+                        <span className="hidden xs:inline">共有</span>ギャラリーに追加
                       </span>
                       <button
                         type="button"
                         onClick={() => setAddToGallery(!addToGallery)}
-                        className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none ${
+                        className={`relative w-8 h-4 md:w-10 md:h-5 rounded-full transition-colors duration-200 focus:outline-none ${
                           addToGallery ? 'bg-[#82d9bc]' : 'bg-gray-700'
                         }`}
                       >
                         <div
-                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 transform ${
-                            addToGallery ? 'translate-x-5' : 'translate-x-0'
+                          className={`absolute top-0.5 left-0.5 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full transition-transform duration-200 transform ${
+                            addToGallery ? 'translate-x-4 md:translate-x-5' : 'translate-x-0'
                           }`}
                         />
                       </button>
