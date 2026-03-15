@@ -74,6 +74,8 @@ export default function GalleryPage() {
     )
   }
 
+  const [albumIdToDelete, setAlbumIdToDelete] = useState<string | null>(null)
+
   const handleCancelSelection = () => {
     const wasEditingAlbum = !!selectedAlbumId;
     setIsSelectionMode(false)
@@ -410,17 +412,7 @@ export default function GalleryPage() {
                         </h4>
                         <p className="text-[10px] text-white/40 font-bold">{album.totalCount || 0}</p>
                       </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteAlbum(album.id)
-                          }}
-                          className="p-1.5 hover:bg-red-500/20 text-white/40 hover:text-red-400 rounded-lg transition-colors"
-                          title="アルバムを削除"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center gap-1">
                         <button 
                           onClick={(e) => {
                             e.stopPropagation()
@@ -431,9 +423,20 @@ export default function GalleryPage() {
                             const existingIds = images.filter(img => img.albumId === album.id).map(img => img.id)
                             setSelectedIds(existingIds)
                           }}
-                          className="p-1.5 hover:bg-[#82d9bc]/10 rounded-lg"
+                          className="p-1.5 bg-[#82d9bc]/10 hover:bg-[#82d9bc]/20 rounded-lg transition-colors"
+                          title="写真を編集"
                         >
                           <Plus className="w-5 h-5 text-[#82d9bc]" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setAlbumIdToDelete(album.id)
+                          }}
+                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                          title="アルバムを削除"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -546,6 +549,46 @@ export default function GalleryPage() {
           images={selectedAlbumId ? images.filter(img => img.albumId === selectedAlbumId) : images}
           onClose={() => setShowCinemaMode(false)}
         />
+      )}
+      {/* Album Deletion Confirmation */}
+      {albumIdToDelete && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" 
+            onClick={() => setAlbumIdToDelete(null)}
+          />
+          <div className="relative w-full max-w-sm theme-elevated border theme-border rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30 mb-6">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-black theme-text mb-2">アルバムを削除しますか？</h3>
+              <p className="text-sm theme-muted font-bold mb-8">
+                中の写真は削除されませんが、<br />
+                アルバムというまとめがなくなります。
+              </p>
+              
+              <div className="flex flex-col w-full gap-3">
+                <button
+                  onClick={async () => {
+                    const id = albumIdToDelete;
+                    setAlbumIdToDelete(null);
+                    await handleDeleteAlbum(id);
+                  }}
+                  className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-red-500/20"
+                >
+                  削除する
+                </button>
+                <button
+                  onClick={() => setAlbumIdToDelete(null)}
+                  className="w-full py-4 bg-white/5 border theme-border theme-text rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
