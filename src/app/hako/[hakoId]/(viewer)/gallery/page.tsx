@@ -308,31 +308,56 @@ export default function GalleryPage() {
 
           {/* Selected Album Indicator */}
           {selectedAlbumId && (
-            <div className="mt-6 flex items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-2xl px-4 py-3 animate-in slide-in-from-top-2 duration-300">
-              <div className="flex items-center gap-3">
-                 <Library className="w-4 h-4 text-[#82d9bc]" />
-                 <div>
-                    <h4 className="text-white font-black text-xs">
-                      {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
-                    </h4>
-                    <p className="text-[8px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
-                 </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setFilter('discovery')
-                    setIsSelectionMode(true)
-                    // Pre-select photos already in this album
-                    const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
-                    setSelectedIds(existingIds)
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-[#82d9bc] text-gray-800 rounded-lg font-black text-[9px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
-                >
-                  <Plus className="w-3 h-3" />
-                  アルバムを編集
-                </button>
+            <div className="mt-8 animate-in slide-in-from-top-4 duration-500">
+              <div className="group relative overflow-hidden theme-elevated border border-[#82d9bc]/30 rounded-[2rem] p-6 md:p-8 shadow-2xl shadow-[#82d9bc]/5">
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#82d9bc]/5 blur-[100px] -mr-32 -mt-32 pointer-events-none" />
+                
+                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#82d9bc] flex items-center justify-center shadow-lg shadow-[#82d9bc]/20">
+                      <Library className="w-7 h-7 md:w-8 md:h-8 text-gray-800" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="px-2.5 py-1 rounded-full bg-[#82d9bc]/10 border border-[#82d9bc]/20 text-[#82d9bc] text-[9px] font-black uppercase tracking-widest">
+                          Collection
+                        </span>
+                        <p className="text-[10px] theme-muted font-bold uppercase tracking-wider opacity-60">
+                          アルバム内の写真を表示中
+                        </p>
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-black theme-text tracking-tight">
+                        {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
+                      </h2>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setFilter('discovery')
+                        setIsSelectionMode(true)
+                        const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
+                        setSelectedIds(existingIds)
+                      }}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-[#82d9bc] text-gray-800 rounded-2xl font-black text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20"
+                    >
+                      <Plus className="w-4 h-4" />
+                      アルバムを編集
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedAlbumId(null)
+                        setFilter('albums')
+                      }}
+                      className="p-3.5 bg-white/5 border theme-border theme-text rounded-2xl hover:bg-white/10 active:scale-95 transition-all"
+                      title="アルバム一覧に戻る"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
