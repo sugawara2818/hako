@@ -52,7 +52,7 @@ export function GalleryCinemaMode({ images, onClose }: GalleryCinemaModeProps) {
   const current = images[index]
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center animate-in fade-in duration-500 overflow-hidden">
+    <div data-theme="dark" className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center animate-in fade-in duration-500 overflow-hidden">
       {/* Background Blur */}
       <div className="absolute inset-0 opacity-30 select-none pointer-events-none">
         <Image src={current.url} alt="" fill className="object-cover blur-[100px]" unoptimized />
