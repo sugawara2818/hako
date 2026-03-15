@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X } from 'lucide-react'
+import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
@@ -97,35 +97,47 @@ export default function GalleryPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      {/* Selection Header Overlay */}
+      {/* 
+          DEDICATED PICKER MODE OVERLAY 
+          When in selection mode, we show a full-screen focused UI 
+          to block other interactions and provide a clean picking experience.
+      */}
       {isSelectionMode && (
-        <div className="fixed top-0 inset-x-0 z-[60] bg-[#82d9bc] text-gray-800 p-4 border-b border-[#82d9bc]/20 animate-in slide-in-from-top duration-300">
-           <div className="max-w-6xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-4">
+        <div className="fixed inset-0 z-[200] theme-bg flex flex-col animate-in fade-in duration-300">
+          {/* Picker Header */}
+          <div className="shrink-0 bg-[#82d9bc] text-gray-800 p-6 md:p-8 shadow-2xl z-10">
+            <div className="max-w-6xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-6">
                 <button 
                   onClick={() => {
                     setIsSelectionMode(false)
                     setSelectedIds([])
                   }}
-                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                  className="p-3 hover:bg-black/10 rounded-2xl transition-all active:scale-90"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6" />
                 </button>
                 <div className="flex flex-col">
-                  <span className="text-xs font-black uppercase tracking-widest">{selectedIds.length} 個選択中</span>
+                  <h2 className="text-2xl font-black">{selectedIds.length} 個選択中</h2>
+                  <p className="text-xs font-black uppercase tracking-widest opacity-60">
+                    {selectedAlbumId 
+                      ? `アルバム「${albums.find(a => a.id === selectedAlbumId)?.name}」に追加します` 
+                      : '追加先のアルバムを選択してください'
+                    }
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
                     const allIds = filteredImages.map(img => img.id)
                     const isAllSelected = allIds.every(id => selectedIds.includes(id))
                     setSelectedIds(isAllSelected ? [] : allIds)
                   }}
-                  className="px-4 py-2 bg-black/5 hover:bg-black/10 rounded-xl text-[10px] font-black transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-black/5 hover:bg-black/10 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
                 >
-                  {filteredImages.every(img => selectedIds.includes(img.id)) ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
+                  {filteredImages.every(img => selectedIds.includes(img.id)) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                   すべて選択
                 </button>
                 <button
@@ -137,151 +149,177 @@ export default function GalleryPage() {
                     }
                   }}
                   disabled={selectedIds.length === 0 || isBatchAdding}
-                  className="px-6 py-2 bg-gray-800 text-white rounded-xl text-[10px] font-black hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-10 py-3 bg-gray-800 text-white rounded-2xl text-xs font-black hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl shadow-black/20"
                 >
-                  {isBatchAdding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FolderPlus className="w-3.5 h-3.5" />}
-                  {selectedAlbumId ? 'このアルバムに追加' : 'アルバムに入れる'}
+                  {isBatchAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <FolderPlus className="w-5 h-5" />}
+                  追加を確定
                 </button>
               </div>
-           </div>
+            </div>
+          </div>
+
+          {/* Picker Grid Area */}
+          <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar custom-scrollbar bg-black/20">
+             <div className="max-w-6xl mx-auto py-8">
+                <div className="px-8 mb-6">
+                   <p className="text-xs theme-muted font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
+                     <ImageIcon className="w-4 h-4" />
+                     アルバムに追加したい写真をタップしてください
+                   </p>
+                </div>
+                <GalleryGrid 
+                  images={filteredImages} 
+                  albums={albums}
+                  hakoId={hakoId} 
+                  onDelete={handleDelete}
+                  columns={columns}
+                  isSelectionMode={true}
+                  selectedIds={selectedIds}
+                  onToggleSelect={handleToggleSelect}
+                />
+             </div>
+          </div>
         </div>
       )}
 
-      {/* Header */}
-      <div className="shrink-0 px-6 py-8 md:px-10 border-b theme-border theme-bg sticky top-0 z-30">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black heading-gradient">
-              共有ギャラリー
-            </h1>
-            <p className="text-[10px] theme-muted mt-1 uppercase tracking-[0.2em] font-black opacity-60">
-              {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} ALBUMS` : `${images.length} MOMENTS`}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {!isSelectionMode && filter !== 'albums' && (
-              <button
-                onClick={() => setIsSelectionMode(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
-              >
-                <Check className="w-4 h-4" />
-                <span className="hidden md:inline">選択</span>
-              </button>
-            )}
-            
-            <button
-              onClick={() => setShowComposer(true)}
-              className="flex items-center gap-2 px-4 md:px-6 py-3 bg-white text-black rounded-2xl font-black text-xs hover:bg-gray-200 active:scale-95 transition-all shadow-xl shadow-white/5"
-            >
-              <Camera className="w-4 h-4" />
-              <span className="hidden md:inline">写真を投稿</span>
-            </button>
-            <button
-               onClick={() => setShowCinemaMode(true)}
-               disabled={images.length === 0}
-               className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-[#82d9bc] text-gray-700 rounded-2xl font-black text-[10px] md:text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20 disabled:opacity-50"
-             >
-              <MonitorPlay className="w-4 h-4" />
-              シネマ再生
-            </button>
-            <button
-              onClick={() => setShowAlbumCreator(true)}
-              className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] md:text-xs hover:bg-white/10 active:scale-95 transition-all"
-            >
-                <FolderPlus className="w-4 h-4 text-[#82d9bc]" />
-               <span className="md:inline">アルバム作成</span>
-             </button>
-          </div>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
-          <button
-            onClick={() => {
-              setFilter('discovery')
-              setSelectedIds([])
-              setIsSelectionMode(false)
-              setSelectedAlbumId(null)
-            }}
-            className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-               filter === 'discovery' && !selectedAlbumId
-                 ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                 : 'text-gray-500 hover:text-white'
-             }`}
-          >
-            新着写真
-          </button>
-          <button
-            onClick={() => {
-              setFilter('albums')
-              setSelectedIds([])
-              setIsSelectionMode(false)
-            }}
-            className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-              filter === 'albums' 
-                ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                : 'text-gray-500 hover:text-white'
-            }`}
-          >
-            アルバム
-          </button>
-        </div>
-
-        {/* Column Switcher (Local ONLY) */}
-        {!selectedAlbumId && filter === 'discovery' && (
-          <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
-            {[2, 3, 4, 5, 6].map(num => (
-              <button
-                 key={num}
-                onClick={() => saveColumns(num)}
-                className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all flex items-center justify-center ${
-                  columns === num 
-                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                    : 'text-gray-500 hover:text-white'
-                }`}
-              >
-                {num}
-              </button>
-            ))}
-            <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40">Columns</span>
-          </div>
-        )}
-
-        {/* Selected Album Indicator */}
-        {selectedAlbumId && (
-          <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-3xl px-6 py-5 gap-4 animate-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-4">
-               <Library className="w-5 h-5 text-[#82d9bc]" />
-               <div>
-                  <h4 className="text-white font-black text-sm">
-                    {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
-                  </h4>
-                  <p className="text-[10px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
-               </div>
+      {/* NORMAL MODE UI (Always present but covered by overlay in selection mode) */}
+      {/* Header Section */}
+      <div className="shrink-0 border-b theme-border theme-bg sticky top-0 z-30">
+        <div className="px-6 py-8 md:px-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black heading-gradient">
+                共有ギャラリー
+              </h1>
+              <p className="text-[10px] theme-muted mt-1 uppercase tracking-[0.2em] font-black opacity-60">
+                {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} ALBUMS` : `${images.length} MOMENTS`}
+              </p>
             </div>
-            
-            <div className="flex items-center gap-2 ml-auto md:ml-0">
+
+            <div className="flex items-center gap-2">
+              {filter !== 'albums' && (
+                <button
+                  onClick={() => setIsSelectionMode(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
+                >
+                  <Check className="w-4 h-4" />
+                  <span className="hidden md:inline">選択</span>
+                </button>
+              )}
+              
               <button
-                onClick={() => {
-                  setFilter('discovery')
-                  setIsSelectionMode(true)
-                  setSelectedIds([])
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
+                onClick={() => setShowComposer(true)}
+                className="flex items-center gap-2 px-4 md:px-6 py-3 bg-white text-black rounded-2xl font-black text-xs hover:bg-gray-200 active:scale-95 transition-all shadow-xl shadow-white/5"
               >
-                <Plus className="w-3.5 h-3.5" />
-                写真を追加
+                <Camera className="w-4 h-4" />
+                <span className="hidden md:inline">写真を投稿</span>
               </button>
-              <button 
-                onClick={() => setSelectedAlbumId(null)}
-                className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all"
+              <button
+                 onClick={() => setShowCinemaMode(true)}
+                 disabled={images.length === 0}
+                 className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-[#82d9bc] text-gray-700 rounded-2xl font-black text-[10px] md:text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20 disabled:opacity-50"
+               >
+                <MonitorPlay className="w-4 h-4" />
+                シネマ再生
+              </button>
+              <button
+                onClick={() => setShowAlbumCreator(true)}
+                className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] md:text-xs hover:bg-white/10 active:scale-95 transition-all"
               >
-                <X className="w-5 h-5" />
-              </button>
+                  <FolderPlusIcon className="w-4 h-4 text-[#82d9bc]" />
+                 <span className="md:inline">アルバム作成</span>
+               </button>
             </div>
           </div>
-        )}
+
+          {/* Inter-Tab Switcher */}
+          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
+            <button
+              onClick={() => {
+                setFilter('discovery')
+                setSelectedIds([])
+                setIsSelectionMode(false)
+                setSelectedAlbumId(null)
+              }}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                 filter === 'discovery' && !selectedAlbumId
+                   ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                   : 'text-gray-500 hover:text-white'
+               }`}
+            >
+              新着写真
+            </button>
+            <button
+              onClick={() => {
+                setFilter('albums')
+                setSelectedIds([])
+                setIsSelectionMode(false)
+              }}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                filter === 'albums' 
+                  ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                  : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              アルバム
+            </button>
+          </div>
+
+          {/* Column Switcher (Local ONLY) */}
+          {!selectedAlbumId && filter === 'discovery' && (
+            <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
+              {[2, 3, 4, 5, 6].map(num => (
+                <button
+                   key={num}
+                  onClick={() => saveColumns(num)}
+                  className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all flex items-center justify-center ${
+                    columns === num 
+                      ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                      : 'text-gray-500 hover:text-white'
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+              <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40">Columns</span>
+            </div>
+          )}
+
+          {/* Selected Album Indicator */}
+          {selectedAlbumId && (
+            <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-3xl px-6 py-5 gap-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-4">
+                 <Library className="w-5 h-5 text-[#82d9bc]" />
+                 <div>
+                    <h4 className="text-white font-black text-sm">
+                      {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
+                    </h4>
+                    <p className="text-[10px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
+                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2 ml-auto md:ml-0">
+                <button
+                  onClick={() => {
+                    setFilter('discovery')
+                    setIsSelectionMode(true)
+                    setSelectedIds([])
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  写真を追加
+                </button>
+                <button 
+                  onClick={() => setSelectedAlbumId(null)}
+                  className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto w-full mx-auto hide-scrollbar custom-scrollbar">
