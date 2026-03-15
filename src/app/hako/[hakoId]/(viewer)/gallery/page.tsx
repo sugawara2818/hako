@@ -345,7 +345,7 @@ export default function GalleryPage() {
           {/* Column Switcher (Local ONLY) */}
           {!selectedAlbumId && filter === 'discovery' && (
             <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
-              {[2, 3, 4, 5, 6].map(num => (
+              {[1, 2, 3, 4, 5, 6].map(num => (
                 <button
                    key={num}
                   onClick={() => saveColumns(num)}
