@@ -308,7 +308,7 @@ export async function syncAlbumPhotos(selectedPostIds: string[], albumId: string
     return { success: false, error: clearError.message }
   }
 
-  // 2. Set album_id for the newly selected posts
+  // 2. Add album_id to all selected posts
   if (selectedPostIds.length > 0) {
     const { error: updateError } = await supabase
       .from('hako_timeline_posts')
@@ -320,6 +320,23 @@ export async function syncAlbumPhotos(selectedPostIds: string[], albumId: string
       console.error('syncAlbumPhotos Update Error:', updateError)
       return { success: false, error: updateError.message }
     }
+  }
+
+  revalidatePath(`/hako/${hakoId}/gallery`)
+  return { success: true }
+}
+
+export async function deleteAlbum(albumId: string, hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  const { error } = await supabase
+    .from('hako_gallery_albums')
+    .delete()
+    .eq('id', albumId)
+
+  if (error) {
+    console.error('deleteAlbum Error:', error)
+    return { success: false, error: error.message }
   }
   
   revalidatePath(`/hako/${hakoId}/gallery`)

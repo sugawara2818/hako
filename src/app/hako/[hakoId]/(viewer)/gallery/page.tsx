@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
-import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum, syncAlbumPhotos } from '@/core/gallery/actions'
+import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum, syncAlbumPhotos, deleteAlbum } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { AlbumCreator } from '@/components/gallery/AlbumCreator'
 import { GalleryComposer } from '@/components/gallery/GalleryComposer'
@@ -74,8 +74,32 @@ export default function GalleryPage() {
     )
   }
 
+  const handleCancelSelection = () => {
+    const wasEditingAlbum = !!selectedAlbumId;
+    setIsSelectionMode(false)
+    setSelectedIds([])
+    if (wasEditingAlbum) {
+      setFilter('albums')
+      setSelectedAlbumId(null)
+    }
+  }
+
+  const handleDeleteAlbum = async (albumId: string) => {
+    if (!confirm('このアルバムを削除しますか？\n（アルバム内の写真は消えません）')) return
+    
+    try {
+      const result = await deleteAlbum(albumId, hakoId)
+      if (result.success) {
+        fetchData()
+      } else {
+        alert('削除に失敗しました: ' + result.error)
+      }
+    } catch (err) {
+      console.error('Delete Album Error:', err)
+    }
+  }
+
   const handleBatchAddToAlbum = async (albumId: string) => {
-    // Only block empty selections if we are NOT in an existing album context (where empty means removal)
     if (!selectedAlbumId && selectedIds.length === 0) return
     setIsBatchAdding(true)
     try {
@@ -88,7 +112,12 @@ export default function GalleryPage() {
         setSelectedIds([])
         setShowAlbumPicker(false)
         fetchData()
-        // If we were adding to a specific album, stay in that album view
+        
+        // Return to albums tab if we were editing one
+        if (selectedAlbumId) {
+          setFilter('albums')
+          setSelectedAlbumId(null)
+        }
       }
     } finally {
       setIsBatchAdding(false)
@@ -113,10 +142,7 @@ export default function GalleryPage() {
             <div className="max-w-6xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <button 
-                  onClick={() => {
-                    setIsSelectionMode(false)
-                    setSelectedIds([])
-                  }}
+                  onClick={handleCancelSelection}
                   className="p-3 hover:bg-black/10 rounded-2xl transition-all active:scale-90"
                 >
                   <X className="w-6 h-6" />
@@ -384,20 +410,32 @@ export default function GalleryPage() {
                         </h4>
                         <p className="text-[10px] text-white/40 font-bold">{album.totalCount || 0}</p>
                       </div>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedAlbumId(album.id)
-                          setFilter('discovery')
-                          setIsSelectionMode(true)
-                          // Pre-select photos already in this album
-                          const existingIds = images.filter(img => img.albumId === album.id).map(img => img.id)
-                          setSelectedIds(existingIds)
-                        }}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-[#82d9bc]/10 rounded-lg"
-                      >
-                        <Plus className="w-5 h-5 text-[#82d9bc]" />
-                      </button>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteAlbum(album.id)
+                          }}
+                          className="p-1.5 hover:bg-red-500/20 text-white/40 hover:text-red-400 rounded-lg transition-colors"
+                          title="アルバムを削除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedAlbumId(album.id)
+                            setFilter('discovery')
+                            setIsSelectionMode(true)
+                            // Pre-select photos already in this album
+                            const existingIds = images.filter(img => img.albumId === album.id).map(img => img.id)
+                            setSelectedIds(existingIds)
+                          }}
+                          className="p-1.5 hover:bg-[#82d9bc]/10 rounded-lg"
+                        >
+                          <Plus className="w-5 h-5 text-[#82d9bc]" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
