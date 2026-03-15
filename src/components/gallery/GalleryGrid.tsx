@@ -22,9 +22,21 @@ interface GalleryGridProps {
   hakoId: string
   onDelete?: (id: string) => void
   columns?: number
+  isSelectionMode?: boolean
+  selectedIds?: string[]
+  onToggleSelect?: (id: string) => void
 }
 
-export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: GalleryGridProps) {
+export function GalleryGrid({ 
+  images, 
+  albums, 
+  hakoId, 
+  onDelete, 
+  columns,
+  isSelectionMode = false,
+  selectedIds = [],
+  onToggleSelect
+}: GalleryGridProps) {
   const [localImages, setLocalImages] = useState<GalleryImage[]>(images)
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
   
@@ -34,7 +46,6 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
   }, [images])
 
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isPinning, setIsPinning] = useState(false)
   const [isAddingToAlbum, setIsAddingToAlbum] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showFullSize, setShowFullSize] = useState(false)
@@ -88,32 +99,59 @@ export function GalleryGrid({ images, albums, hakoId, onDelete, columns }: Galle
             : undefined 
         }}
       >
-        {localImages.map((image) => (
-          <div
-            key={image.id}
-            className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group hover:scale-[1.02] transition-all duration-300 border border-white/5 bg-white/5"
-            onClick={() => setSelectedImage(image)}
-          >
-            <Image
-              src={image.url}
-              alt=""
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
-              {image.isPinned && (
-                <div className="absolute top-2 right-2 p-1 bg-[#82d9bc] rounded-lg shadow-lg">
-                  <ImageIcon className="w-3 h-3 text-gray-700" />
+        {localImages.map((image) => {
+          const isSelected = selectedIds.includes(image.id)
+          return (
+            <div
+              key={image.id}
+              className={`relative aspect-square rounded-2xl overflow-hidden cursor-pointer group hover:scale-[1.02] transition-all duration-300 border ${
+                isSelected 
+                  ? 'border-[#82d9bc] ring-2 ring-[#82d9bc]/30 scale-[0.98]' 
+                  : 'border-white/5 bg-white/5'
+              }`}
+              onClick={() => {
+                if (isSelectionMode && onToggleSelect) {
+                  onToggleSelect(image.id)
+                } else {
+                  setSelectedImage(image)
+                }
+              }}
+            >
+              <Image
+                src={image.url}
+                alt=""
+                fill
+                className={`object-cover transition-transform duration-500 ${!isSelectionMode ? 'group-hover:scale-110' : ''}`}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              />
+              
+              {/* Selection Overlay */}
+              {isSelectionMode && (
+                <div className={`absolute inset-0 transition-colors duration-200 ${isSelected ? 'bg-[#82d9bc]/10' : 'bg-black/20 group-hover:bg-black/10'}`}>
+                  <div className={`absolute top-2 right-2 w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-200 ${
+                    isSelected 
+                      ? 'bg-[#82d9bc] border-[#82d9bc] shadow-lg shadow-[#82d9bc]/20' 
+                      : 'bg-black/40 border-white/20'
+                  }`}>
+                    {isSelected && <Send className="w-3.5 h-3.5 text-gray-700 -rotate-45" />}
+                  </div>
                 </div>
               )}
-              {image.caption && (
-                <p className="text-[10px] text-white/80 line-clamp-1 mb-1 font-medium">{image.caption}</p>
-              )}
-              <p className="text-[10px] font-black text-white truncate">{image.userName}</p>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+                {image.isPinned && !isSelectionMode && (
+                  <div className="absolute top-2 right-2 p-1 bg-[#82d9bc] rounded-lg shadow-lg">
+                    <ImageIcon className="w-3 h-3 text-gray-700" />
+                  </div>
+                )}
+                {image.caption && (
+                  <p className="text-[10px] text-white/80 line-clamp-1 mb-1 font-medium">{image.caption}</p>
+                )}
+                <p className="text-[10px] font-black text-white truncate">{image.userName}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     )}
 

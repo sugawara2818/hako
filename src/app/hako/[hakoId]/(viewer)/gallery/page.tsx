@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X } from 'lucide-react'
 import Image from 'next/image'
-import { getGalleryImages, deleteGalleryPost, getAlbums } from '@/core/gallery/actions'
+import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { AlbumCreator } from '@/components/gallery/AlbumCreator'
 import { GalleryComposer } from '@/components/gallery/GalleryComposer'
 import { useParams, useRouter } from 'next/navigation'
 import { GalleryCinemaMode } from '@/components/gallery/GalleryCinemaMode'
+import { Check, Square, CheckSquare, Trash2, FolderPlus as FolderPlusIcon } from 'lucide-react'
 
 export default function GalleryPage() {
   const params = useParams()
@@ -24,6 +25,12 @@ export default function GalleryPage() {
   const [showCinemaMode, setShowCinemaMode] = useState(false)
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null)
   const [columns, setColumns] = useState(4)
+
+  // Selection states
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isBatchAdding, setIsBatchAdding] = useState(false)
+  const [showAlbumPicker, setShowAlbumPicker] = useState(false)
 
   // Load column preference
   useEffect(() => {
@@ -50,7 +57,7 @@ export default function GalleryPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [hakoId, filter])
+  }, [hakoId])
 
   useEffect(() => {
     fetchData()
@@ -61,8 +68,85 @@ export default function GalleryPage() {
     setImages(prev => prev.filter(img => img.id !== postId))
   }, [])
 
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    )
+  }
+
+  const handleBatchAddToAlbum = async (albumId: string) => {
+    if (selectedIds.length === 0) return
+    setIsBatchAdding(true)
+    try {
+      const result = await batchAddPostsToAlbum(selectedIds, albumId, hakoId)
+      if (result.success) {
+        setIsSelectionMode(false)
+        setSelectedIds([])
+        setShowAlbumPicker(false)
+        fetchData()
+        // If we were adding to a specific album, stay in that album view
+      }
+    } finally {
+      setIsBatchAdding(false)
+    }
+  }
+
+  const filteredImages = selectedAlbumId 
+    ? images.filter(img => img.albumId === selectedAlbumId) 
+    : images
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
+      {/* Selection Header Overlay */}
+      {isSelectionMode && (
+        <div className="fixed top-0 inset-x-0 z-[60] bg-[#82d9bc] text-gray-800 p-4 border-b border-[#82d9bc]/20 animate-in slide-in-from-top duration-300">
+           <div className="max-w-6xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => {
+                    setIsSelectionMode(false)
+                    setSelectedIds([])
+                  }}
+                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="flex flex-col">
+                  <span className="text-xs font-black uppercase tracking-widest">{selectedIds.length} 個選択中</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const allIds = filteredImages.map(img => img.id)
+                    const isAllSelected = allIds.every(id => selectedIds.includes(id))
+                    setSelectedIds(isAllSelected ? [] : allIds)
+                  }}
+                  className="px-4 py-2 bg-black/5 hover:bg-black/10 rounded-xl text-[10px] font-black transition-all flex items-center gap-2"
+                >
+                  {filteredImages.every(img => selectedIds.includes(img.id)) ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
+                  すべて選択
+                </button>
+                <button
+                  onClick={() => {
+                    if (selectedAlbumId) {
+                      handleBatchAddToAlbum(selectedAlbumId)
+                    } else {
+                      setShowAlbumPicker(true)
+                    }
+                  }}
+                  disabled={selectedIds.length === 0 || isBatchAdding}
+                  className="px-6 py-2 bg-gray-800 text-white rounded-xl text-[10px] font-black hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isBatchAdding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FolderPlus className="w-3.5 h-3.5" />}
+                  {selectedAlbumId ? 'このアルバムに追加' : 'アルバムに入れる'}
+                </button>
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="shrink-0 px-6 py-8 md:px-10 border-b theme-border theme-bg sticky top-0 z-30">
         <div className="flex items-center justify-between mb-6">
@@ -76,6 +160,16 @@ export default function GalleryPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {!isSelectionMode && filter !== 'albums' && (
+              <button
+                onClick={() => setIsSelectionMode(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
+              >
+                <Check className="w-4 h-4" />
+                <span className="hidden md:inline">選択</span>
+              </button>
+            )}
+            
             <button
               onClick={() => setShowComposer(true)}
               className="flex items-center gap-2 px-4 md:px-6 py-3 bg-white text-black rounded-2xl font-black text-xs hover:bg-gray-200 active:scale-95 transition-all shadow-xl shadow-white/5"
@@ -106,6 +200,8 @@ export default function GalleryPage() {
           <button
             onClick={() => {
               setFilter('discovery')
+              setSelectedIds([])
+              setIsSelectionMode(false)
               setSelectedAlbumId(null)
             }}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
@@ -117,7 +213,11 @@ export default function GalleryPage() {
             新着写真
           </button>
           <button
-            onClick={() => setFilter('albums')}
+            onClick={() => {
+              setFilter('albums')
+              setSelectedIds([])
+              setIsSelectionMode(false)
+            }}
             className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
               filter === 'albums' 
                 ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
@@ -150,7 +250,7 @@ export default function GalleryPage() {
 
         {/* Selected Album Indicator */}
         {selectedAlbumId && (
-          <div className="mt-6 flex items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-2xl px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-3xl px-6 py-5 gap-4 animate-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-4">
                <Library className="w-5 h-5 text-[#82d9bc]" />
                <div>
@@ -160,12 +260,26 @@ export default function GalleryPage() {
                   <p className="text-[10px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
                </div>
             </div>
-            <button 
-              onClick={() => setSelectedAlbumId(null)}
-              className="text-gray-500 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            
+            <div className="flex items-center gap-2 ml-auto md:ml-0">
+              <button
+                onClick={() => {
+                  setFilter('discovery')
+                  setIsSelectionMode(true)
+                  setSelectedIds([])
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                写真を追加
+              </button>
+              <button 
+                onClick={() => setSelectedAlbumId(null)}
+                className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -213,15 +327,79 @@ export default function GalleryPage() {
         ) : (
           <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             <GalleryGrid 
-              images={selectedAlbumId ? images.filter(img => img.albumId === selectedAlbumId) : images} 
+              images={filteredImages} 
               albums={albums}
               hakoId={hakoId} 
               onDelete={handleDelete}
               columns={columns}
+              isSelectionMode={isSelectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
             />
           </div>
         )}
       </div>
+
+      {/* Album Picker Modal */}
+      {showAlbumPicker && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => !isBatchAdding && setShowAlbumPicker(false)} 
+          />
+          <div className="relative w-full max-w-md theme-elevated border theme-border rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-[#82d9bc]/20 flex items-center justify-center border border-[#82d9bc]/30">
+                <Library className="w-6 h-6 text-[#82d9bc]" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black theme-text">アルバムを選択</h3>
+                <p className="text-xs theme-muted font-bold uppercase tracking-widest">{selectedIds.length} 個の写真を追加します</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+              {albums.length === 0 ? (
+                <div className="text-center py-10 theme-surface rounded-3xl border border-dashed theme-border">
+                  <p className="text-sm theme-muted font-bold">アルバムがありません</p>
+                </div>
+              ) : (
+                albums.map(album => (
+                  <button
+                    key={album.id}
+                    onClick={() => handleBatchAddToAlbum(album.id)}
+                    disabled={isBatchAdding}
+                    className="w-full flex items-center justify-between p-4 theme-surface hover:theme-elevated border theme-border rounded-2xl transition-all group active:scale-95"
+                  >
+                    <span className="font-black theme-text text-sm">{album.name}</span>
+                    <Plus className="w-4 h-4 text-[#82d9bc] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))
+              )}
+            </div>
+
+            <div className="mt-8">
+              <button
+                onClick={() => setShowAlbumPicker(false)}
+                disabled={isBatchAdding}
+                className="w-full py-4 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-black text-sm transition-all"
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Processing Overlay */}
+      {isBatchAdding && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
+           <div className="theme-elevated p-8 rounded-[2rem] border theme-border shadow-2xl flex flex-col items-center gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-[#82d9bc]" />
+              <p className="text-xs font-black theme-text uppercase tracking-widest">Adding to album...</p>
+           </div>
+        </div>
+      )}
 
       {showAlbumCreator && (
         <AlbumCreator 

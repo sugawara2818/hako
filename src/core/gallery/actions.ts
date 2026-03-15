@@ -230,3 +230,21 @@ export async function addPostToAlbum(postId: string, albumId: string, hakoId: st
   revalidatePath(`/hako/${hakoId}/gallery`)
   return { success: true }
 }
+
+export async function batchAddPostsToAlbum(postIds: string[], albumId: string, hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  const { error } = await supabase
+    .from('hako_timeline_posts')
+    .update({ album_id: albumId })
+    .in('id', postIds)
+    .eq('hako_id', hakoId)
+
+  if (error) {
+    console.error('batchAddPostsToAlbum Error:', error)
+    return { success: false, error: error.message }
+  }
+  
+  revalidatePath(`/hako/${hakoId}/gallery`)
+  return { success: true }
+}
