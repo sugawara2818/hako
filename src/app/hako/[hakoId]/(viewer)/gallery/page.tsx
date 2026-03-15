@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
-import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum } from '@/core/gallery/actions'
+import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum, syncAlbumPhotos } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { AlbumCreator } from '@/components/gallery/AlbumCreator'
 import { GalleryComposer } from '@/components/gallery/GalleryComposer'
@@ -78,7 +78,10 @@ export default function GalleryPage() {
     if (selectedIds.length === 0) return
     setIsBatchAdding(true)
     try {
-      const result = await batchAddPostsToAlbum(selectedIds, albumId, hakoId)
+      const result = selectedAlbumId 
+        ? await syncAlbumPhotos(selectedIds, albumId, hakoId)
+        : await batchAddPostsToAlbum(selectedIds, albumId, hakoId)
+        
       if (result.success) {
         setIsSelectionMode(false)
         setSelectedIds([])
@@ -152,7 +155,7 @@ export default function GalleryPage() {
                     className="px-10 py-3 bg-white text-gray-900 rounded-2xl text-xs font-black hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl shadow-black/10"
                   >
                     {isBatchAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <FolderPlus className="w-5 h-5" />}
-                    追加を確定
+                    {selectedAlbumId ? '変更を保存' : '追加を確定'}
                   </button>
               </div>
             </div>
@@ -197,15 +200,6 @@ export default function GalleryPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {filter !== 'albums' && (
-                <button
-                  onClick={() => setIsSelectionMode(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs hover:bg-white/10 active:scale-95 transition-all"
-                >
-                  <Check className="w-4 h-4" />
-                  <span className="hidden md:inline">選択</span>
-                </button>
-              )}
               
               <button
                 onClick={() => setShowComposer(true)}
@@ -310,7 +304,7 @@ export default function GalleryPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  写真を追加
+                  写真を編集
                 </button>
                 <button 
                   onClick={() => setSelectedAlbumId(null)}

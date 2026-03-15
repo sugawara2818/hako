@@ -248,3 +248,35 @@ export async function batchAddPostsToAlbum(postIds: string[], albumId: string, h
   revalidatePath(`/hako/${hakoId}/gallery`)
   return { success: true }
 }
+export async function syncAlbumPhotos(selectedPostIds: string[], albumId: string, hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  // 1. Remove album_id from all posts currently in this album
+  const { error: clearError } = await supabase
+    .from('hako_timeline_posts')
+    .update({ album_id: null })
+    .eq('album_id', albumId)
+    .eq('hako_id', hakoId)
+
+  if (clearError) {
+    console.error('syncAlbumPhotos Clear Error:', clearError)
+    return { success: false, error: clearError.message }
+  }
+
+  // 2. Set album_id for the newly selected posts
+  if (selectedPostIds.length > 0) {
+    const { error: updateError } = await supabase
+      .from('hako_timeline_posts')
+      .update({ album_id: albumId })
+      .in('id', selectedPostIds)
+      .eq('hako_id', hakoId)
+
+    if (updateError) {
+      console.error('syncAlbumPhotos Update Error:', updateError)
+      return { success: false, error: updateError.message }
+    }
+  }
+  
+  revalidatePath(`/hako/${hakoId}/gallery`)
+  return { success: true }
+}
