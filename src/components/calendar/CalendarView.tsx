@@ -427,10 +427,12 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[18px] sm:h-[22px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
+                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[18px] sm:h-[22px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 mx-0.5 sm:mx-1 ${
                               event.isStart ? 'border-l-[2px] sm:border-l-[3px] rounded-l-sm' : ''
                             } ${
                               event.isEnd ? 'rounded-r-sm' : ''
+                            } ${
+                              !isCurrentMonth ? 'opacity-40' : ''
                             }`}
                             style={{ 
                               borderLeftColor: event.isStart ? (event.color || '#3b82f6') : 'transparent',
