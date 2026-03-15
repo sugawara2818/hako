@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, Image as ImageIcon } from 'lucide-react'
+import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, ChevronLeft, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { getGalleryImages, deleteGalleryPost, getAlbums, batchAddPostsToAlbum, syncAlbumPhotos, deleteAlbum } from '@/core/gallery/actions'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
@@ -217,13 +217,41 @@ export default function GalleryPage() {
       <div className="shrink-0 border-b theme-border theme-bg sticky top-0 z-30">
         <div className="px-6 py-8 md:px-10">
           <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black heading-gradient">
-                共有ギャラリー
-              </h1>
-              <p className="text-[10px] theme-muted mt-1 uppercase tracking-[0.2em] font-black opacity-60">
-                {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} ALBUMS` : `${images.length} MOMENTS`}
-              </p>
+            <div className="flex items-center gap-4">
+              {selectedAlbumId && (
+                <button 
+                  onClick={() => {
+                    setSelectedAlbumId(null)
+                    setFilter('albums')
+                  }}
+                  className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6 text-[#82d9bc]" />
+                </button>
+              )}
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black heading-gradient">
+                  {selectedAlbumId 
+                    ? (albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム') 
+                    : '共有ギャラリー'
+                  }
+                </h1>
+                {selectedAlbumId ? (
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-[10px] theme-muted uppercase tracking-[0.2em] font-black opacity-60">
+                      写真 {albums.find(a => a.id === selectedAlbumId)?.totalCount || 0}
+                    </p>
+                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                    <p className="text-[10px] theme-muted uppercase tracking-[0.2em] font-black opacity-60">
+                      {albums.find(a => a.id === selectedAlbumId)?.created_at ? new Date(albums.find(a => a.id === selectedAlbumId).created_at).toLocaleDateString() : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[10px] theme-muted mt-1 uppercase tracking-[0.2em] font-black opacity-60">
+                    {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} ALBUMS` : `${images.length} MOMENTS`}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -253,38 +281,39 @@ export default function GalleryPage() {
             </div>
           </div>
 
-          {/* Inter-Tab Switcher */}
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
-            <button
-              onClick={() => {
-                setFilter('discovery')
-                setSelectedIds([])
-                setIsSelectionMode(false)
-                setSelectedAlbumId(null)
-              }}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-                 filter === 'discovery' && !selectedAlbumId
-                   ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                   : 'text-gray-500 hover:text-white'
-               }`}
-            >
-              新着写真
-            </button>
-            <button
-              onClick={() => {
-                setFilter('albums')
-                setSelectedIds([])
-                setIsSelectionMode(false)
-              }}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-                filter === 'albums' 
-                  ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                  : 'text-gray-500 hover:text-white'
-              }`}
-            >
-              アルバム
-            </button>
-          </div>
+          {!selectedAlbumId && (
+            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
+              <button
+                onClick={() => {
+                  setFilter('discovery')
+                  setSelectedIds([])
+                  setIsSelectionMode(false)
+                  setSelectedAlbumId(null)
+                }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                  filter === 'discovery' && !selectedAlbumId
+                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                    : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                新着写真
+              </button>
+              <button
+                onClick={() => {
+                  setFilter('albums')
+                  setSelectedIds([])
+                  setIsSelectionMode(false)
+                }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                  filter === 'albums' 
+                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                    : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                アルバム
+              </button>
+            </div>
+          )}
 
           {/* Column Switcher (Local ONLY) */}
           {!selectedAlbumId && filter === 'discovery' && (
@@ -306,61 +335,6 @@ export default function GalleryPage() {
             </div>
           )}
 
-          {/* Selected Album Indicator */}
-          {selectedAlbumId && (
-            <div className="mt-8 animate-in slide-in-from-top-4 duration-500">
-              <div className="group relative overflow-hidden theme-elevated border border-[#82d9bc]/30 rounded-[2rem] p-6 md:p-8 shadow-2xl shadow-[#82d9bc]/5">
-                {/* Decorative background element */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#82d9bc]/5 blur-[100px] -mr-32 -mt-32 pointer-events-none" />
-                
-                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-center gap-5">
-                    <div className="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#82d9bc] flex items-center justify-center shadow-lg shadow-[#82d9bc]/20">
-                      <Library className="w-7 h-7 md:w-8 md:h-8 text-gray-800" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="px-2.5 py-1 rounded-full bg-[#82d9bc]/10 border border-[#82d9bc]/20 text-[#82d9bc] text-[9px] font-black uppercase tracking-widest">
-                          Collection
-                        </span>
-                        <p className="text-[10px] theme-muted font-bold uppercase tracking-wider opacity-60">
-                          アルバム内の写真を表示中
-                        </p>
-                      </div>
-                      <h2 className="text-2xl md:text-3xl font-black theme-text tracking-tight">
-                        {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
-                      </h2>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        setFilter('discovery')
-                        setIsSelectionMode(true)
-                        const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
-                        setSelectedIds(existingIds)
-                      }}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-[#82d9bc] text-gray-800 rounded-2xl font-black text-xs hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#82d9bc]/20"
-                    >
-                      <Plus className="w-4 h-4" />
-                      アルバムを編集
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAlbumId(null)
-                        setFilter('albums')
-                      }}
-                      className="p-3.5 bg-white/5 border theme-border theme-text rounded-2xl hover:bg-white/10 active:scale-95 transition-all"
-                      title="アルバム一覧に戻る"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -612,6 +586,20 @@ export default function GalleryPage() {
             </div>
           </div>
         </div>
+      )}
+      {/* Floating Action Button (FAB) for Album Editing */}
+      {selectedAlbumId && !isSelectionMode && (
+        <button 
+          onClick={() => {
+            setFilter('discovery')
+            setIsSelectionMode(true)
+            const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
+            setSelectedIds(existingIds)
+          }}
+          className="fixed bottom-12 right-8 w-16 h-16 bg-[#82d9bc] text-gray-800 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all z-40 lg:bottom-16 lg:right-16"
+        >
+          <Plus className="w-8 h-8" />
+        </button>
       )}
     </div>
   )
