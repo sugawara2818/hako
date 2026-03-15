@@ -424,7 +424,7 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
 
               {error && <p className="text-red-400 text-sm">{error}</p>}
               
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-white/10 pt-4 gap-4">
+              <div className="flex items-center justify-between border-t border-white/10 pt-4 gap-4">
                 <div className="flex items-center gap-1">
                   <input
                     ref={fileInputRef}
@@ -449,12 +449,12 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
                   </button>
                 </div>
                 
-                <div className="flex flex-wrap items-center justify-end gap-3 md:gap-4">
+                <div className="flex items-center justify-end gap-3">
                   {/* Gallery Switch UI */}
                   {selectedFiles.length > 0 && features.includes('gallery') && (
-                    <div className="flex items-center gap-2 md:gap-3 py-1.5 px-3 rounded-2xl bg-white/5 border border-white/10 shrink-0">
+                    <div className="flex items-center gap-2 py-1.5 px-3 rounded-2xl bg-white/5 border border-white/10 shrink-0">
                       <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wider text-gray-400">
-                        <span className="hidden xs:inline">共有</span>ギャラリーに追加
+                        ギャラリー
                       </span>
                       <button
                         type="button"
