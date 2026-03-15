@@ -427,10 +427,10 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                           <button 
                             key={event.id}
                             onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[18px] sm:h-[22px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 mx-0.5 sm:mx-1 ${
-                              event.isStart ? 'border-l-[2px] sm:border-l-[3px] rounded-l-sm' : ''
+                            className={`px-1 sm:px-2 text-[8px] sm:text-[10px] truncate font-bold flex items-center transition-all hover:brightness-105 active:scale-[0.98] h-[18px] sm:h-[22px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 ${
+                              event.isStart ? 'ml-0.5 sm:ml-1 rounded-l-sm' : ''
                             } ${
-                              event.isEnd ? 'rounded-r-sm' : ''
+                              event.isEnd ? 'mr-0.5 sm:mr-1 rounded-r-sm' : ''
                             } ${
                               !isCurrentMonth ? 'opacity-40' : ''
                             }`}
@@ -441,7 +441,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               zIndex: 10,
                             }}
                           >
-                            {(event.isStart || (i % 7 === 0)) && (
+                            {event.isStart && (
                                <span className="truncate">{event.title}</span>
                             )}
                           </button>
