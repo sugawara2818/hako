@@ -347,13 +347,14 @@ export default function GalleryPage() {
                     {album.cover_url ? (
                       <Image src={album.cover_url} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-black">
-                        <Library className="w-12 h-12 text-[#82d9bc]/40" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#82d9bc]/20 via-black to-slate-950 flex items-center justify-center">
+                        <div className="w-20 h-20 rounded-full bg-[#82d9bc]/5 blur-3xl" />
+                        <Library className="w-10 h-10 text-[#82d9bc]/20 animate-pulse" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10" />
                     <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
-                      <h4 className="text-lg font-black text-white mb-1 drop-shadow-md truncate leading-tight">
+                      <h4 className="text-lg font-black !text-white mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate leading-tight">
                         {album.name}
                       </h4>
                       <div className="flex items-center gap-2">
@@ -362,15 +363,10 @@ export default function GalleryPage() {
                              <Image src={album.userAvatar} alt="" width={20} height={20} className="w-full h-full object-cover" />
                            </div>
                          )}
-                         <p className="text-[11px] text-white font-black uppercase tracking-wider drop-shadow-sm">
+                         <p className="text-[11px] !text-white/90 font-black uppercase tracking-wider drop-shadow-md">
                            {album.userName}
                          </p>
                       </div>
-                      {album.description && (
-                        <p className="text-[10px] text-white/60 line-clamp-1 mt-1 font-bold italic">
-                          {album.description}
-                        </p>
-                      )}
                     </div>
                   </div>
                 ))}
