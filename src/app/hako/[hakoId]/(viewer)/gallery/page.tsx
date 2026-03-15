@@ -1,4 +1,5 @@
 'use client'
+// Triggering fresh push for gallery refinements
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Camera, Loader2, FolderPlus, Library, MonitorPlay, X, ChevronLeft, Image as ImageIcon } from 'lucide-react'
