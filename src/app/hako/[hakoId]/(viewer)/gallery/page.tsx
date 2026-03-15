@@ -220,8 +220,8 @@ export default function GalleryPage() {
       {/* NORMAL MODE UI (Always present but covered by overlay in selection mode) */}
       {/* Header Section */}
       <div className="shrink-0 border-b theme-border theme-bg sticky top-0 z-30">
-        <div className="px-6 py-8 md:px-10">
-          <div className="flex items-center justify-between mb-6">
+        <div className="px-6 py-4 md:px-10 md:py-6">
+          <div className="flex items-center justify-between mb-4 md:mb-0">
             <div className="flex items-center gap-4">
               {selectedAlbumId && (
                 <button 
@@ -243,6 +243,10 @@ export default function GalleryPage() {
                 </h1>
                 {selectedAlbumId ? (
                   <div className="flex items-center gap-3 mt-1">
+                    <p className="text-[10px] theme-muted uppercase tracking-[0.2em] font-black opacity-60">
+                      by {albums.find(a => a.id === selectedAlbumId)?.userName || 'Unknown'}
+                    </p>
+                    <div className="w-1 h-1 rounded-full bg-white/20" />
                     <p className="text-[10px] theme-muted uppercase tracking-[0.2em] font-black opacity-60">
                       写真 {albums.find(a => a.id === selectedAlbumId)?.totalCount || 0}
                     </p>
