@@ -351,17 +351,26 @@ export default function GalleryPage() {
                         <Library className="w-12 h-12 text-[#82d9bc]/40" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-6 flex flex-col justify-end">
-                      <h4 className="text-base font-black text-white mb-1 drop-shadow-md truncate">{album.name}</h4>
-                      <div className="flex items-center gap-2 opacity-80">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
+                    <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
+                      <h4 className="text-lg font-black text-white mb-1 drop-shadow-md truncate leading-tight">
+                        {album.name}
+                      </h4>
+                      <div className="flex items-center gap-2">
                          {album.userAvatar && (
-                           <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20">
-                             <Image src={album.userAvatar} alt="" width={16} height={16} className="w-full h-full object-cover" />
+                           <div className="w-5 h-5 rounded-full overflow-hidden border border-white/30 shadow-sm">
+                             <Image src={album.userAvatar} alt="" width={20} height={20} className="w-full h-full object-cover" />
                            </div>
                          )}
-                         <p className="text-[10px] text-white font-black uppercase tracking-wider">{album.userName}</p>
+                         <p className="text-[11px] text-white font-black uppercase tracking-wider drop-shadow-sm">
+                           {album.userName}
+                         </p>
                       </div>
-                      {album.description && <p className="text-[9px] text-white/50 line-clamp-1 mt-1 font-bold">{album.description}</p>}
+                      {album.description && (
+                        <p className="text-[10px] text-white/60 line-clamp-1 mt-1 font-bold italic">
+                          {album.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
