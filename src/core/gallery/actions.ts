@@ -218,7 +218,6 @@ export async function getAlbums(hakoId: string) {
       .from('hako_timeline_posts')
       .select('url')
       .eq('album_id', album.id)
-      .eq('is_gallery', true)
       .order('created_at', { ascending: false })
       .limit(4)
 
@@ -227,7 +226,6 @@ export async function getAlbums(hakoId: string) {
       .from('hako_timeline_posts')
       .select('*', { count: 'exact', head: true })
       .eq('album_id', album.id)
-      .eq('is_gallery', true)
     
     return {
       ...album,
