@@ -183,10 +183,7 @@ export async function getAlbums(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('hako_gallery_albums')
-    .select(`
-      *,
-      profiles:user_id (display_name, avatar_url)
-    `)
+    .select('*')
     .eq('hako_id', hakoId)
     .order('created_at', { ascending: false })
 
@@ -213,13 +210,12 @@ export async function getAlbums(hakoId: string) {
   }
 
   return (data || []).map(album => {
-    const globalProfile = (album.profiles as any) || {}
     const memberInfo = memberDataMap[album.user_id] || {}
     
     return {
       ...album,
-      userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
-      userAvatar: memberInfo.avatar_url || globalProfile.avatar_url
+      userName: memberInfo.display_name || 'ユーザー',
+      userAvatar: memberInfo.avatar_url
     }
   })
 }
