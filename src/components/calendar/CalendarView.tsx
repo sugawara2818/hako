@@ -407,7 +407,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                   >
                     <div className="flex items-center pt-0.5 px-1 sm:px-2 pb-0.5">
                       <span className={`text-[9px] sm:text-[11px] font-black w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-all ${
-                        isTodayDate ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 
+                        isTodayDate ? 'border-2 border-purple-600 text-purple-600 shadow-sm' : 
                         isSelected ? 'bg-black/5 dark:bg-white/5 border theme-border' :
                         !isCurrentMonth ? 'theme-muted opacity-20' :
                         i % 7 === 0 ? 'text-red-500' :
