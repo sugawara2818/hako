@@ -276,8 +276,8 @@ export default function GalleryPage() {
               >
                   <FolderPlusIcon className="w-4 h-4 text-[#82d9bc]" />
                  <span className="md:inline">アルバム作成</span>
-               </button>
-            </div>
+              </div>
+            )}
           </div>
 
           {!selectedAlbumId && (
