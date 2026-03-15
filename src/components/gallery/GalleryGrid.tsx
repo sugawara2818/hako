@@ -184,18 +184,18 @@ export function GalleryGrid({
           </div>
           
           {/* Scrollable Content Stage */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
+          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center hide-scrollbar">
             <div className="w-full max-w-4xl mx-auto flex flex-col pb-20">
               
               {/* Photo Stage - Massive View */}
-              <div className="w-full p-4 md:p-8 flex items-center justify-center min-h-[40vh] md:min-h-[60vh]">
-                <div className="relative w-full h-full flex items-center justify-center shadow-2xl rounded-3xl overflow-hidden theme-surface/10 ring-1 ring-white/5">
+              <div className="w-full p-2 md:p-8 flex items-center justify-center min-h-[40vh] md:min-h-[60vh]">
+                <div className="relative w-full h-full flex items-center justify-center shadow-2xl md:rounded-3xl overflow-hidden theme-surface/10 ring-1 ring-white/5 bg-black/20">
                   <Image
                     src={selectedImage.url}
                     alt=""
                     width={2000}
                     height={1500}
-                    className="w-full h-auto max-h-[85vh] object-contain"
+                    className="w-full h-auto max-h-[75vh] md:max-h-[85vh] object-contain"
                     priority
                     unoptimized
                   />

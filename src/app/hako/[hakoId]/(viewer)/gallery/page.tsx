@@ -136,8 +136,8 @@ export default function GalleryPage() {
       {isSelectionMode && (
         <div className="fixed inset-0 z-[200] theme-bg flex flex-col animate-in fade-in duration-300">
           {/* Picker Header */}
-          <div className="shrink-0 bg-[#82d9bc] text-gray-800 p-6 md:p-8 shadow-2xl z-10">
-            <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="shrink-0 bg-[#82d9bc] text-gray-800 p-4 md:p-8 shadow-2xl z-10">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
               <div className="flex items-center gap-6">
                 <button 
                   onClick={handleCancelSelection}
@@ -156,14 +156,21 @@ export default function GalleryPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
+                <button
+                  onClick={() => setShowComposer(true)}
+                  className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl text-black md:text-gray-800 transition-all active:scale-95 flex items-center justify-center shadow-xl md:shadow-none"
+                  title="新しい写真をアップロード"
+                >
+                  <Camera className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
                 <button
                   onClick={() => {
                     const allIds = filteredImages.map(img => img.id)
                     const isAllSelected = allIds.every(id => selectedIds.includes(id))
                     setSelectedIds(isAllSelected ? [] : allIds)
                   }}
-                  className="px-6 py-3 bg-black/5 hover:bg-black/10 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+                  className="hidden md:flex px-6 py-3 bg-black/5 hover:bg-black/10 rounded-2xl text-xs font-black transition-all items-center gap-2"
                 >
                   {filteredImages.every(img => selectedIds.includes(img.id)) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                   すべて選択
@@ -177,10 +184,10 @@ export default function GalleryPage() {
                       }
                     }}
                     disabled={(!selectedAlbumId && selectedIds.length === 0) || isBatchAdding}
-                    className="px-10 py-3 bg-white text-gray-900 rounded-2xl text-xs font-black hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl shadow-black/10"
+                    className="px-6 md:px-10 py-3 bg-white text-gray-900 rounded-2xl text-[10px] md:text-xs font-black hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2 md:gap-3 shadow-xl shadow-black/10"
                   >
-                    {isBatchAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <FolderPlus className="w-5 h-5" />}
-                    {selectedAlbumId ? '変更を保存' : '追加を確定'}
+                    {isBatchAdding ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <FolderPlus className="w-4 h-4 md:w-5 md:h-5" />}
+                    <span className="inline">{selectedAlbumId ? '変更を保存' : '追加を確定'}</span>
                   </button>
               </div>
             </div>
@@ -537,6 +544,7 @@ export default function GalleryPage() {
             setShowComposer(false)
             fetchData()
           }}
+          albumId={selectedAlbumId}
         />
       )}
 

@@ -10,9 +10,10 @@ interface GalleryComposerProps {
   hakoId: string
   onSuccess: () => void
   onClose: () => void
+  albumId?: string | null
 }
 
-export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerProps) {
+export function GalleryComposer({ hakoId, onSuccess, onClose, albumId }: GalleryComposerProps) {
   const [caption, setCaption] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -63,7 +64,8 @@ export function GalleryComposer({ hakoId, onSuccess, onClose }: GalleryComposerP
       setIsUploading(false)
 
       const postResult = await createGalleryPost(hakoId, uploadResult.url, caption.trim(), {
-        is_timeline: shareToTimeline
+        is_timeline: shareToTimeline,
+        albumId
       })
       
       if (!postResult.success) {

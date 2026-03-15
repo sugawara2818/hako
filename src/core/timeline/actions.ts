@@ -124,7 +124,7 @@ export async function createTimelinePost(
   hakoId: string, 
   content: string, 
   imageUrls?: string[], 
-  options?: { is_gallery?: boolean; is_timeline?: boolean }
+  options?: { is_gallery?: boolean; is_timeline?: boolean; albumId?: string | null }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
@@ -140,7 +140,8 @@ export async function createTimelinePost(
         image_url: imageUrls?.[0] || null, // Fallback for legacy
         image_urls: imageUrls || [],
         is_gallery: options?.is_gallery ?? true,
-        is_timeline: options?.is_timeline !== undefined ? options.is_timeline : true
+        is_timeline: options?.is_timeline !== undefined ? options.is_timeline : true,
+        album_id: options?.albumId || null
       })
 
     if (error) {

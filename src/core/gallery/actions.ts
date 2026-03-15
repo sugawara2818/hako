@@ -152,12 +152,13 @@ export async function toggleGalleryPin(postId: string, hakoId: string, isPinned:
   return { success: true }
 }
 
-export async function createGalleryPost(hakoId: string, imageUrl: string, caption?: string, options?: { is_timeline?: boolean }) {
+export async function createGalleryPost(hakoId: string, imageUrl: string, caption?: string, options?: { is_timeline?: boolean; albumId?: string | null }) {
   // We now use the unified timeline post creation
   // Default is_timeline to false for gallery-specific posts
   const result = await createTimelinePost(hakoId, caption || '', [imageUrl], { 
     is_gallery: true,
-    is_timeline: options?.is_timeline || false
+    is_timeline: options?.is_timeline || false,
+    albumId: options?.albumId
   })
   
   if (result.success) {
