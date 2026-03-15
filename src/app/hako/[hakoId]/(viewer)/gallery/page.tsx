@@ -77,13 +77,11 @@ export default function GalleryPage() {
   const [albumIdToDelete, setAlbumIdToDelete] = useState<string | null>(null)
 
   const handleCancelSelection = () => {
-    const wasEditingAlbum = !!selectedAlbumId;
     setIsSelectionMode(false)
     setSelectedIds([])
-    if (wasEditingAlbum) {
-      setFilter('albums')
-      setSelectedAlbumId(null)
-    }
+    // If we are currently viewing an album (selectedAlbumId is set), 
+    // we want to stay in that album view (discovery filter with that ID).
+    // The previous logic was forcing a return to the album list.
   }
 
   const handleDeleteAlbum = async (albumId: string) => {
