@@ -384,9 +384,20 @@ export default function GalleryPage() {
                         </h4>
                         <p className="text-[10px] text-white/40 font-bold">{album.totalCount || 0}</p>
                       </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Plus className="w-4 h-4 text-[#82d9bc]" />
-                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedAlbumId(album.id)
+                          setFilter('discovery')
+                          setIsSelectionMode(true)
+                          // Pre-select photos already in this album
+                          const existingIds = images.filter(img => img.albumId === album.id).map(img => img.id)
+                          setSelectedIds(existingIds)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-[#82d9bc]/10 rounded-lg"
+                      >
+                        <Plus className="w-5 h-5 text-[#82d9bc]" />
+                      </button>
                     </div>
                   </div>
                 ))}
