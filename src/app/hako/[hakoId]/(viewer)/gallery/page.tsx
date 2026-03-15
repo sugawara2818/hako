@@ -324,10 +324,17 @@ export default function GalleryPage() {
             {albums.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                 <p className="text-lg font-bold mb-2 text-white/40">アルバムはまだありません</p>
-                <p className="text-sm">思い出をコレクションにまとめてみましょう。</p>
+                <p className="text-sm">お気に入りの写真をコレクションにまとめてみましょう。</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div 
+                className={`grid gap-3 ${!columns ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' : ''}`}
+                style={{ 
+                  gridTemplateColumns: columns 
+                    ? `repeat(${columns}, minmax(0, 1fr))` 
+                    : undefined 
+                }}
+              >
                 {albums.map((album) => (
                   <div 
                     key={album.id} 
@@ -335,7 +342,7 @@ export default function GalleryPage() {
                       setSelectedAlbumId(album.id)
                       setFilter('discovery')
                     }}
-                    className="relative aspect-[4/3] group cursor-pointer overflow-hidden rounded-[2rem] border border-white/5 bg-white/5 hover:border-purple-500/30 transition-all"
+                    className="relative aspect-square group cursor-pointer overflow-hidden rounded-2xl border border-white/5 bg-white/5 hover:border-[#82d9bc]/30 hover:scale-[1.02] transition-all duration-300"
                   >
                     {album.cover_url ? (
                       <Image src={album.cover_url} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -344,9 +351,9 @@ export default function GalleryPage() {
                         <Library className="w-12 h-12 text-[#82d9bc]/40" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
-                      <h4 className="text-xl font-black text-white mb-2">{album.name}</h4>
-                      {album.description && <p className="text-xs text-gray-400 line-clamp-2 mb-4">{album.description}</p>}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+                      <h4 className="text-sm font-black text-white mb-0.5 truncate">{album.name}</h4>
+                      {album.description && <p className="text-[10px] text-gray-400 line-clamp-1 opacity-60 font-bold">{album.description}</p>}
                     </div>
                   </div>
                 ))}
