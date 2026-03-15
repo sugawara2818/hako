@@ -91,7 +91,7 @@ export default function GalleryPage() {
     }
   }
 
-  const filteredImages = selectedAlbumId 
+  const filteredImages = (selectedAlbumId && !isSelectionMode)
     ? images.filter(img => img.albumId === selectedAlbumId) 
     : images
 
