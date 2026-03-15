@@ -88,7 +88,7 @@ export function GalleryGrid({
       {localImages.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <p className="text-lg font-bold mb-2 text-white/40">写真はまだありません</p>
-          <p className="text-sm">タイムラインに投稿された写真がここに集まります。</p>
+          <p className="text-sm">こちらに写真が集まります。</p>
         </div>
       ) : (
       <div 

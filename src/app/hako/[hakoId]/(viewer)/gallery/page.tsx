@@ -282,18 +282,18 @@ export default function GalleryPage() {
 
           {/* Selected Album Indicator */}
           {selectedAlbumId && (
-            <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-3xl px-6 py-5 gap-4 animate-in slide-in-from-top-2 duration-300">
-              <div className="flex items-center gap-4">
-                 <Library className="w-5 h-5 text-[#82d9bc]" />
+            <div className="mt-6 flex items-center justify-between bg-[#82d9bc]/10 border border-[#82d9bc]/20 rounded-2xl px-4 py-3 animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-3">
+                 <Library className="w-4 h-4 text-[#82d9bc]" />
                  <div>
-                    <h4 className="text-white font-black text-sm">
+                    <h4 className="text-white font-black text-xs">
                       {albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム'}
                     </h4>
-                    <p className="text-[10px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
+                    <p className="text-[8px] text-[#82d9bc] font-bold uppercase tracking-wider">Viewing Collection</p>
                  </div>
               </div>
               
-              <div className="flex items-center gap-2 ml-auto md:ml-0">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
                     setFilter('discovery')
@@ -302,16 +302,10 @@ export default function GalleryPage() {
                     const existingIds = images.filter(img => img.albumId === selectedAlbumId).map(img => img.id)
                     setSelectedIds(existingIds)
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#82d9bc] text-gray-800 rounded-xl font-black text-[10px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-[#82d9bc] text-gray-800 rounded-lg font-black text-[9px] hover:opacity-90 transition-all shadow-lg shadow-[#82d9bc]/20"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                   アルバムを編集
-                </button>
-                <button 
-                  onClick={() => setSelectedAlbumId(null)}
-                  className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-full transition-all"
-                >
-                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
