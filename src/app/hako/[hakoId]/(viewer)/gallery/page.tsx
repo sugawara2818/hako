@@ -239,7 +239,7 @@ export default function GalleryPage() {
                 <h1 className="text-2xl md:text-3xl font-black heading-gradient">
                   {selectedAlbumId 
                     ? (albums.find(a => a.id === selectedAlbumId)?.name || 'アルバム') 
-                    : '共有ギャラリー'
+                    : 'ギャラリー'
                   }
                 </h1>
                 {selectedAlbumId ? (

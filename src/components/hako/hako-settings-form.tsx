@@ -19,7 +19,7 @@ const FEATURE_PIECES = [
   { id: 'timeline', label: 'タイムライン', desc: 'Xのようなリアルタイムな投稿機能', icon: Hash }, 
   { id: 'diary', label: '日記', desc: '日々の想いを綴るクローズドな日記帳', icon: BookOpen },
   { id: 'calendar', label: '共有カレンダー', desc: '共有のカレンダーで予定を管理・表示', icon: Calendar },
-  { id: 'gallery', label: '共有ギャラリー', desc: 'タイムラインに投稿された画像を一覧で表示', icon: ImageIcon },
+  { id: 'gallery', label: 'ギャラリー', desc: 'タイムラインに投稿された画像を一覧で表示', icon: ImageIcon },
 ]
 
 const PRESET_GRADIENTS = [
