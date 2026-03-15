@@ -60,13 +60,23 @@ export function GalleryCinemaMode({ images, onClose }: GalleryCinemaModeProps) {
 
       {/* Header UI */}
       <div className="absolute top-0 inset-x-0 p-6 flex items-center justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500 rounded-xl shadow-lg">
-             <ImageIcon className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h3 className="text-white font-black text-xs uppercase tracking-widest">Cinema Exhibition</h3>
-            <p className="text-gray-400 text-[10px] uppercase tracking-wider">{index + 1} / {images.length}</p>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={onClose}
+            className="group flex items-center gap-2 py-2 px-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition-all border border-white/5 hover:border-white/10"
+          >
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-black uppercase tracking-widest">戻る</span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500 rounded-xl shadow-lg">
+               <ImageIcon className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-white font-black text-xs uppercase tracking-widest">Cinema Exhibition</h3>
+              <p className="text-gray-400 text-[10px] uppercase tracking-wider">{index + 1} / {images.length}</p>
+            </div>
           </div>
         </div>
         
