@@ -216,7 +216,7 @@ export async function getAlbums(hakoId: string) {
     // Fetch top 4 photos for this album
     const { data: previewPhotos } = await supabase
       .from('hako_timeline_posts')
-      .select('url')
+      .select('image_urls, image_url')
       .eq('album_id', album.id)
       .order('created_at', { ascending: false })
       .limit(4)
@@ -231,7 +231,7 @@ export async function getAlbums(hakoId: string) {
       ...album,
       userName: memberInfo.display_name || globalProfile.display_name || 'ユーザー',
       userAvatar: memberInfo.avatar_url || globalProfile.avatar_url,
-      previewPhotos: (previewPhotos || []).map(p => p.url),
+      previewPhotos: (previewPhotos || []).map(p => (p.image_urls as string[])?.[0] || (p.image_url as string) || ''),
       totalCount: count || 0
     }
   }))
