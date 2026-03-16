@@ -6,10 +6,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export default async function HakoMembersPage({
-  params: { hakoId }
+  params
 }: {
-  params: { hakoId: string }
+  params: Promise<{ hakoId: string }>
 }) {
+  const { hakoId } = await params
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
