@@ -154,34 +154,111 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
             </div>
 
             {/* Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2 min-w-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Start Time */}
+              <div className="space-y-2">
                 <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5" /> 開始
                 </label>
-                <input
-                  type="datetime-local"
-                  value={startAt}
-                  onChange={e => setStartAt(e.target.value)}
-                  step="300"
-                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
-                  required
-                  disabled={!isEditable}
-                />
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="date"
+                    value={startAt.split('T')[0]}
+                    onChange={e => {
+                      const time = startAt.split('T')[1] || '09:00'
+                      setStartAt(`${e.target.value}T${time}`)
+                    }}
+                    className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark] font-bold"
+                    required
+                    disabled={!isEditable}
+                  />
+                  {!isAllDay && (
+                    <div className="flex gap-2">
+                      <select
+                        value={startAt.split('T')[1]?.split(':')[0] || '09'}
+                        onChange={e => {
+                          const date = startAt.split('T')[0]
+                          const mins = startAt.split('T')[1]?.split(':')[1] || '00'
+                          setStartAt(`${date}T${e.target.value}:${mins}`)
+                        }}
+                        disabled={!isEditable}
+                        className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
+                      >
+                        {Array.from({ length: 24 }).map((_, i) => (
+                          <option key={i} value={i.toString().padStart(2, '0')}>{i}時</option>
+                        ))}
+                      </select>
+                      <select
+                        value={startAt.split('T')[1]?.split(':')[1] || '00'}
+                        onChange={e => {
+                          const date = startAt.split('T')[0]
+                          const hour = startAt.split('T')[1]?.split(':')[0] || '09'
+                          setStartAt(`${date}T${hour}:${e.target.value}`)
+                        }}
+                        disabled={!isEditable}
+                        className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
+                      >
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const val = (i * 5).toString().padStart(2, '0')
+                          return <option key={val} value={val}>{val}分</option>
+                        })}
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2 min-w-0">
+
+              {/* End Time */}
+              <div className="space-y-2">
                 <label className="text-[10px] md:text-xs font-black theme-muted uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> 終了
                 </label>
-                <input
-                  type="datetime-local"
-                  value={endAt}
-                  onChange={e => setEndAt(e.target.value)}
-                  step="300"
-                  className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
-                  required
-                  disabled={!isEditable}
-                />
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="date"
+                    value={endAt.split('T')[0]}
+                    onChange={e => {
+                      const time = endAt.split('T')[1] || '10:00'
+                      setEndAt(`${e.target.value}T${time}`)
+                    }}
+                    className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark] font-bold"
+                    required
+                    disabled={!isEditable}
+                  />
+                  {!isAllDay && (
+                    <div className="flex gap-2">
+                      <select
+                        value={endAt.split('T')[1]?.split(':')[0] || '10'}
+                        onChange={e => {
+                          const date = endAt.split('T')[0]
+                          const mins = endAt.split('T')[1]?.split(':')[1] || '00'
+                          setEndAt(`${date}T${e.target.value}:${mins}`)
+                        }}
+                        disabled={!isEditable}
+                        className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
+                      >
+                        {Array.from({ length: 24 }).map((_, i) => (
+                          <option key={i} value={i.toString().padStart(2, '0')}>{i}時</option>
+                        ))}
+                      </select>
+                      <select
+                        value={endAt.split('T')[1]?.split(':')[1] || '00'}
+                        onChange={e => {
+                          const date = endAt.split('T')[0]
+                          const hour = endAt.split('T')[1]?.split(':')[0] || '10'
+                          setEndAt(`${date}T${hour}:${e.target.value}`)
+                        }}
+                        disabled={!isEditable}
+                        className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
+                      >
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const val = (i * 5).toString().padStart(2, '0')
+                          return <option key={val} value={val}>{val}分</option>
+                        })}
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
