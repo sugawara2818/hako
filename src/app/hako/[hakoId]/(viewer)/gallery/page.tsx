@@ -310,56 +310,62 @@ export default function GalleryPage() {
           </div>
 
           {!selectedAlbumId && (
-            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl w-fit overflow-x-auto hide-scrollbar max-w-full">
-              <button
-                onClick={() => {
-                  setFilter('discovery')
-                  setSelectedIds([])
-                  setIsSelectionMode(false)
-                  setSelectedAlbumId(null)
-                }}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-                  filter === 'discovery' && !selectedAlbumId
-                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                    : 'text-gray-500 hover:text-white'
-                }`}
-              >
-                新着写真
-              </button>
-              <button
-                onClick={() => {
-                  setFilter('albums')
-                  setSelectedIds([])
-                  setIsSelectionMode(false)
-                }}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
-                  filter === 'albums' 
-                    ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                    : 'text-gray-500 hover:text-white'
-                }`}
-              >
-                アルバム
-              </button>
-            </div>
-          )}
+            <div className="mt-8 flex flex-col md:flex-row md:items-center gap-4">
+              {/* Tab Switcher & Column Switcher (Grouped) */}
+              <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl w-fit">
+                {/* View Tabs */}
+                <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-1">
+                  <button
+                    onClick={() => {
+                      setFilter('discovery')
+                      setSelectedIds([])
+                      setIsSelectionMode(false)
+                      setSelectedAlbumId(null)
+                    }}
+                    className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                      filter === 'discovery' && !selectedAlbumId
+                        ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                        : 'text-gray-500 hover:text-white'
+                    }`}
+                  >
+                    写真
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilter('albums')
+                      setSelectedIds([])
+                      setIsSelectionMode(false)
+                    }}
+                    className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap ${
+                      filter === 'albums' 
+                        ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
+                        : 'text-gray-500 hover:text-white'
+                    }`}
+                  >
+                    アルバム
+                  </button>
+                </div>
 
-          {/* Column Switcher (Local ONLY) */}
-          {!selectedAlbumId && filter === 'discovery' && (
-            <div className="mt-6 flex items-center gap-3 bg-white/5 p-1 rounded-2xl w-fit">
-              {[1, 2, 3, 4, 5, 6].map(num => (
-                <button
-                   key={num}
-                  onClick={() => saveColumns(num)}
-                  className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all flex items-center justify-center ${
-                    columns === num 
-                      ? 'bg-[#82d9bc] text-gray-700 shadow-lg shadow-[#82d9bc]/20' 
-                      : 'text-gray-500 hover:text-white'
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-              <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40">Columns</span>
+                {/* Column Selector */}
+                {filter === 'discovery' && (
+                  <div className="flex items-center gap-1.5 px-1">
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <button
+                        key={num}
+                        onClick={() => saveColumns(num)}
+                        className={`w-7 h-7 rounded-lg text-[10px] font-black transition-all flex items-center justify-center ${
+                          columns === num 
+                            ? 'bg-[#82d9bc] text-gray-700 shadow-sm shadow-[#82d9bc]/20' 
+                            : 'text-gray-500 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <span className="ml-2 text-[8px] font-black theme-muted uppercase tracking-widest opacity-40">Columns</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
