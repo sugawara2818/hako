@@ -16,10 +16,11 @@ interface TimelineFeedProps {
   initialPosts: any[]
   hideHeader?: boolean
   isFullWidth?: boolean
+  isEmbedded?: boolean
   features?: string[]
 }
 
-export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false, isFullWidth = false, features = ['timeline'] }: TimelineFeedProps) {
+export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader = false, isFullWidth = false, isEmbedded = false, features = ['timeline'] }: TimelineFeedProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [content, setContent] = useState('')
@@ -284,12 +285,12 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
     <>
     <div 
       ref={feedRef}
-      className="w-full max-w-4xl mx-auto flex flex-col min-h-screen relative animate-fade-in"
+      className={`w-full mx-auto flex flex-col min-h-screen relative animate-fade-in ${isEmbedded ? '' : 'max-w-4xl'}`}
       style={{ 
         animationDelay: '0.1s',
-        backgroundColor: 'var(--bg)',
-        borderLeft: '1px solid var(--border)',
-        borderRight: '1px solid var(--border)'
+        backgroundColor: isEmbedded ? 'transparent' : 'var(--bg)',
+        borderLeft: isEmbedded ? 'none' : '1px solid var(--border)',
+        borderRight: isEmbedded ? 'none' : '1px solid var(--border)'
       }}
     >
       {/* Timeline Header Integrated */}
@@ -315,13 +316,13 @@ export function TimelineFeed({ hakoId, currentUserId, initialPosts, hideHeader =
             <p>まだ投稿がありません。最初の投稿をしましょう！</p>
           </div>
         ) : (
-          <div className={`${isFullWidth ? 'w-full' : 'max-w-4xl px-0 md:px-8 pb-8 md:pb-12'} mx-auto w-full`}>
+          <div className={`${(isFullWidth || isEmbedded) ? 'w-full' : 'max-w-4xl px-0 md:px-8 pb-8 md:pb-12'} mx-auto w-full`}>
             {initialPosts.map((post: any) => (
               <TimelinePost 
                 key={post.id} 
                 post={post} 
                 currentUserId={currentUserId}
-                isFullWidth={isFullWidth}
+                isFullWidth={isFullWidth || isEmbedded}
               />
             ))}
           </div>
