@@ -55,13 +55,22 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       const start = new Date(initialDate)
       const end = new Date(initialDate)
       
+      // Round to nearest 5 minutes
+      const roundTo5Min = (date: Date) => {
+        const minutes = date.getMinutes()
+        const roundedMinutes = Math.round(minutes / 5) * 5
+        date.setMinutes(roundedMinutes, 0, 0)
+        return date
+      }
+
       // If it's exactly midnight, default to 9:00 - 10:00
       if (start.getHours() === 0 && start.getMinutes() === 0 && start.getSeconds() === 0) {
         start.setHours(9, 0, 0, 0)
         end.setHours(10, 0, 0, 0)
       } else {
         // Otherwise use the provided time and default to 1 hour duration
-        end.setHours(start.getHours() + 1, start.getMinutes(), 0, 0)
+        roundTo5Min(start)
+        end.setTime(start.getTime() + 60 * 60 * 1000)
       }
       
       setStartAt(format(start, "yyyy-MM-dd'T'HH:mm"))
@@ -154,6 +163,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
+                  step="300"
                   className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
                   required
                   disabled={!isEditable}
@@ -167,6 +177,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                   type="datetime-local"
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
+                  step="300"
                   className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all min-w-0 box-border appearance-none disabled:opacity-50 [color-scheme:light_dark]"
                   required
                   disabled={!isEditable}

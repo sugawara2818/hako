@@ -85,7 +85,7 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
       const y = clientY - rect.top - 24
       
       const rawMinutes = (y - dragOffset)
-      const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15))
+      const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 5) * 5))
       setDragCurrentTop(snappedMinutes)
     }
 
@@ -730,9 +730,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                    const rect = e.currentTarget.getBoundingClientRect();
                    const y = e.clientY - rect.top - 24; // Subtract pt-6
                    
-                   // Snap to 15 minutes and clamp
+                   // Snap to 5 minutes and clamp
                    const rawMinutes = y;
-                   const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 15) * 15));
+                   const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 5) * 5));
                    
                    const clickedTime = new Date(selectedDay);
                    clickedTime.setHours(Math.floor(snappedMinutes / 60), snappedMinutes % 60, 0, 0);
