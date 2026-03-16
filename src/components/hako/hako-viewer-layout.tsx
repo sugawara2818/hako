@@ -291,19 +291,25 @@ export function HakoViewerLayout({
               }
               return null
             })}
-            
-            <Link
-              key="members"
-              href={`/hako/${hakoId}/members`}
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname === `/hako/${hakoId}/members`
-                  ? 'theme-surface theme-text border theme-border shadow-sm'
-                  : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
-                }`}
-            >
-              <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
-              メンバー
-            </Link>
           </div>
+
+          <div className="pt-4 px-2">
+            <InstallButton variant="sidebar" />
+          </div>
+        </nav>
+
+        <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+          <Link
+            key="members"
+            href={`/hako/${hakoId}/members`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname === `/hako/${hakoId}/members`
+                ? 'theme-surface theme-text border theme-border shadow-sm'
+                : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+              }`}
+          >
+            <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
+            メンバー
+          </Link>
 
           {isOwner && (
             <div className="space-y-1">
@@ -317,12 +323,6 @@ export function HakoViewerLayout({
             </div>
           )}
 
-          <div className="pt-4 px-2">
-            <InstallButton variant="sidebar" />
-          </div>
-        </nav>
-
-        <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
           <ThemeToggle />
           <UserMenu userId={userId} email={email} hakoId={hakoId} isOwner={isOwner} displayName={displayName} avatarUrl={avatarUrl} />
         </div>
