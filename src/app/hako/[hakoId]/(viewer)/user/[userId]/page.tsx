@@ -149,7 +149,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {activeTab === 'timeline' && (
-            <div className="w-full -mx-4 md:mx-0">
+            <div className="w-full -mx-2 md:mx-0">
               {initialPosts.length > 0 ? (
                 <TimelineFeed
                   hakoId={hakoId}
