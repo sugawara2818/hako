@@ -337,7 +337,8 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
   }
 
   return (
-    <div 
+    <>
+      <div 
         id="calendar-view-container" 
         className="flex flex-col h-full theme-bg select-none overflow-hidden relative overscroll-none touch-pan-x"
         onTouchStart={handleTouchStart}
@@ -363,13 +364,6 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:w-5" />
               </button>
             </div>
-
-            <button 
-                onClick={() => onAddEvent(new Date())}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all shrink-0"
-            >
-                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
           </div>
         </div>
       </div>
@@ -925,5 +919,14 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
         </div>
       )}
     </div>
+
+    {/* Floating Action Button */}
+    <button
+      onClick={() => onAddEvent(new Date())}
+      className="fixed bottom-24 md:bottom-6 right-4 md:right-8 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transition-all hover:scale-105 active:scale-95 z-40 group"
+    >
+      <Plus className="w-6 h-6" />
+    </button>
+    </>
   )
 }
