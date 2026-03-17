@@ -25,21 +25,18 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   const [entries, setEntries] = useState(initialEntries)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
 
-  const setView = (v: 'list' | 'calendar') => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('view', v)
-    router.push(`/hako/${hakoId}/diary?${params.toString()}`)
+  const updateURL = (params: { view?: 'list' | 'calendar'; date?: string | null }) => {
+    const nextParams = new URLSearchParams(searchParams.toString())
+    if (params.view) nextParams.set('view', params.view)
+    if (params.date !== undefined) {
+      if (params.date) nextParams.set('date', params.date)
+      else nextParams.delete('date')
+    }
+    router.push(`/hako/${hakoId}/diary?${nextParams.toString()}`)
   }
 
-  const setSelectedFilterDate = (date: string | null) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (date) {
-      params.set('date', date)
-    } else {
-      params.delete('date')
-    }
-    router.push(`/hako/${hakoId}/diary?${params.toString()}`)
-  }
+  const setView = (v: 'list' | 'calendar') => updateURL({ view: v })
+  const setSelectedFilterDate = (date: string | null) => updateURL({ date })
 
   const handleDelete = async (id: string) => {
     try {
@@ -52,8 +49,7 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   }
 
   const handleDateSelect = (date: string) => {
-    setSelectedFilterDate(date)
-    setView('list')
+    updateURL({ view: 'list', date })
   }
 
   const filteredEntries = selectedFilterDate
