@@ -134,7 +134,13 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
         {isAuthor && (
           <div className="flex items-center gap-2">
             <Link 
-              href={`/hako/${hakoId}/diary/edit/${entry.id}`}
+              href={`/hako/${hakoId}/diary/edit/${entry.id}${
+                from === 'profile' && referralUserId
+                  ? `?from=profile&userId=${referralUserId}`
+                  : from === 'list' && searchParams.get('date')
+                    ? `?from=list&date=${searchParams.get('date')}`
+                    : from ? `?from=${from}` : ''
+              }`}
               className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 theme-text rounded-2xl transition-all text-xs font-bold"
             >
               <Edit2 className="w-3.5 h-3.5" /> 編集

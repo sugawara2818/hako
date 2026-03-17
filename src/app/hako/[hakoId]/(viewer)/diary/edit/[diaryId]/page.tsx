@@ -7,8 +7,9 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditDiaryPage({ params }: { params: Promise<{ hakoId: string, diaryId: string }> }) {
+export default async function EditDiaryPage({ params, searchParams }: { params: Promise<{ hakoId: string, diaryId: string }>, searchParams: Promise<{ from?: string, date?: string, userId?: string }> }) {
   const { hakoId, diaryId } = await params
+  const { from, date, userId } = await searchParams
   const supabase = await createServerSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,11 +33,24 @@ export default async function EditDiaryPage({ params }: { params: Promise<{ hako
 
   if (!hako || !member || !diary) return notFound()
 
+  const getBackLink = () => {
+    if (from === 'profile' && userId) {
+      return `/hako/${hakoId}/user/${userId}?tab=diary`
+    }
+    if (from === 'list' && date) {
+      return `/hako/${hakoId}/diary?view=list&date=${date}`
+    }
+    if (from === 'list') {
+      return `/hako/${hakoId}/diary?view=list`
+    }
+    return `/hako/${hakoId}/diary/${diaryId}`
+  }
+
   return (
     <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-              <Link href={`/hako/${hakoId}/diary/${diaryId}`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold">
-                <ChevronLeft className="w-4 h-4" /> 日記に戻る
+              <Link href={getBackLink()} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold">
+                <ChevronLeft className="w-4 h-4" /> 戻る
               </Link>
               <h1 className="text-3xl md:text-4xl font-black text-white">
                   日記を編集

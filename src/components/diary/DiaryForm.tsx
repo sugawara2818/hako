@@ -71,7 +71,27 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       } else {
         await createDiaryEntry(hakoId, title, content, diaryDate, isPublic)
       }
-      router.push(`/hako/${hakoId}/diary?view=list&date=${diaryDate}`)
+      
+      // Context-aware redirect
+      const params = new URLSearchParams(window.location.search)
+      const from = params.get('from')
+      const date = params.get('date')
+      const userId = params.get('userId')
+
+      if (from === 'profile' && userId) {
+        router.push(`/hako/${hakoId}/user/${userId}?tab=diary`)
+      } else if (from === 'list' && date) {
+        router.push(`/hako/${hakoId}/diary?view=list&date=${date}`)
+      } else if (from === 'list') {
+        router.push(`/hako/${hakoId}/diary?view=list`)
+      } else if (initialData) {
+        // Default for edit: back to detail
+        router.push(`/hako/${hakoId}/diary/${initialData.id}`)
+      } else {
+        // Default for new: to the new entry's date list
+        router.push(`/hako/${hakoId}/diary?view=list&date=${diaryDate}`)
+      }
+      
       router.refresh()
     } catch (err: any) {
       setError(err.message || '保存に失敗しました')

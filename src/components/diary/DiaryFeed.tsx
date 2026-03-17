@@ -224,7 +224,13 @@ const DiaryItem = React.memo(({ entry, isAuthor, hakoId, onDelete, isProfileView
             {isAuthor && (
               <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Link 
-                  href={`/hako/${hakoId}/diary/edit/${entry.id}`}
+                  href={`/hako/${hakoId}/diary/edit/${entry.id}${
+                    isProfileView 
+                      ? `?from=profile&userId=${entry.user_id}` 
+                      : selectedFilterDate 
+                        ? `?from=list&date=${selectedFilterDate}` 
+                        : '?from=list'
+                  }`}
                   className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:theme-text hover:bg-white/10 rounded-full transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
