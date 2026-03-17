@@ -33,21 +33,5 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
     redirect(`/hako/${hakoId}`)
   }
 
-  return (
-    <HakoViewerLayout
-      hakoId={hako.id}
-      hakoName={hako.name}
-      iconUrl={hako.icon_url || null}
-      iconColor={hako.icon_color || null}
-      email={user.email || ''}
-      isOwner={member.role === 'owner'}
-      memberCount={count || 1}
-      displayName={member.display_name}
-      avatarUrl={member.avatar_url || null}
-      features={features}
-      userId={user.id}
-    >
-      <ChatView hakoId={hakoId} currentUserId={user.id} />
-    </HakoViewerLayout>
-  )
+  return <ChatView hakoId={hakoId} currentUserId={user.id} />
 }

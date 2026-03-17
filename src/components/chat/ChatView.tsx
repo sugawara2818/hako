@@ -117,7 +117,7 @@ export function ChatView({ hakoId, currentUserId }: ChatViewProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden theme-bg">
+    <div className="flex-1 flex flex-col overflow-hidden theme-bg">
       {/* Chat Messages */}
       <div 
         ref={scrollRef}
@@ -175,7 +175,7 @@ export function ChatView({ hakoId, currentUserId }: ChatViewProps) {
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 p-4 md:p-8 border-t theme-border bg-white/5 backdrop-blur-md">
+      <div className="shrink-0 p-4 md:p-8 border-t theme-border bg-white/5 backdrop-blur-md pb-safe">
         <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-end gap-3">
           <div className="flex-1 relative">
             <textarea
