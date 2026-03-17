@@ -36,7 +36,10 @@ export default async function NewDiaryPage({
   return (
     <div className="flex-1 overflow-y-auto w-full mx-auto p-4 md:p-8 hide-scrollbar">
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-              <Link href={`/hako/${hakoId}/diary`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold">
+              <Link 
+                href={`/hako/${hakoId}/diary?view=list${defaultDate ? `&date=${defaultDate}` : ''}`} 
+                className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-6 font-bold"
+              >
                 <ChevronLeft className="w-4 h-4" /> 日記に戻る
               </Link>
               <h1 className="text-3xl md:text-4xl font-black text-white">

@@ -71,7 +71,7 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       } else {
         await createDiaryEntry(hakoId, title, content, diaryDate, isPublic)
       }
-      router.push(`/hako/${hakoId}/diary`)
+      router.push(`/hako/${hakoId}/diary?view=list&date=${diaryDate}`)
       router.refresh()
     } catch (err: any) {
       setError(err.message || '保存に失敗しました')
