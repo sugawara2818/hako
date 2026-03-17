@@ -33,5 +33,12 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
     redirect(`/hako/${hakoId}`)
   }
 
-  return <ChatView hakoId={hakoId} currentUserId={user.id} />
+  return (
+    <ChatView 
+      hakoId={hakoId} 
+      currentUserId={user.id} 
+      currentUserName={member.display_name || 'ユーザー'} 
+      currentUserAvatar={member.avatar_url || null} 
+    />
+  )
 }

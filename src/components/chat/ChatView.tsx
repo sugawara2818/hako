@@ -18,9 +18,11 @@ interface ChatMessage {
 interface ChatViewProps {
   hakoId: string
   currentUserId: string
+  currentUserName: string
+  currentUserAvatar: string | null
 }
 
-export function ChatView({ hakoId, currentUserId }: ChatViewProps) {
+export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar }: ChatViewProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [inputText, setInputText] = useState('')
@@ -49,33 +51,66 @@ export function ChatView({ hakoId, currentUserId }: ChatViewProps) {
           filter: `hako_id=eq.${hakoId}`,
         },
         async (payload: { new: { id: string; content: string; created_at: string; user_id: string } }) => {
-          // Fetch full message info (with user names) for the new message
-          const { data: member } = await supabase
-            .from('hako_members')
-            .select('display_name, avatar_url')
-            .eq('hako_id', hakoId)
-            .eq('user_id', payload.new.user_id)
-            .single()
+          // If it's my own message, it's already added optimistically (or will be shortly)
+          // We can check if it exists or just ignore if it's from currentUserId to avoid extra fetch
+          // However, for consistency, we want the "real" message from server too.
+          // Let's check if the ID is already in our list (optimistic ID won't match, but we can use a temp ID)
+          
+          setMessages((prev) => {
+            const exists = prev.some(m => m.id === payload.new.id)
+            if (exists) return prev
 
-          const newMessage: ChatMessage = {
-            id: payload.new.id,
-            content: payload.new.content,
-            created_at: payload.new.created_at,
-            user_id: payload.new.user_id,
-            userName: member?.display_name || 'ユーザー',
-            userAvatar: member?.avatar_url || null,
-          }
+            // If it's from another user, we need their info. 
+            // If it's from me, we use our local current info.
+            const isMe = payload.new.user_id === currentUserId
+            
+            if (isMe) {
+               return [...prev, {
+                  id: payload.new.id,
+                  content: payload.new.content,
+                  created_at: payload.new.created_at,
+                  user_id: payload.new.user_id,
+                  userName: currentUserName,
+                  userAvatar: currentUserAvatar,
+               }]
+            }
 
-          setMessages((prev) => [...prev, newMessage])
+            // For other users, we do the fetch
+            fetchMemberInfo(payload.new)
+            return prev
+          })
           scrollToBottom()
         }
       )
       .subscribe()
 
+    const fetchMemberInfo = async (msgPayload: any) => {
+      const { data: member } = await supabase
+        .from('hako_members')
+        .select('display_name, avatar_url')
+        .eq('hako_id', hakoId)
+        .eq('user_id', msgPayload.user_id)
+        .single()
+
+      const newMessage: ChatMessage = {
+        id: msgPayload.id,
+        content: msgPayload.content,
+        created_at: msgPayload.created_at,
+        user_id: msgPayload.user_id,
+        userName: member?.display_name || 'ユーザー',
+        userAvatar: member?.avatar_url || null,
+      }
+
+      setMessages((prev) => {
+        if (prev.some(m => m.id === newMessage.id)) return prev
+        return [...prev, newMessage]
+      })
+    }
+
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [hakoId, supabase])
+  }, [hakoId, currentUserId, currentUserName, currentUserAvatar])
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -93,14 +128,37 @@ export function ChatView({ hakoId, currentUserId }: ChatViewProps) {
     setInputText('')
     setIsSending(true)
 
+    // Optimistic Update
+    const tempId = `temp-${Date.now()}`
+    const optimisticMessage: ChatMessage = {
+      id: tempId,
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      user_id: currentUserId,
+      userName: currentUserName,
+      userAvatar: currentUserAvatar
+    }
+    
+    setMessages(prev => [...prev, optimisticMessage])
+    scrollToBottom()
+
     try {
       const result = await sendChatMessage(hakoId, messageContent)
-      if (!result.success) {
+      if (result.success) {
+        // Replace temp message with real one to avoid flicker or duplication
+        setMessages(prev => prev.map(m => m.id === tempId ? {
+          ...m,
+          id: result.data.id,
+          created_at: result.data.created_at
+        } : m))
+      } else {
         alert(result.error)
+        setMessages(prev => prev.filter(m => m.id !== tempId))
         setInputText(messageContent)
       }
     } catch (err) {
       console.error('Failed to send message:', err)
+      setMessages(prev => prev.filter(m => m.id !== tempId))
       setInputText(messageContent)
     } finally {
       setIsSending(false)
