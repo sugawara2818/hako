@@ -84,7 +84,6 @@ function ConfirmDialog({
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const router = useRouter()
   const [confirmState, setConfirmState] = useState<{
     id: string
@@ -104,13 +103,8 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
     }
   }
 
-  const filteredEntries = useMemo(() => {
-    if (!selectedDate) return entries
-    return entries.filter(e => e.diary_date === selectedDate)
-  }, [entries, selectedDate])
-
   const sortedEntries = useMemo(() => {
-    return [...filteredEntries].sort((a: DiaryEntry, b: DiaryEntry) => {
+    return [...entries].sort((a: DiaryEntry, b: DiaryEntry) => {
       if (sortMode === 'date_desc') {
         const diff = new Date(b.diary_date).getTime() - new Date(a.diary_date).getTime()
         return diff !== 0 ? diff : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -127,7 +121,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
       }
       return 0
     })
-  }, [filteredEntries, sortMode])
+  }, [entries, sortMode])
 
   if (entries.length === 0) {
     return (
@@ -162,14 +156,6 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
                 <Calendar className="w-5 h-5" />
               </button>
             </div>
-            {selectedDate && (
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="px-3 py-2 text-[10px] font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all"
-              >
-                解除
-              </button>
-            )}
           </div>
 
           <div className="relative group/sort">
@@ -203,8 +189,10 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
             hakoId={hakoId} 
             userId={currentUserId} 
             onDateClick={(date) => {
-               setSelectedDate(date)
-               setViewMode('list')
+               const entry = entries.find(e => e.diary_date === date);
+               if (entry) {
+                 router.push(`/hako/${hakoId}/diary/${entry.id}?from=profile&userId=${entry.user_id}`);
+               }
             }}
           />
         </div>

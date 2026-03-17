@@ -81,14 +81,6 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
         </div>
 
         <div className="flex items-center gap-2">
-          {selectedFilterDate && (
-            <button
-              onClick={() => setSelectedFilterDate(null)}
-              className="px-3 py-2 text-[10px] font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all hidden sm:block"
-            >
-              解除
-            </button>
-          )}
 
           {view === 'list' && (
             <div className="relative group/sort">
@@ -118,8 +110,16 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
             onDelete={handleDelete}
           />
         ) : (
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto relative group">
             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} selectedDate={selectedFilterDate} />
+            {selectedFilterDate && (
+              <button
+                onClick={() => setSelectedFilterDate(null)}
+                className="absolute -top-12 left-1/2 -translate-x-1/2 px-6 py-2.5 text-sm font-black text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-2xl hover:bg-orange-400/20 transition-all shadow-xl shadow-orange-900/20 animate-in fade-in slide-in-from-top-2"
+              >
+                選択解除: {selectedFilterDate}
+              </button>
+            )}
           </div>
         )}
       </div>

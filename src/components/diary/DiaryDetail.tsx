@@ -114,10 +114,10 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
       )}
       <div className="flex items-center justify-between mb-10">
         <Link 
-          href={from === 'profile' && referralUserId ? `/hako/${hakoId}/user/${referralUserId}?tab=diary` : `/hako/${hakoId}/diary`} 
+          href={`/hako/${hakoId}/diary`} 
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:theme-text transition-colors font-bold"
         >
-          <ChevronLeft className="w-4 h-4" /> {from === 'profile' ? 'プロフィールへ戻る' : '日記一覧'}
+          <ChevronLeft className="w-4 h-4" /> 日記一覧へ戻る
         </Link>
         
         {isAuthor && (
