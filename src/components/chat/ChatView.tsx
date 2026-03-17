@@ -244,7 +244,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   return (
     <div className="flex-1 flex overflow-hidden theme-bg">
       {/* Sidebar - Desktop */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <ChannelSidebar 
           channels={channels}
           activeChannelId={activeChannelId || ''}
@@ -259,20 +259,20 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header (Channel Info) */}
-        <div className="h-16 border-b theme-border flex items-center px-4 md:px-8 bg-white/5 backdrop-blur-md justify-between shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full relative">
+        {/* Unified Header (Visible everywhere) */}
+        <div className="h-14 border-b theme-border flex items-center px-4 md:px-6 bg-white/5 backdrop-blur-md justify-between shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
             <button 
               onClick={() => setShowSidebar(true)}
-              className="md:hidden p-2 -ml-2 theme-muted"
+              className="lg:hidden p-2 -ml-2 theme-muted hover:theme-text transition-colors"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 min-w-0 text-brand-primary">
-              <Hash className="w-5 h-5 shrink-0" />
-              <h1 className="font-black text-lg truncate theme-text">
-                {activeChannel?.name || '読み込み中...'}
+              <Hash className="w-4 h-4 shrink-0 opacity-50" />
+              <h1 className="font-bold text-sm md:text-base truncate theme-text">
+                {activeChannel?.name || 'チャット'}
               </h1>
             </div>
           </div>
@@ -375,12 +375,12 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
       {/* Mobile Sidebar Overlay */}
       {showSidebar && (
-        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] lg:hidden flex animate-in fade-in duration-200">
           <div 
             className="flex-1 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowSidebar(false)}
           />
-          <div className="w-64 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300">
+          <div className="w-72 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300 shadow-2xl">
             <ChannelSidebar 
               channels={channels}
               activeChannelId={activeChannelId || ''}
