@@ -35,7 +35,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [channels, setChannels] = useState<ChatChannel[]>([])
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isChannelsLoading, setIsChannelsLoading] = useState(true)
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
@@ -44,11 +45,15 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   // 1. Fetch Channels
   useEffect(() => {
     const fetchChannels = async () => {
+      setIsChannelsLoading(true)
       const data = await getChatChannels(hakoId)
       setChannels(data)
-      if (data.length > 0 && !activeChannelId) {
-        setActiveChannelId(data[0].id)
+      if (data.length > 0) {
+        if (!activeChannelId) {
+          setActiveChannelId(data[0].id)
+        }
       }
+      setIsChannelsLoading(false)
     }
     fetchChannels()
   }, [hakoId])
@@ -58,10 +63,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     if (!activeChannelId) return
 
     const fetchInitialMessages = async () => {
-      setIsLoading(true)
+      setIsMessagesLoading(true)
       const msgs = await getChatMessages(hakoId, activeChannelId)
       setMessages(msgs)
-      setIsLoading(false)
+      setIsMessagesLoading(false)
       scrollToBottom()
     }
 
@@ -227,6 +232,15 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
   const activeChannel = channels.find(c => c.id === activeChannelId)
 
+  if (isChannelsLoading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-brand-primary/50" />
+        <p className="text-xs font-black theme-muted uppercase tracking-widest">チャンネルを読み込み中...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 flex overflow-hidden theme-bg">
       {/* Sidebar - Desktop */}
@@ -269,7 +283,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth hide-scrollbar transition-all"
         >
-          {isLoading ? (
+          {isMessagesLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-4">
               <Loader2 className="w-10 h-10 animate-spin text-brand-primary/50" />
               <p className="text-xs font-black theme-muted uppercase tracking-widest">メッセージを読み込み中...</p>
