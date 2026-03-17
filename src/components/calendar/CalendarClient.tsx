@@ -242,6 +242,7 @@ export function CalendarClient({ hakoId, currentUserId, initialEvents }: Calenda
     <>
       <CalendarView 
         hakoId={hakoId}
+        currentUserId={currentUserId}
         initialEvents={events}
         onAddEvent={handleAddEvent}
         onEditEvent={handleShowDetail}

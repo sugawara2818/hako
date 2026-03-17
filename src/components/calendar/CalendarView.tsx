@@ -30,13 +30,14 @@ import { CalendarEvent } from '@/core/calendar/actions'
 
 interface CalendarViewProps {
   hakoId: string
+  currentUserId: string
   initialEvents: CalendarEvent[]
   onAddEvent: (date: Date) => void
   onEditEvent: (event: CalendarEvent) => void
   onMoveEvent?: (event: CalendarEvent, newStart: Date, newEnd: Date) => void
 }
 
-export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, onMoveEvent }: CalendarViewProps) {
+export function CalendarView({ hakoId, currentUserId, initialEvents, onAddEvent, onEditEvent, onMoveEvent }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const [isDayViewOpen, setIsDayViewOpen] = useState(false)
@@ -825,6 +826,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                             }}
                             onMouseDown={(e) => {
                               e.stopPropagation()
+                              // Only allow moving own events
+                              if (pos.event.user_id !== currentUserId) return;
+                              
                               const rect = e.currentTarget.getBoundingClientRect()
                               const offset = e.clientY - rect.top
                               setDraggingEvent(pos.event)
@@ -832,7 +836,9 @@ export function CalendarView({ hakoId, initialEvents, onAddEvent, onEditEvent, o
                               setDragCurrentTop(pos.top)
                             }}
                             onTouchStart={(e) => {
-                              // e.stopPropagation() // Keep propagation to allow clicks if needed, but here we want drag
+                              // Only allow moving own events
+                              if (pos.event.user_id !== currentUserId) return;
+                              
                               const rect = e.currentTarget.getBoundingClientRect()
                               const offset = e.touches[0].clientY - rect.top
                               setDraggingEvent(pos.event)
