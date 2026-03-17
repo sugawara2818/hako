@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, User, ArrowUpDown } from 'lucide-react'
+import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -105,7 +105,9 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
   }
 
   const sortedEntries = useMemo(() => {
-    return [...entries].sort((a, b) => {
+    // If entries are already sorted by parent, we could skip this,
+    // but for profile view and simplicity, we'll re-apply sorting here.
+    return [...entries].sort((a: DiaryEntry, b: DiaryEntry) => {
       if (sortMode === 'date_desc') {
         const diff = new Date(b.diary_date).getTime() - new Date(a.diary_date).getTime()
         return diff !== 0 ? diff : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -138,8 +140,8 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto relative w-full">
-      <div className="flex items-center justify-between mb-2 md:mb-4 animate-fade-in px-4 sm:px-0">
-        {isProfileView ? (
+      {isProfileView && (
+        <div className="flex items-center justify-between mb-2 md:mb-4 animate-fade-in px-4 sm:px-0 gap-3">
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
             <button
               onClick={() => setViewMode('list')}
@@ -156,24 +158,22 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
               <Calendar className="w-5 h-5" />
             </button>
           </div>
-        ) : (
-          <div /> /* Spacer to keep sort dropdown on the right */
-        )}
 
-        <div className="relative group/sort">
-          <select 
-            value={sortMode}
-            onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
-            className="appearance-none bg-black/40 border border-white/5 theme-text text-[11px] sm:text-sm font-bold rounded-xl pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 outline-none focus:border-blue-500/30 hover:bg-white/5 transition-all w-auto"
-          >
-            <option value="date_desc">新しい順 (日付)</option>
-            <option value="date_asc">古い順 (日付)</option>
-            <option value="created_desc">新しい順 (投稿日)</option>
-            <option value="created_asc">古い順 (投稿日)</option>
-          </select>
-          <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative group/sort">
+            <select 
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
+              className="appearance-none bg-black/40 border border-white/5 theme-text text-[11px] sm:text-sm font-bold rounded-xl pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 outline-none focus:border-blue-500/30 hover:bg-white/5 transition-all w-auto"
+            >
+              <option value="date_desc">新しい順 (日付)</option>
+              <option value="date_asc">古い順 (日付)</option>
+              <option value="created_desc">新しい順 (投稿日)</option>
+              <option value="created_asc">古い順 (投稿日)</option>
+            </select>
+            <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
-      </div>
+      )}
 
       {confirmState && (
         <ConfirmDialog
@@ -203,7 +203,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
         </div>
       ) : (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          {sortedEntries.map((entry) => (
+          {sortedEntries.map((entry: DiaryEntry) => (
             <DiaryItem 
               key={entry.id} 
               entry={entry} 
@@ -223,7 +223,6 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
   
-  // Robust display name resolution: Hako-specific name > Profile global name > Default
   const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
 
   return (
