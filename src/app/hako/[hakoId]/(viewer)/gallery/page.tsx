@@ -383,14 +383,7 @@ export default function GalleryPage() {
                 <p className="text-sm">お気に入りの写真をコレクションにまとめてみましょう。</p>
               </div>
             ) : (
-              <div 
-                className={`grid gap-3 ${!columns ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' : ''}`}
-                style={{ 
-                  gridTemplateColumns: columns 
-                    ? `repeat(${columns}, minmax(0, 1fr))` 
-                    : undefined 
-                }}
-              >
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {albums.map((album) => (
                   <div 
                     key={album.id} 
