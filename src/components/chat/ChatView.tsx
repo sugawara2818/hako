@@ -376,10 +376,6 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       {/* Mobile Sidebar Overlay */}
       {showSidebar && (
         <div className="fixed inset-0 z-[200] lg:hidden flex animate-in fade-in duration-200">
-          <div 
-            className="flex-1 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowSidebar(false)}
-          />
           <div className="w-72 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300 shadow-2xl">
             <ChannelSidebar 
               channels={channels}
@@ -393,6 +389,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               isOwner={isOwner}
             />
           </div>
+          <div 
+            className="flex-1 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowSidebar(false)}
+          />
         </div>
       )}
     </div>
