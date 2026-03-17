@@ -215,10 +215,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                       {msg.userName}
                     </span>
                   )}
-                  <div className={`px-4 py-3 rounded-2xl text-sm font-medium break-words shadow-sm line-clamp-none ${
+                  <div className={`px-4 py-2.5 rounded-2xl text-[15px] font-medium break-words shadow-sm line-clamp-none leading-relaxed ${
                     isMe 
-                      ? 'bg-brand-primary text-gray-800 rounded-tr-none' 
-                      : 'theme-surface border theme-border rounded-tl-none'
+                      ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
+                      : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
                   }`}>
                     {msg.content}
                   </div>
