@@ -68,17 +68,30 @@ export function GalleryGrid({
     try {
       const response = await fetch(url)
       const blob = await response.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = `hako-memory-${id}.jpg`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(blobUrl)
+      
+      // Check for Web Share API support (typically mobile browsers)
+      const file = new File([blob], `hako-memory-${id}.jpg`, { type: 'image/jpeg' })
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Hako Memory',
+        })
+      } else {
+        // Fallback to standard download
+        const blobUrl = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = `hako-memory-${id}.jpg`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+      }
     } catch (error) {
+      // Don't show error if user cancelled share sheet
+      if (error instanceof Error && error.name === 'AbortError') return
+      
       console.error('Download failed:', error)
-      // Fallback
       window.open(url, '_blank')
     } finally {
       setIsDownloading(false)
@@ -299,7 +312,8 @@ export function GalleryGrid({
                       ) : (
                         <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
                       )}
-                      <span>{isDownloading ? 'DOWNLOADING...' : 'DOWNLOAD PHOTO'}</span>
+                      <span className="hidden md:inline">{isDownloading ? '処理中...' : '写真を保存'}</span>
+                      <span className="md:hidden">{isDownloading ? '処理中...' : 'フォトに保存'}</span>
                     </button>
                   </div>
 
