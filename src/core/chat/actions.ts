@@ -102,22 +102,61 @@ export async function deleteChatMessage(messageId: string, hakoId: string) {
 
 export async function getChatChannels(hakoId: string) {
   const supabase = await createServerSupabaseClient()
-  
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return []
+
+  // Get all public channels + private channels the user is a member of
   const { data, error } = await supabase
     .from('chat_channels')
-    .select('*')
+    .select(`
+      *,
+      chat_channel_members!inner(user_id)
+    `)
     .eq('hako_id', hakoId)
+    .or(`type.eq.public,chat_channel_members.user_id.eq.${user.id}`)
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('getChatChannels Error:', error)
-    return []
+    // Fallback: If the inner join fails (no members yet for private channels), just get public ones
+    const { data: publicData, error: publicError } = await supabase
+      .from('chat_channels')
+      .select('*')
+      .eq('hako_id', hakoId)
+      .eq('type', 'public')
+      .order('created_at', { ascending: true })
+
+    if (publicError) {
+      console.error('getChatChannels Error:', publicError)
+      return []
+    }
+    
+    // We also need private ones where the user is a member
+    const { data: privateData } = await supabase
+      .from('chat_channels')
+      .select('*, chat_channel_members!inner(user_id)')
+      .eq('hako_id', hakoId)
+      .eq('type', 'private')
+      .eq('chat_channel_members.user_id', user.id)
+
+    const combined = [...(publicData || []), ...(privateData || [])].sort((a, b) => 
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+    // Remove the temporary join field from output
+    return combined.map(({ chat_channel_members, ...rest }) => rest)
   }
 
-  return data || []
+  return (data || []).map(({ chat_channel_members, ...rest }) => rest)
 }
 
-export async function createChatChannel(hakoId: string, name: string, description: string = '') {
+export async function createChatChannel(
+  hakoId: string, 
+  name: string, 
+  description: string = '', 
+  type: 'public' | 'private' = 'public',
+  memberIds: string[] = []
+) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -125,12 +164,13 @@ export async function createChatChannel(hakoId: string, name: string, descriptio
     return { success: false, error: '認証が必要です' }
   }
 
-  const { data, error } = await supabase
+  const { data: channel, error } = await supabase
     .from('chat_channels')
     .insert({
       hako_id: hakoId,
       name,
       description,
+      type,
       created_by: user.id,
     })
     .select()
@@ -141,8 +181,25 @@ export async function createChatChannel(hakoId: string, name: string, descriptio
     return { success: false, error: error.message }
   }
 
+  // If private, or if we just want to track creator as member
+  const membersToInsert = [...new Set([user.id, ...memberIds])].map(userId => ({
+    channel_id: channel.id,
+    user_id: userId
+  }))
+
+  if (membersToInsert.length > 0) {
+    const { error: memberError } = await supabase
+      .from('chat_channel_members')
+      .insert(membersToInsert)
+
+    if (memberError) {
+      console.error('Add participants error:', memberError)
+      // We don't fail the whole thing, but it's not ideal
+    }
+  }
+
   revalidatePath(`/hako/${hakoId}/chat`)
-  return { success: true, data }
+  return { success: true, data: channel }
 }
 
 export async function deleteChatChannel(hakoId: string, channelId: string) {

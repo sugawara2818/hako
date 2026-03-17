@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel } from '@/core/chat/actions'
-import { Loader2, Send, MessageCircle, Menu, Hash } from 'lucide-react'
+import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
 
@@ -21,6 +21,13 @@ interface ChatChannel {
   id: string
   name: string
   description: string | null
+  type?: 'public' | 'private'
+}
+
+interface Member {
+  user_id: string
+  display_name: string | null
+  avatar_url: string | null
 }
 
 interface ChatViewProps {
@@ -33,6 +40,7 @@ interface ChatViewProps {
 
 export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner }: ChatViewProps) {
   const [channels, setChannels] = useState<ChatChannel[]>([])
+  const [members, setMembers] = useState<Member[]>([])
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isChannelsLoading, setIsChannelsLoading] = useState(true)
@@ -42,20 +50,26 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [showSidebar, setShowSidebar] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 1. Fetch Channels
+  // 1. Fetch Channels & Members
   useEffect(() => {
-    const fetchChannels = async () => {
+    const init = async () => {
       setIsChannelsLoading(true)
-      const data = await getChatChannels(hakoId)
-      setChannels(data)
-      if (data.length > 0) {
+      const [channelsData, membersData] = await Promise.all([
+        getChatChannels(hakoId),
+        supabase.from('hako_members').select('user_id, display_name, avatar_url').eq('hako_id', hakoId)
+      ])
+      
+      setChannels(channelsData)
+      setMembers(membersData.data || [])
+      
+      if (channelsData.length > 0) {
         if (!activeChannelId) {
-          setActiveChannelId(data[0].id)
+          setActiveChannelId(channelsData[0].id)
         }
       }
       setIsChannelsLoading(false)
     }
-    fetchChannels()
+    init()
   }, [hakoId])
 
   // 2. Fetch Messages and Setup Subscription
@@ -123,12 +137,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       .subscribe()
 
     const fetchMemberInfo = async (msgPayload: any) => {
-      const { data: member } = await supabase
-        .from('hako_members')
-        .select('display_name, avatar_url')
-        .eq('hako_id', hakoId)
-        .eq('user_id', msgPayload.user_id)
-        .single()
+      const member = members.find(m => m.user_id === msgPayload.user_id)
 
       const newMessage: ChatMessage = {
         id: msgPayload.id,
@@ -149,7 +158,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [hakoId, activeChannelId, currentUserId, currentUserName, currentUserAvatar])
+  }, [hakoId, activeChannelId, currentUserId, currentUserName, currentUserAvatar, members])
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -204,8 +213,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
-  const handleCreateChannel = async (name: string, description: string) => {
-    const res = await createChatChannel(hakoId, name, description)
+  const handleCreateChannel = async (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => {
+    const res = await createChatChannel(hakoId, name, description, type, memberIds)
     if (res.success) {
       setChannels(prev => [...prev, res.data])
       setActiveChannelId(res.data.id)
@@ -247,6 +256,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       <div className="hidden lg:block">
         <ChannelSidebar 
           channels={channels}
+          members={members}
           activeChannelId={activeChannelId || ''}
           onChannelSelect={(id) => {
             setActiveChannelId(id)
@@ -270,7 +280,11 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 min-w-0 text-brand-primary">
-              <Hash className="w-4 h-4 shrink-0 opacity-50" />
+              {activeChannel?.type === 'private' ? (
+                <Users className="w-4 h-4 shrink-0 opacity-50" />
+              ) : (
+                <Hash className="w-4 h-4 shrink-0 opacity-50" />
+              )}
               <h1 className="font-bold text-sm md:text-base truncate theme-text">
                 {activeChannel?.name || 'チャット'}
               </h1>
@@ -379,6 +393,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           <div className="w-72 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300 shadow-2xl">
             <ChannelSidebar 
               channels={channels}
+              members={members}
               activeChannelId={activeChannelId || ''}
               onChannelSelect={(id) => {
                 setActiveChannelId(id)
