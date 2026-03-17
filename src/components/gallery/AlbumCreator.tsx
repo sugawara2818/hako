@@ -28,10 +28,10 @@ export function AlbumCreator({ hakoId, onClose, onSuccess }: AlbumCreatorProps) 
       if (result.success) {
         onSuccess()
       } else {
-        setError(result.error || 'Failed to create album')
+        setError(result.error || 'アルバムの作成に失敗しました')
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError('予期せぬエラーが発生しました')
     } finally {
       setIsSubmitting(false)
     }

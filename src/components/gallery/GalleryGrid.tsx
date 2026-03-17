@@ -213,7 +213,7 @@ export function GalleryGrid({
                 </div>
                 <div className="flex flex-col -space-y-0.5">
                   <span className="text-[11px] font-black theme-text truncate max-w-[120px]">{selectedImage.userName}</span>
-                  <span className="text-[9px] font-bold theme-muted uppercase tracking-tighter">Contributor</span>
+                  <span className="text-[9px] font-bold theme-muted uppercase tracking-tighter">投稿者</span>
                 </div>
             </div>
           </div>
@@ -245,7 +245,7 @@ export function GalleryGrid({
                    <div className="flex items-center gap-3 px-4 py-2 bg-[#82d9bc]/5 rounded-full w-fit border border-[#82d9bc]/10">
                     <CalendarIcon className="w-3.5 h-3.5 text-[#82d9bc]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#82d9bc]">
-                      Captured on {new Date(selectedImage.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      撮影日: {new Date(selectedImage.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                   </div>
 
@@ -257,7 +257,7 @@ export function GalleryGrid({
                     </div>
                   ) : (
                     <div className="p-8 rounded-[2rem] theme-surface/20 border border-dashed theme-border flex items-center justify-center">
-                      <p className="text-sm theme-muted italic font-bold opacity-30">NO CAPTION PROVIDED</p>
+                      <p className="text-sm theme-muted italic font-bold opacity-30">キャプションなし</p>
                     </div>
                   )}
                 </div>
@@ -269,14 +269,14 @@ export function GalleryGrid({
                       <FolderPlus className="w-5 h-5 text-[#82d9bc]" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black theme-text uppercase tracking-widest">Collections</h4>
-                      <p className="text-[10px] theme-muted font-bold">Add this memory to an album</p>
+                      <h4 className="text-xs font-black theme-text uppercase tracking-widest">コレクション</h4>
+                      <p className="text-[10px] theme-muted font-bold">この思い出をアルバムに追加</p>
                     </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2.5">
                     {albums.length === 0 ? (
-                      <p className="text-xs theme-muted p-4 bg-white/5 rounded-2xl w-full text-center font-bold">No albums created in this Hako yet.</p>
+                      <p className="text-xs theme-muted p-4 bg-white/5 rounded-2xl w-full text-center font-bold">この箱にアルバムはまだありません。</p>
                     ) : (
                       albums.map((album) => {
                         const isActive = selectedImage.albumId === album.id
@@ -323,7 +323,7 @@ export function GalleryGrid({
                       className="h-16 theme-surface border border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all opacity-80 hover:opacity-100"
                     >
                       <Trash2 className="w-5 h-5" />
-                      REMOVE FROM GALLERY
+                      ギャラリーから削除
                     </button>
                   )}
                 </div>

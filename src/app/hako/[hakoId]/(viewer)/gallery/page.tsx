@@ -261,7 +261,7 @@ export default function GalleryPage() {
                         )}
                       </div>
                       <p className="text-[10px] theme-muted uppercase tracking-[0.1em] font-black opacity-80">
-                        作成者 {albums.find(a => a.id === selectedAlbumId)?.userName || 'Unknown'}
+                        作成者 {albums.find(a => a.id === selectedAlbumId)?.userName || '不明'}
                       </p>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
@@ -275,7 +275,7 @@ export default function GalleryPage() {
                   </div>
                 ) : (
                   <p className="text-[10px] theme-muted mt-1 uppercase tracking-[0.2em] font-black opacity-60">
-                    {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} ALBUMS` : `${images.length} MOMENTS`}
+                    {isLoading ? '集計中...' : filter === 'albums' ? `${albums.length} 個のアルバム` : `${images.length} 件の思い出`}
                   </p>
                 )}
               </div>
@@ -360,7 +360,7 @@ export default function GalleryPage() {
                       {num}
                     </button>
                   ))}
-                  <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40 shrink-0">Columns</span>
+                  <span className="text-[8px] font-black theme-muted uppercase tracking-widest px-2 opacity-40 shrink-0">表示列数</span>
                 </div>
               )}
             </div>
@@ -373,7 +373,7 @@ export default function GalleryPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
              <Loader2 className="w-10 h-10 animate-spin text-[#82d9bc]/50" />
-             <p className="text-xs font-black theme-muted uppercase tracking-widest">Memories are loading...</p>
+             <p className="text-xs font-black theme-muted uppercase tracking-widest">読み込み中...</p>
           </div>
         ) : filter === 'albums' ? (
           <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -545,7 +545,7 @@ export default function GalleryPage() {
         <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
            <div className="theme-elevated p-8 rounded-[2rem] border theme-border shadow-2xl flex flex-col items-center gap-4">
               <Loader2 className="w-10 h-10 animate-spin text-[#82d9bc]" />
-              <p className="text-xs font-black theme-text uppercase tracking-widest">Adding to album...</p>
+              <p className="text-xs font-black theme-text uppercase tracking-widest">アルバムに追加中...</p>
            </div>
         </div>
       )}

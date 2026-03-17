@@ -74,7 +74,7 @@ export function GalleryCinemaMode({ images, onClose }: GalleryCinemaModeProps) {
                <ImageIcon className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-white font-black text-xs uppercase tracking-widest">Cinema Exhibition</h3>
+              <h3 className="text-white font-black text-xs uppercase tracking-widest">シネマ展示</h3>
               <p className="text-gray-400 text-[10px] uppercase tracking-wider">{index + 1} / {images.length}</p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export function GalleryCinemaMode({ images, onClose }: GalleryCinemaModeProps) {
           <div className="flex items-center justify-center gap-3">
             <div className="h-[1px] w-8 bg-purple-500/50" />
             <span className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em]">
-              Captured by {current.userName}
+              撮影者: {current.userName}
             </span>
             <div className="h-[1px] w-8 bg-purple-500/50" />
           </div>

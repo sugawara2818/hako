@@ -137,7 +137,7 @@ export function GalleryComposer({ hakoId, onSuccess, onClose, albumId }: Gallery
                     <Camera className="w-10 h-10" />
                   </div>
                   <p className="font-black text-lg">写真を選択</p>
-                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-40">JPG, PNG, WEBP up to 10MB</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-40">JPG, PNG, WEBP（最大10MB）</p>
                 </div>
               )}
 
@@ -145,7 +145,7 @@ export function GalleryComposer({ hakoId, onSuccess, onClose, albumId }: Gallery
                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-sm z-20">
                   <Loader2 className="w-10 h-10 animate-spin text-brand-primary mb-3" />
                   <p className="text-white font-black uppercase tracking-widest text-xs">
-                    {isUploading ? 'Uploading...' : 'Saving Moment...'}
+                    {isUploading ? 'アップロード中...' : '保存中...'}
                   </p>
                 </div>
               )}
