@@ -261,8 +261,8 @@ const DiaryItem = React.memo(({ entry, isAuthor, hakoId, onDelete, isProfileView
 
       {/* Inline Confirmation Overlay */}
       {isConfirming && (
-        <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
-           <p className="text-sm font-bold text-white mb-4">この日記を削除しますか？</p>
+        <div className="absolute inset-0 z-10 bg-white/90 dark:bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+           <p className="text-sm font-bold text-gray-900 dark:text-white mb-4">この日記を削除しますか？</p>
            <div className="flex gap-3 w-full max-w-[240px]">
               <button
                 disabled={loading}
@@ -278,7 +278,7 @@ const DiaryItem = React.memo(({ entry, isAuthor, hakoId, onDelete, isProfileView
                   e.stopPropagation()
                   setIsConfirming(false)
                 }}
-                className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all"
+                className="flex-1 py-3 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-white text-xs font-bold rounded-xl transition-all"
               >
                 キャンセル
               </button>

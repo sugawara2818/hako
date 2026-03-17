@@ -36,8 +36,8 @@ function ConfirmDialog({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
       {/* Dialog card */}
-      <div className="relative w-full max-w-[320px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <p className="text-base text-gray-200 leading-relaxed mb-6 text-center font-medium">{message}</p>
+      <div className="relative w-full max-w-[320px] theme-surface border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-base theme-text opacity-90 leading-relaxed mb-6 text-center font-medium">{message}</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={onConfirm}
@@ -51,7 +51,7 @@ function ConfirmDialog({
           </button>
           <button
             onClick={onCancel}
-            className="w-full py-4 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-bold transition-all"
+            className="w-full py-4 rounded-2xl border border-white/10 theme-muted hover:theme-text hover:bg-white/5 text-sm font-bold transition-all"
           >
             キャンセル
           </button>
