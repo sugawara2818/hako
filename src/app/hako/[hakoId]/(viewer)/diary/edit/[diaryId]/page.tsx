@@ -7,9 +7,9 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditDiaryPage({ params, searchParams }: { params: Promise<{ hakoId: string, diaryId: string }>, searchParams: Promise<{ from?: string, date?: string, userId?: string }> }) {
+export default async function EditDiaryPage({ params, searchParams }: { params: Promise<{ hakoId: string, diaryId: string }>, searchParams: Promise<{ from?: string, date?: string, userId?: string, source?: string }> }) {
   const { hakoId, diaryId } = await params
-  const { from, date, userId } = await searchParams
+  const { from, date, userId, source } = await searchParams
   const supabase = await createServerSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -34,6 +34,16 @@ export default async function EditDiaryPage({ params, searchParams }: { params: 
   if (!hako || !member || !diary) return notFound()
 
   const getBackLink = () => {
+    // If we came from the detail page, return to it but keep the context
+    if (source === 'detail') {
+      const sp = new URLSearchParams()
+      if (from) sp.set('from', from)
+      if (date) sp.set('date', date)
+      if (userId) sp.set('userId', userId)
+      const query = sp.toString()
+      return `/hako/${hakoId}/diary/${diaryId}${query ? `?${query}` : ''}`
+    }
+
     if (from === 'profile' && userId) {
       return `/hako/${hakoId}/user/${userId}?tab=diary`
     }

@@ -77,8 +77,16 @@ export function DiaryForm({ hakoId, initialData }: DiaryFormProps) {
       const from = params.get('from')
       const date = params.get('date')
       const userId = params.get('userId')
+      const source = params.get('source')
 
-      if (from === 'profile' && userId) {
+      if (source === 'detail' && initialData) {
+        const sp = new URLSearchParams()
+        if (from) sp.set('from', from)
+        if (date) sp.set('date', date)
+        if (userId) sp.set('userId', userId)
+        const query = sp.toString()
+        router.push(`/hako/${hakoId}/diary/${initialData.id}${query ? `?${query}` : ''}`)
+      } else if (from === 'profile' && userId) {
         router.push(`/hako/${hakoId}/user/${userId}?tab=diary`)
       } else if (from === 'list' && date) {
         router.push(`/hako/${hakoId}/diary?view=list&date=${date}`)

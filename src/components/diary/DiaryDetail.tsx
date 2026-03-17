@@ -136,10 +136,10 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
             <Link 
               href={`/hako/${hakoId}/diary/edit/${entry.id}${
                 from === 'profile' && referralUserId
-                  ? `?from=profile&userId=${referralUserId}`
+                  ? `?from=profile&userId=${referralUserId}&source=detail`
                   : from === 'list' && searchParams.get('date')
-                    ? `?from=list&date=${searchParams.get('date')}`
-                    : from ? `?from=${from}` : ''
+                    ? `?from=list&date=${searchParams.get('date')}&source=detail`
+                    : from ? `?from=${from}&source=detail` : '?source=detail'
               }`}
               className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 theme-text rounded-2xl transition-all text-xs font-bold"
             >
