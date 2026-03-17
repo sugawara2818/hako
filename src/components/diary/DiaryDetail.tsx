@@ -103,6 +103,17 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
     }
   }
 
+  const getBackLink = () => {
+    if (from === 'profile' && referralUserId) {
+      return `/hako/${hakoId}/user/${referralUserId}?tab=diary`
+    }
+    const diaryDate = searchParams.get('date')
+    if (from === 'list' && diaryDate) {
+      return `/hako/${hakoId}/diary?view=list&date=${diaryDate}`
+    }
+    return `/hako/${hakoId}/diary`
+  }
+
   return (
     <div className="max-w-2xl mx-auto animate-fade-in relative">
       {showConfirm && (
@@ -114,10 +125,10 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
       )}
       <div className="flex items-center justify-between mb-10">
         <Link 
-          href={`/hako/${hakoId}/diary`} 
+          href={getBackLink()} 
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:theme-text transition-colors font-bold"
         >
-          <ChevronLeft className="w-4 h-4" /> 日記一覧へ戻る
+          <ChevronLeft className="w-4 h-4" /> {from === 'profile' ? 'プロフィールへ戻る' : '日記一覧へ戻る'}
         </Link>
         
         {isAuthor && (

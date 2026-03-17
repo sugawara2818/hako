@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { DiaryFeed } from './DiaryFeed'
 import { DiaryCalendar } from './DiaryCalendar'
 import { deleteDiaryEntry } from '@/core/diary/actions'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface DiaryPortalProps {
   hakoId: string
@@ -15,11 +15,31 @@ interface DiaryPortalProps {
 }
 
 export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPortalProps) {
-  const [view, setView] = useState<'list' | 'calendar'>('list')
-  const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
-  const [entries, setEntries] = useState(initialEntries)
-  const [selectedFilterDate, setSelectedFilterDate] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // URL-driven states
+  const view = (searchParams.get('view') as 'list' | 'calendar') || 'list'
+  const selectedFilterDate = searchParams.get('date') || null
+  
+  const [entries, setEntries] = useState(initialEntries)
+  const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
+
+  const setView = (v: 'list' | 'calendar') => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('view', v)
+    router.push(`/hako/${hakoId}/diary?${params.toString()}`)
+  }
+
+  const setSelectedFilterDate = (date: string | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (date) {
+      params.set('date', date)
+    } else {
+      params.delete('date')
+    }
+    router.push(`/hako/${hakoId}/diary?${params.toString()}`)
+  }
 
   const handleDelete = async (id: string) => {
     try {
@@ -81,6 +101,14 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
         </div>
 
         <div className="flex items-center gap-2">
+          {selectedFilterDate && (
+            <button
+              onClick={() => setSelectedFilterDate(null)}
+              className="px-3 py-2 text-[10px] font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all flex items-center gap-1 animate-in fade-in zoom-in-95"
+            >
+              解除: {selectedFilterDate}
+            </button>
+          )}
 
           {view === 'list' && (
             <div className="relative group/sort">
@@ -108,18 +136,11 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
             currentUserId={currentUserId}
             entries={sortedEntries}
             onDelete={handleDelete}
+            selectedFilterDate={selectedFilterDate}
           />
         ) : (
           <div className="max-w-md mx-auto relative group">
             <DiaryCalendar hakoId={hakoId} onDateSelect={handleDateSelect} selectedDate={selectedFilterDate} />
-            {selectedFilterDate && (
-              <button
-                onClick={() => setSelectedFilterDate(null)}
-                className="absolute -top-12 left-1/2 -translate-x-1/2 px-6 py-2.5 text-sm font-black text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-2xl hover:bg-orange-400/20 transition-all shadow-xl shadow-orange-900/20 animate-in fade-in slide-in-from-top-2"
-              >
-                選択解除: {selectedFilterDate}
-              </button>
-            )}
           </div>
         )}
       </div>

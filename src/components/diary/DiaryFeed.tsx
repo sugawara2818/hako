@@ -33,6 +33,7 @@ interface DiaryFeedProps {
   entries: DiaryEntry[]
   onDelete?: (id: string) => void | Promise<void>
   isProfileView?: boolean
+  selectedFilterDate?: string | null
 }
 
 // ──────────────────────────────────────────────────
@@ -81,7 +82,7 @@ function ConfirmDialog({
   )
 }
 
-export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
+export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView, selectedFilterDate }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const router = useRouter()
@@ -206,6 +207,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
               hakoId={hakoId}
               onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
               isProfileView={isProfileView}
+              selectedFilterDate={selectedFilterDate}
             />
           ))}
         </div>
@@ -214,7 +216,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
   )
 }
 
-function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void>, isProfileView?: boolean }) {
+function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView, selectedFilterDate }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void>, isProfileView?: boolean, selectedFilterDate?: string | null }) {
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
   
@@ -222,7 +224,16 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView }: { entry
 
   return (
     <div className="group relative theme-surface border theme-border rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">
-      <Link href={`/hako/${hakoId}/diary/${entry.id}${isProfileView ? `?from=profile&userId=${entry.user_id}` : ''}`} className="block p-6">
+      <Link 
+        href={`/hako/${hakoId}/diary/${entry.id}${
+          isProfileView 
+            ? `?from=profile&userId=${entry.user_id}` 
+            : selectedFilterDate 
+              ? `?from=list&date=${selectedFilterDate}` 
+              : '?from=list'
+        }`} 
+        className="block p-6"
+      >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <Link href={`/hako/${hakoId}/user/${entry.user_id}`} className="group/avatar shrink-0">
