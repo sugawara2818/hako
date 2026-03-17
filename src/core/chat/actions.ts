@@ -3,7 +3,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function sendChatMessage(hakoId: string, content: string) {
+export async function sendChatMessage(hakoId: string, channelId: string, content: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,6 +15,7 @@ export async function sendChatMessage(hakoId: string, content: string) {
     .from('chat_messages')
     .insert({
       hako_id: hakoId,
+      channel_id: channelId,
       user_id: user.id,
       content,
     })
@@ -29,7 +30,7 @@ export async function sendChatMessage(hakoId: string, content: string) {
   return { success: true, data }
 }
 
-export async function getChatMessages(hakoId: string, limit = 50) {
+export async function getChatMessages(hakoId: string, channelId: string, limit = 50) {
   const supabase = await createServerSupabaseClient()
   
   const { data, error } = await supabase
@@ -39,9 +40,11 @@ export async function getChatMessages(hakoId: string, limit = 50) {
       content,
       created_at,
       user_id,
-      metadata
+      metadata,
+      channel_id
     `)
     .eq('hako_id', hakoId)
+    .eq('channel_id', channelId)
     .order('created_at', { ascending: false })
     .limit(limit)
 
@@ -94,5 +97,95 @@ export async function deleteChatMessage(messageId: string, hakoId: string) {
      return { success: false, error: error.message }
   }
 
+  return { success: true }
+}
+
+export async function getChatChannels(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  const { data, error } = await supabase
+    .from('chat_channels')
+    .select('*')
+    .eq('hako_id', hakoId)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('getChatChannels Error:', error)
+    return []
+  }
+
+  return data || []
+}
+
+export async function createChatChannel(hakoId: string, name: string, description: string = '') {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: '認証が必要です' }
+  }
+
+  const { data, error } = await supabase
+    .from('chat_channels')
+    .insert({
+      hako_id: hakoId,
+      name,
+      description,
+      created_by: user.id,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('createChatChannel Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
+  return { success: true, data }
+}
+
+export async function deleteChatChannel(hakoId: string, channelId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: '認証が必要です' }
+  }
+
+  // Check if owner
+  const { data: member } = await supabase
+    .from('hako_members')
+    .select('role')
+    .eq('hako_id', hakoId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (member?.role !== 'owner') {
+    return { success: false, error: 'オーナーのみ削除可能です' }
+  }
+
+  // Prevent deleting the last channel (optional but recommended)
+  const { count } = await supabase
+    .from('chat_channels')
+    .select('*', { count: 'exact', head: true })
+    .eq('hako_id', hakoId)
+
+  if (count && count <= 1) {
+    return { success: false, error: '最後のチャンネルは削除できません' }
+  }
+
+  const { error } = await supabase
+    .from('chat_channels')
+    .delete()
+    .eq('id', channelId)
+    .eq('hako_id', hakoId)
+
+  if (error) {
+    console.error('deleteChatChannel Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
   return { success: true }
 }

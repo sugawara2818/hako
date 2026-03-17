@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { getChatMessages, sendChatMessage } from '@/core/chat/actions'
-import { Loader2, Send, MessageCircle } from 'lucide-react'
+import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel } from '@/core/chat/actions'
+import { Loader2, Send, MessageCircle, Menu, Hash } from 'lucide-react'
 import Image from 'next/image'
+import { ChannelSidebar } from './ChannelSidebar'
 
 interface ChatMessage {
   id: string
@@ -13,6 +14,13 @@ interface ChatMessage {
   user_id: string
   userName: string
   userAvatar: string | null
+  channel_id: string
+}
+
+interface ChatChannel {
+  id: string
+  name: string
+  description: string | null
 }
 
 interface ChatViewProps {
@@ -20,19 +28,38 @@ interface ChatViewProps {
   currentUserId: string
   currentUserName: string
   currentUserAvatar: string | null
+  isOwner: boolean
 }
 
-export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar }: ChatViewProps) {
+export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner }: ChatViewProps) {
+  const [channels, setChannels] = useState<ChatChannel[]>([])
+  const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // 1. Fetch Channels
   useEffect(() => {
+    const fetchChannels = async () => {
+      const data = await getChatChannels(hakoId)
+      setChannels(data)
+      if (data.length > 0 && !activeChannelId) {
+        setActiveChannelId(data[0].id)
+      }
+    }
+    fetchChannels()
+  }, [hakoId])
+
+  // 2. Fetch Messages and Setup Subscription
+  useEffect(() => {
+    if (!activeChannelId) return
+
     const fetchInitialMessages = async () => {
       setIsLoading(true)
-      const msgs = await getChatMessages(hakoId)
+      const msgs = await getChatMessages(hakoId, activeChannelId)
       setMessages(msgs)
       setIsLoading(false)
       scrollToBottom()
@@ -41,27 +68,20 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     fetchInitialMessages()
 
     const channel = supabase
-      .channel(`chat:${hakoId}`)
+      .channel(`chat:${activeChannelId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
-          filter: `hako_id=eq.${hakoId}`,
+          filter: `channel_id=eq.${activeChannelId}`,
         },
-        async (payload: { new: { id: string; content: string; created_at: string; user_id: string } }) => {
-          // If it's my own message, it's already added optimistically (or will be shortly)
-          // We can check if it exists or just ignore if it's from currentUserId to avoid extra fetch
-          // However, for consistency, we want the "real" message from server too.
-          // Let's check if the ID is already in our list (optimistic ID won't match, but we can use a temp ID)
-          
+        async (payload: { new: { id: string; content: string; created_at: string; user_id: string; channel_id: string } }) => {
           setMessages((prev) => {
             const exists = prev.some(m => m.id === payload.new.id)
             if (exists) return prev
 
-            // If it's from another user, we need their info. 
-            // If it's from me, we use our local current info.
             const isMe = payload.new.user_id === currentUserId
             
             if (isMe) {
@@ -72,14 +92,27 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                   user_id: payload.new.user_id,
                   userName: currentUserName,
                   userAvatar: currentUserAvatar,
+                  channel_id: payload.new.channel_id
                }]
             }
 
-            // For other users, we do the fetch
             fetchMemberInfo(payload.new)
             return prev
           })
           scrollToBottom()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_channels',
+          filter: `hako_id=eq.${hakoId}`,
+        },
+        () => {
+           // Refresh channels on any change
+           getChatChannels(hakoId).then(setChannels)
         }
       )
       .subscribe()
@@ -99,6 +132,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
         user_id: msgPayload.user_id,
         userName: member?.display_name || 'ユーザー',
         userAvatar: member?.avatar_url || null,
+        channel_id: msgPayload.channel_id
       }
 
       setMessages((prev) => {
@@ -110,7 +144,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [hakoId, currentUserId, currentUserName, currentUserAvatar])
+  }, [hakoId, activeChannelId, currentUserId, currentUserName, currentUserAvatar])
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -122,7 +156,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputText.trim() || isSending) return
+    if (!inputText.trim() || isSending || !activeChannelId) return
 
     const messageContent = inputText.trim()
     setInputText('')
@@ -136,16 +170,16 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       created_at: new Date().toISOString(),
       user_id: currentUserId,
       userName: currentUserName,
-      userAvatar: currentUserAvatar
+      userAvatar: currentUserAvatar,
+      channel_id: activeChannelId
     }
     
     setMessages(prev => [...prev, optimisticMessage])
     scrollToBottom()
 
     try {
-      const result = await sendChatMessage(hakoId, messageContent)
+      const result = await sendChatMessage(hakoId, activeChannelId, messageContent)
       if (result.success) {
-        // Replace temp message with real one to avoid flicker or duplication
         setMessages(prev => prev.map(m => m.id === tempId ? {
           ...m,
           id: result.data.id,
@@ -165,104 +199,188 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-brand-primary/50" />
-        <p className="text-xs font-black theme-muted uppercase tracking-widest">チャットを読み込み中...</p>
-      </div>
-    )
+  const handleCreateChannel = async (name: string, description: string) => {
+    const res = await createChatChannel(hakoId, name, description)
+    if (res.success) {
+      setChannels(prev => [...prev, res.data])
+      setActiveChannelId(res.data.id)
+    } else {
+      alert(res.error)
+    }
   }
 
-  return (
-    <div className="flex-1 flex flex-col overflow-hidden theme-bg">
-      {/* Chat Messages */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth hide-scrollbar transition-all"
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-               <MessageCircle className="w-8 h-8" />
-            </div>
-            <p className="text-sm font-bold">まだメッセージはありません</p>
-            <p className="text-xs mt-1">最初のメッセージを送ってみましょう</p>
-          </div>
-        ) : (
-          messages.map((msg) => {
-            const isMe = msg.user_id === currentUserId
-            return (
-              <div 
-                key={msg.id} 
-                className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-              >
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-xl overflow-hidden bg-white/5 shrink-0 border theme-border">
-                  {msg.userAvatar ? (
-                    <Image src={msg.userAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-brand-primary/20 text-brand-primary font-black text-xs">
-                      {msg.userName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+  const handleDeleteChannel = async (channelId: string) => {
+    if (!confirm('チャンネルを削除してもよろしいですか？メッセージもすべて削除されます。')) return
+    const res = await deleteChatChannel(hakoId, channelId)
+    if (res.success) {
+      setChannels(prev => {
+        const remaining = prev.filter(c => c.id !== channelId)
+        if (activeChannelId === channelId) {
+          setActiveChannelId(remaining[0]?.id || null)
+        }
+        return remaining
+      })
+    } else {
+      alert(res.error)
+    }
+  }
 
-                {/* Content Bubble */}
-                <div className={`flex flex-col max-w-[75%] gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
-                  {!isMe && (
-                    <span className="text-[10px] font-black theme-muted uppercase tracking-widest px-1">
-                      {msg.userName}
-                    </span>
-                  )}
-                  <div className={`px-4 py-2.5 rounded-2xl text-[15px] font-medium break-words shadow-sm line-clamp-none leading-relaxed ${
-                    isMe 
-                      ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
-                      : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
-                  }`}>
-                    {msg.content}
-                  </div>
-                  <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
-                    {new Date(msg.created_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
-            )
-          })
-        )}
+  const activeChannel = channels.find(c => c.id === activeChannelId)
+
+  return (
+    <div className="flex-1 flex overflow-hidden theme-bg">
+      {/* Sidebar - Desktop */}
+      <div className="hidden md:block">
+        <ChannelSidebar 
+          channels={channels}
+          activeChannelId={activeChannelId || ''}
+          onChannelSelect={(id) => {
+            setActiveChannelId(id)
+            setShowSidebar(false)
+          }}
+          onCreateChannel={handleCreateChannel}
+          onDeleteChannel={handleDeleteChannel}
+          isOwner={isOwner}
+        />
       </div>
 
-      {/* Input Area */}
-      <div className="shrink-0 p-4 md:p-8 border-t theme-border bg-white/5 backdrop-blur-md pb-safe">
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="メッセージを入力..."
-              rows={1}
-              className="w-full bg-white/5 border theme-border rounded-2xl px-5 py-3.5 text-sm theme-text focus:outline-none focus:border-brand-primary/50 transition-all resize-none max-h-32 hide-scrollbar"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend(e)
-                }
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header (Channel Info) */}
+        <div className="h-16 border-b theme-border flex items-center px-4 md:px-8 bg-white/5 backdrop-blur-md justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <button 
+              onClick={() => setShowSidebar(true)}
+              className="md:hidden p-2 -ml-2 theme-muted"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-2 min-w-0 text-brand-primary">
+              <Hash className="w-5 h-5 shrink-0" />
+              <h1 className="font-black text-lg truncate theme-text">
+                {activeChannel?.name || '読み込み中...'}
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Messages */}
+        <div 
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth hide-scrollbar transition-all"
+        >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-brand-primary/50" />
+              <p className="text-xs font-black theme-muted uppercase tracking-widest">メッセージを読み込み中...</p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                 <MessageCircle className="w-8 h-8" />
+              </div>
+              <p className="text-sm font-bold">まだメッセージはありません</p>
+              <p className="text-xs mt-1">最初のメッセージを送ってみましょう</p>
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const isMe = msg.user_id === currentUserId
+              return (
+                <div 
+                  key={msg.id} 
+                  className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                >
+                  {/* Avatar */}
+                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-white/5 shrink-0 border theme-border">
+                    {msg.userAvatar ? (
+                      <Image src={msg.userAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-brand-primary/20 text-brand-primary font-black text-xs">
+                        {msg.userName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Bubble */}
+                  <div className={`flex flex-col max-w-[75%] gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
+                    {!isMe && (
+                      <span className="text-[10px] font-black theme-muted uppercase tracking-widest px-1">
+                        {msg.userName}
+                      </span>
+                    )}
+                    <div className={`px-4 py-2.5 rounded-2xl text-[15px] font-medium break-words shadow-sm line-clamp-none leading-relaxed ${
+                      isMe 
+                        ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
+                        : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
+                    }`}>
+                      {msg.content}
+                    </div>
+                    <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
+                      {new Date(msg.created_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="shrink-0 p-4 md:p-8 border-t theme-border bg-white/5 backdrop-blur-md pb-safe">
+          <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-end gap-3">
+            <div className="flex-1 relative">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder={`${activeChannel?.name || 'チャンネル'}に書き込む...`}
+                rows={1}
+                className="w-full bg-white/5 border theme-border rounded-2xl px-5 py-3.5 text-sm theme-text focus:outline-none focus:border-brand-primary/50 transition-all resize-none max-h-32 hide-scrollbar"
+                disabled={!activeChannelId}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSend(e)
+                  }
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!inputText.trim() || isSending || !activeChannelId}
+              className="w-12 h-12 rounded-2xl bg-brand-primary text-gray-800 flex items-center justify-center shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+            >
+              {isSending ? (
+                 <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                 <Send className="w-5 h-5" />
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {showSidebar && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
+          <div 
+            className="flex-1 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowSidebar(false)}
+          />
+          <div className="w-64 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300">
+            <ChannelSidebar 
+              channels={channels}
+              activeChannelId={activeChannelId || ''}
+              onChannelSelect={(id) => {
+                setActiveChannelId(id)
+                setShowSidebar(false)
               }}
+              onCreateChannel={handleCreateChannel}
+              onDeleteChannel={handleDeleteChannel}
+              isOwner={isOwner}
             />
           </div>
-          <button
-            type="submit"
-            disabled={!inputText.trim() || isSending}
-            className="w-12 h-12 rounded-2xl bg-brand-primary text-gray-800 flex items-center justify-center shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
-          >
-            {isSending ? (
-               <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-               <Send className="w-5 h-5" />
-            )}
-          </button>
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   )
 }

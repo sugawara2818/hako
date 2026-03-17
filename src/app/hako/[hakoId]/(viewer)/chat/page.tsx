@@ -39,6 +39,7 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
       currentUserId={user.id} 
       currentUserName={member.display_name || 'ユーザー'} 
       currentUserAvatar={member.avatar_url || null} 
+      isOwner={member.role === 'owner'}
     />
   )
 }
