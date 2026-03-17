@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { X, ExternalLink, Calendar as CalendarIcon, Download, Trash2, Loader2, Image as ImageIcon, FolderPlus, ChevronLeft, Send } from 'lucide-react'
+import { X, Calendar as CalendarIcon, Download, Trash2, Loader2, Image as ImageIcon, FolderPlus, ChevronLeft, Send } from 'lucide-react'
 import { toggleGalleryPin, addPostToAlbum } from '@/core/gallery/actions'
 
 interface GalleryImage {
@@ -48,7 +48,7 @@ export function GalleryGrid({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isAddingToAlbum, setIsAddingToAlbum] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [showFullSize, setShowFullSize] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
 
   const handleAddToAlbum = async (postId: string, albumId: string) => {
@@ -60,6 +60,28 @@ export function GalleryGrid({
       }
     } finally {
       setIsAddingToAlbum(false)
+    }
+  }
+
+  const handleDownload = async (url: string, id: string) => {
+    setIsDownloading(true)
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = `hako-memory-${id}.jpg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      console.error('Download failed:', error)
+      // Fallback
+      window.open(url, '_blank')
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -265,22 +287,20 @@ export function GalleryGrid({
                 </div>
 
                 {/* Primary Actions Block */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-10">
+                <div className="flex flex-col gap-4 pt-10">
                   <div className="flex gap-3">
                     <button
-                      onClick={() => setShowFullSize(true)}
-                      className="flex-1 h-16 theme-elevated hover:theme-surface theme-text rounded-3xl font-black transition-all flex items-center justify-center gap-3 text-sm border theme-border shadow-xl group"
+                      onClick={() => handleDownload(selectedImage.url, selectedImage.id)}
+                      disabled={isDownloading}
+                      className="flex-1 h-16 bg-[#82d9bc] hover:opacity-90 disabled:opacity-50 text-gray-700 rounded-3xl transition-all shadow-xl shadow-[#82d9bc]/20 flex items-center justify-center gap-3 group font-black"
                     >
-                      <ExternalLink className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      FULL SIZE
+                      {isDownloading ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                      )}
+                      <span>{isDownloading ? 'DOWNLOADING...' : 'DOWNLOAD PHOTO'}</span>
                     </button>
-                    <a
-                      href={selectedImage.url}
-                      download
-                      className="w-16 h-16 bg-[#82d9bc] hover:opacity-90 text-gray-700 rounded-3xl transition-all shadow-xl shadow-[#82d9bc]/20 flex items-center justify-center shrink-0 group"
-                    >
-                      <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                    </a>
                   </div>
 
                   {onDelete && (
@@ -299,34 +319,6 @@ export function GalleryGrid({
         </div>
       )}
 
-      {/* Internal Full Size View */}
-      {showFullSize && selectedImage && (
-        <div className="fixed inset-0 z-[600] theme-bg flex flex-col animate-in fade-in duration-300">
-          <div className="h-16 border-b theme-border flex items-center px-4 shrink-0 shadow-sm sticky top-0 bg-inherit z-10 backdrop-blur-md bg-opacity-80">
-            <button
-              onClick={() => setShowFullSize(false)}
-              className="p-2 -ml-2 theme-text hover:theme-elevated rounded-full transition-all flex items-center gap-3 font-black px-4 group"
-            >
-              <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-              <span>詳細に戻る</span>
-            </button>
-          </div>
-          <div className="flex-1 bg-black flex items-center justify-center overflow-auto p-4 md:p-8">
-             <div className="relative min-w-full min-h-full flex items-center justify-center">
-                <Image
-                  src={selectedImage.url}
-                  alt=""
-                  width={4000}
-                  height={3000}
-                  className="max-w-none w-auto h-auto cursor-zoom-out"
-                  onClick={() => setShowFullSize(false)}
-                  priority
-                  unoptimized
-                />
-             </div>
-          </div>
-        </div>
-      )}
 
       {/* Custom Delete Confirmation Modal - Matched with Timeline Style */}
       {showDeleteConfirm && selectedImage && (
