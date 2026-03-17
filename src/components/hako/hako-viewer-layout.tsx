@@ -3,7 +3,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon, Users } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon, Users, MessageCircle } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -286,6 +286,21 @@ export function HakoViewerLayout({
                   >
                     <ImageIcon className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
                     ギャラリー
+                  </Link>
+                )
+              }
+              if (featureId === 'chat') {
+                return (
+                  <Link
+                    key="chat"
+                    href={`/hako/${hakoId}/chat`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/chat`)
+                        ? 'theme-surface theme-text border theme-border shadow-sm'
+                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                      }`}
+                  >
+                    <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
+                    チャット
                   </Link>
                 )
               }
