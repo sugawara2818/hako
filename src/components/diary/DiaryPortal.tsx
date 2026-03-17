@@ -17,26 +17,37 @@ interface DiaryPortalProps {
 export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPortalProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = React.useTransition()
   
-  // URL-driven states
-  const view = (searchParams.get('view') as 'list' | 'calendar') || 'list'
-  const selectedFilterDate = searchParams.get('date') || null
+  // Local states for immediate feedback
+  const [view, setLocalView] = useState<'list' | 'calendar'>((searchParams.get('view') as 'list' | 'calendar') || 'list')
+  const [selectedFilterDate, setLocalSelectedFilterDate] = useState<string | null>(searchParams.get('date') || null)
   
   const [entries, setEntries] = useState(initialEntries)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
 
-  const updateURL = (params: { view?: 'list' | 'calendar'; date?: string | null }) => {
-    const nextParams = new URLSearchParams(searchParams.toString())
-    if (params.view) nextParams.set('view', params.view)
-    if (params.date !== undefined) {
-      if (params.date) nextParams.set('date', params.date)
-      else nextParams.delete('date')
-    }
-    router.push(`/hako/${hakoId}/diary?${nextParams.toString()}`)
+  // Synchronize URL in the background
+  const syncURL = (v: 'list' | 'calendar', d: string | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('view', v)
+    if (d) params.set('date', d)
+    else params.delete('date')
+    
+    // Use transition to avoid blocking UI with URL changes
+    startTransition(() => {
+      router.replace(`/hako/${hakoId}/diary?${params.toString()}`, { scroll: false })
+    })
   }
 
-  const setView = (v: 'list' | 'calendar') => updateURL({ view: v })
-  const setSelectedFilterDate = (date: string | null) => updateURL({ date })
+  const setView = (v: 'list' | 'calendar') => {
+    setLocalView(v)
+    syncURL(v, selectedFilterDate)
+  }
+
+  const setSelectedFilterDate = (date: string | null) => {
+    setLocalSelectedFilterDate(date)
+    syncURL(view, date)
+  }
 
   const handleDelete = async (id: string) => {
     try {
@@ -49,7 +60,9 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   }
 
   const handleDateSelect = (date: string) => {
-    updateURL({ view: 'list', date })
+    setLocalView('list')
+    setLocalSelectedFilterDate(date)
+    syncURL('list', date)
   }
 
   const filteredEntries = selectedFilterDate

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, ArrowUpDown } from 'lucide-react'
+import { BookOpen, Calendar, Lock, Unlock, Trash2, Edit2, ChevronRight, ArrowUpDown, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -37,89 +37,24 @@ interface DiaryFeedProps {
 }
 
 // ──────────────────────────────────────────────────
-// Custom confirm dialog component
+// Main DiaryFeed Component
 // ──────────────────────────────────────────────────
-function ConfirmDialog({
-  message,
-  onConfirm,
-  onCancel,
-  confirmLabel = '削除する',
-  danger = true,
-}: {
-  message: string
-  onConfirm: () => void
-  onCancel: () => void
-  confirmLabel?: string
-  danger?: boolean
-}) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
-      {/* Dialog card */}
-      <div className="relative w-full max-w-[320px] bg-[#1a1a1a] border border-white/10 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <p className="text-base text-gray-200 leading-relaxed mb-6 text-center font-medium">{message}</p>
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={onConfirm}
-            className={`w-full py-4 rounded-2xl text-sm font-black transition-all active:scale-95 ${
-              danger
-                ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20'
-                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20'
-            }`}
-          >
-            {confirmLabel}
-          </button>
-          <button
-            onClick={onCancel}
-            className="w-full py-4 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-bold transition-all"
-          >
-            キャンセル
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView, selectedFilterDate }: DiaryFeedProps) {
+export const DiaryFeed = React.memo(({ hakoId, currentUserId, entries, onDelete, isProfileView, selectedFilterDate }: DiaryFeedProps) => {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const router = useRouter()
-  const [confirmState, setConfirmState] = useState<{
-    id: string
-    message: string
-  } | null>(null)
-
-  const showConfirm = (id: string, message: string) => {
-    setConfirmState({ id, message })
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!confirmState) return
-    const id = confirmState.id
-    setConfirmState(null)
-    if (onDelete) {
-      await onDelete(id)
-    }
-  }
 
   const sortedEntries = useMemo(() => {
     return [...entries].sort((a: DiaryEntry, b: DiaryEntry) => {
-      if (sortMode === 'date_desc') {
-        const diff = new Date(b.diary_date).getTime() - new Date(a.diary_date).getTime()
-        return diff !== 0 ? diff : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      }
-      if (sortMode === 'date_asc') {
-        const diff = new Date(a.diary_date).getTime() - new Date(b.diary_date).getTime()
-        return diff !== 0 ? diff : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      }
-      if (sortMode === 'created_desc') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      }
-      if (sortMode === 'created_asc') {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      }
+      const aDate = new Date(a.diary_date).getTime()
+      const bDate = new Date(b.diary_date).getTime()
+      const aCreated = new Date(a.created_at).getTime()
+      const bCreated = new Date(b.created_at).getTime()
+
+      if (sortMode === 'date_desc') return bDate - aDate || bCreated - aCreated
+      if (sortMode === 'date_asc') return aDate - bDate || aCreated - bCreated
+      if (sortMode === 'created_desc') return bCreated - aCreated
+      if (sortMode === 'created_asc') return aCreated - bCreated
       return 0
     })
   }, [entries, sortMode])
@@ -175,14 +110,6 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
         </div>
       )}
 
-      {confirmState && (
-        <ConfirmDialog
-          message={confirmState.message}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setConfirmState(null)}
-        />
-      )}
-
       {viewMode === 'calendar' ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
           <ProfileDiaryCalendar 
@@ -205,7 +132,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
               entry={entry} 
               isAuthor={entry.user_id === currentUserId} 
               hakoId={hakoId}
-              onDelete={() => showConfirm(entry.id, 'この日記を削除しますか？')}
+              onDelete={onDelete}
               isProfileView={isProfileView}
               selectedFilterDate={selectedFilterDate}
             />
@@ -214,13 +141,32 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
       )}
     </div>
   )
-}
+})
 
-function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView, selectedFilterDate }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete: (id: string) => void | Promise<void>, isProfileView?: boolean, selectedFilterDate?: string | null }) {
+DiaryFeed.displayName = 'DiaryFeed'
+
+// ──────────────────────────────────────────────────
+// Sub-component: DiaryItem with Inline Deletion Confirm
+// ──────────────────────────────────────────────────
+const DiaryItem = React.memo(({ entry, isAuthor, hakoId, onDelete, isProfileView, selectedFilterDate }: { entry: DiaryEntry, isAuthor: boolean, hakoId: string, onDelete?: (id: string) => void | Promise<void>, isProfileView?: boolean, selectedFilterDate?: string | null }) => {
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [loading, setLoading] = useState(false)
   const date = new Date(entry.diary_date)
   const formattedDate = format(date, 'yyyy年MM月dd日 (E)', { locale: ja })
-  
   const displayName = entry.hako_members?.[0]?.display_name || entry.profiles?.display_name || 'ユーザー'
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!onDelete) return
+    setLoading(true)
+    try {
+      await onDelete(entry.id)
+    } finally {
+      setLoading(false)
+      setIsConfirming(false)
+    }
+  }
 
   return (
     <div className="group relative theme-surface border theme-border rounded-3xl overflow-hidden hover:border-white/10 transition-all duration-300">
@@ -288,7 +234,7 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView, selectedF
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    onDelete(entry.id)
+                    setIsConfirming(true)
                   }}
                   className="p-2.5 md:p-2 text-gray-400 bg-white/5 md:bg-transparent hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                 >
@@ -312,6 +258,35 @@ function DiaryItem({ entry, isAuthor, hakoId, onDelete, isProfileView, selectedF
           {entry.content}
         </p>
       </Link>
+
+      {/* Inline Confirmation Overlay */}
+      {isConfirming && (
+        <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+           <p className="text-sm font-bold text-white mb-4">この日記を削除しますか？</p>
+           <div className="flex gap-3 w-full max-w-[240px]">
+              <button
+                disabled={loading}
+                onClick={handleDelete}
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white text-xs font-black rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-95 flex items-center justify-center"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '削除する'}
+              </button>
+              <button
+                disabled={loading}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsConfirming(false)
+                }}
+                className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all"
+              >
+                キャンセル
+              </button>
+           </div>
+        </div>
+      )}
     </div>
   )
-}
+})
+
+DiaryItem.displayName = 'DiaryItem'
