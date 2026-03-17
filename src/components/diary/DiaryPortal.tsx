@@ -32,13 +32,8 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   }
 
   const handleDateSelect = (date: string) => {
-    const entry = entries.find(e => e.diary_date === date)
-    if (entry) {
-      router.push(`/hako/${hakoId}/diary/${entry.id}`)
-    } else {
-      setSelectedFilterDate(date)
-      setView('list')
-    }
+    setSelectedFilterDate(date)
+    setView('list')
   }
 
   const filteredEntries = selectedFilterDate

@@ -80,11 +80,11 @@ function ConfirmDialog({
     </div>
   )
 }
-// ──────────────────────────────────────────────────
 
 export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileView }: DiaryFeedProps) {
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const router = useRouter()
   const [confirmState, setConfirmState] = useState<{
     id: string
@@ -104,10 +104,13 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
     }
   }
 
+  const filteredEntries = useMemo(() => {
+    if (!selectedDate) return entries
+    return entries.filter(e => e.diary_date === selectedDate)
+  }, [entries, selectedDate])
+
   const sortedEntries = useMemo(() => {
-    // If entries are already sorted by parent, we could skip this,
-    // but for profile view and simplicity, we'll re-apply sorting here.
-    return [...entries].sort((a: DiaryEntry, b: DiaryEntry) => {
+    return [...filteredEntries].sort((a: DiaryEntry, b: DiaryEntry) => {
       if (sortMode === 'date_desc') {
         const diff = new Date(b.diary_date).getTime() - new Date(a.diary_date).getTime()
         return diff !== 0 ? diff : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -124,7 +127,7 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
       }
       return 0
     })
-  }, [entries, sortMode])
+  }, [filteredEntries, sortMode])
 
   if (entries.length === 0) {
     return (
@@ -142,21 +145,31 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
     <div className="space-y-4 max-w-2xl mx-auto relative w-full">
       {isProfileView && (
         <div className="flex items-center justify-between mb-2 md:mb-4 animate-fade-in px-4 sm:px-0 gap-3">
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
-              title="リスト表示"
-            >
-              <BookOpen className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
-              title="カレンダー表示"
-            >
-              <Calendar className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border theme-border">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+                title="リスト表示"
+              >
+                <BookOpen className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'theme-muted hover:theme-text'}`}
+                title="カレンダー表示"
+              >
+                <Calendar className="w-5 h-5" />
+              </button>
+            </div>
+            {selectedDate && (
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="px-3 py-2 text-[10px] font-bold text-orange-400 bg-orange-400/10 border border-orange-400/20 rounded-xl hover:bg-orange-400/20 transition-all"
+              >
+                解除
+              </button>
+            )}
           </div>
 
           <div className="relative group/sort">
@@ -190,14 +203,8 @@ export function DiaryFeed({ hakoId, currentUserId, entries, onDelete, isProfileV
             hakoId={hakoId} 
             userId={currentUserId} 
             onDateClick={(date) => {
-               const entry = entries.find(e => e.diary_date === date);
-               if (entry) {
-                 const baseUrl = `/hako/${hakoId}/diary/${entry.id}`;
-                 const query = isProfileView ? `?from=profile&userId=${entry.user_id}` : '';
-                 router.push(`${baseUrl}${query}`);
-               } else {
-                 setViewMode('list');
-               }
+               setSelectedDate(date)
+               setViewMode('list')
             }}
           />
         </div>
