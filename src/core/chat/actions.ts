@@ -27,14 +27,24 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
     return { success: false, error: error.message }
   }
 
-  // Update channel info
-  await supabase
-    .from('chat_channels')
-    .update({
-      last_message_content: content,
-      last_message_at: new Date().toISOString()
-    })
-    .eq('id', channelId)
+  // Update channel info and member read status
+  const now = new Date().toISOString()
+  await Promise.all([
+    supabase
+      .from('chat_channels')
+      .update({
+        last_message_content: content,
+        last_message_at: now
+      })
+      .eq('id', channelId),
+    supabase
+      .from('chat_channel_members')
+      .upsert({
+        channel_id: channelId,
+        user_id: user.id,
+        last_read_at: now
+      }, { onConflict: 'channel_id,user_id' })
+  ])
 
   return { success: true, data }
 }

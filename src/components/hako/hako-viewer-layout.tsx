@@ -132,7 +132,7 @@ export function HakoViewerLayout({
   useEffect(() => {
     const checkNotifications = async () => {
       try {
-        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId, latestChat } = await getLatestTimestamps(hakoId)
+        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId, latestChat, latestChatUserId } = await getLatestTimestamps(hakoId)
         const lastTimeline = localStorage.getItem(`hako_${hakoId}_last_timeline`)
         const lastDiary = localStorage.getItem(`hako_${hakoId}_last_diary`)
         const lastChatLocal = localStorage.getItem(`hako_${hakoId}_last_chat`)
@@ -143,7 +143,7 @@ export function HakoViewerLayout({
         if (latestDiary && latestDiaryUserId !== userId && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
             if (!isDiaryActive) setHasNewDiary(true)
         }
-        if (latestChat && (!lastChatLocal || new Date(latestChat) > new Date(lastChatLocal))) {
+        if (latestChat && latestChatUserId !== userId && (!lastChatLocal || new Date(latestChat) > new Date(lastChatLocal))) {
             if (!isChatActive) setHasNewChat(true)
         }
       } catch (e) {
