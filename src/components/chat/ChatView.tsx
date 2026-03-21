@@ -92,12 +92,25 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           setChannels(updatedChannels)
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_channel_members',
+          filter: `user_id=eq.${currentUserId}`,
+        },
+        async () => {
+          const updatedChannels = await getChatChannels(hakoId)
+          setChannels(updatedChannels)
+        }
+      )
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [hakoId])
+  }, [hakoId, currentUserId])
 
   // 3. Fetch Messages and Setup Message Subscription
   useEffect(() => {
