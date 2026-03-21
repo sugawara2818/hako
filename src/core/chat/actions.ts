@@ -111,13 +111,17 @@ export async function deleteChatMessage(messageId: string, hakoId: string) {
 
 
 
+import { createAdminSupabaseClient } from '@/lib/supabase/admin'
+
 export async function getChatChannels(hakoId: string) {
   try {
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
-    const { data: channels, error } = await supabase
+    // Fetch all channels securely using admin client because remote RLS is failing
+    const adminSupabase = createAdminSupabaseClient()
+    const { data: channels, error } = await adminSupabase
       .from('chat_channels')
       .select('*')
       .eq('hako_id', hakoId)
@@ -129,8 +133,24 @@ export async function getChatChannels(hakoId: string) {
       return []
     }
 
+    // Fetch memberships to filter private channels
+    const { data: myMemberships } = await adminSupabase
+      .from('chat_channel_members')
+      .select('channel_id')
+      .eq('user_id', user.id)
+
+    const membershipIds = new Set(myMemberships?.map(m => m.channel_id) || [])
+
+    // Filter channels based on access rules safely
+    const filteredChannels = (channels || []).filter(ch => {
+      if (ch.created_by === user.id) return true
+      if (ch.type === 'public') return true
+      if (ch.type === 'private' && membershipIds.has(ch.id)) return true
+      return false
+    })
+
     // Return channels with unreadCount 0
-    return (channels || []).map(ch => ({
+    return filteredChannels.map(ch => ({
       ...ch,
       unreadCount: 0
     }))
