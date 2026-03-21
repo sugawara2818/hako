@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ChatView } from '@/components/chat/ChatView'
-import { HakoViewerLayout } from '@/components/hako/hako-viewer-layout'
+import { getChatChannels } from '@/core/chat/actions'
 
 export default async function ChatPage({ params }: { params: Promise<{ hakoId: string }> }) {
   const { hakoId } = await params
@@ -11,16 +11,15 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/hako/${hakoId}/login`)
 
-  // 2. Fetch hako data and member info concurrently
-  const [hakoResponse, memberResponse, countResponse] = await Promise.all([
+  // 2. Fetch hako data, member info, and channels concurrently
+  const [hakoResponse, memberResponse, initialChannels] = await Promise.all([
     supabase.from('hako').select('*').eq('id', hakoId).single(),
     supabase.from('hako_members').select('*').eq('hako_id', hakoId).eq('user_id', user.id).maybeSingle(),
-    supabase.from('hako_members').select('*', { count: 'exact', head: true }).eq('hako_id', hakoId)
+    getChatChannels(hakoId)
   ])
 
   const { data: hako } = hakoResponse
   const { data: member } = memberResponse
-  const { count } = countResponse
 
   if (!hako || !member) {
     redirect(`/hako/${hakoId}`)
@@ -40,6 +39,7 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
       currentUserName={member.display_name || 'ユーザー'} 
       currentUserAvatar={member.avatar_url || null} 
       isOwner={member.role === 'owner'}
+      initialChannels={initialChannels}
     />
   )
 }

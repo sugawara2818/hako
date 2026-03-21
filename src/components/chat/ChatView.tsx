@@ -39,14 +39,15 @@ interface ChatViewProps {
   currentUserName: string
   currentUserAvatar: string | null
   isOwner: boolean
+  initialChannels: any[]
 }
 
-export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner }: ChatViewProps) {
-  const [channels, setChannels] = useState<ChatChannel[]>([])
+export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner, initialChannels }: ChatViewProps) {
+  const [channels, setChannels] = useState<ChatChannel[]>(initialChannels)
   const [members, setMembers] = useState<Member[]>([])
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isChannelsLoading, setIsChannelsLoading] = useState(true)
+  const [isChannelsLoading, setIsChannelsLoading] = useState(false)
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -66,16 +67,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
   // 2. Fetch Channels and Setup Channel Subscription
   useEffect(() => {
-    const fetchChannels = async () => {
-      setIsChannelsLoading(true)
-      const channelsData = await getChatChannels(hakoId)
-      setChannels(channelsData)
-      
-      // Removed automatic selection of first channel to show list first
-      setIsChannelsLoading(false)
-    }
-
-    fetchChannels()
+    // Initial channels are already loaded via props
 
     const channel = supabase
       .channel(`channels:${hakoId}`)
