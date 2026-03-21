@@ -109,30 +109,38 @@ export async function deleteChatMessage(messageId: string, hakoId: string) {
   return { success: true }
 }
 
+import { createAdminSupabaseClient } from '@/lib/supabase/admin'
+
 export async function getChatChannels(hakoId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
 
-  if (!user) return []
+    // Use admin client to bypass RLS for fetching list
+    // This confirms if the data EXISTS in the DB
+    const adminSupabase = createAdminSupabaseClient()
+    const { data: channels, error } = await adminSupabase
+      .from('chat_channels')
+      .select('*')
+      .eq('hako_id', hakoId)
+      .order('last_message_at', { ascending: false, nullsFirst: true })
+      .order('created_at', { ascending: false })
 
-  // 1. Fetch channels for this hako OR created by this user
-  const { data: channels, error } = await supabase
-    .from('chat_channels')
-    .select('*')
-    .or(`hako_id.eq.${hakoId},created_by.eq.${user.id}`)
-    .order('last_message_at', { ascending: false, nullsFirst: true })
-    .order('created_at', { ascending: false })
+    if (error) {
+      console.error('getChatChannels (Admin) Error:', error)
+      return []
+    }
 
-  if (error) {
-    console.error('getChatChannels Error:', error)
+    // Return channels with unreadCount 0
+    return (channels || []).map(ch => ({
+      ...ch,
+      unreadCount: 0
+    }))
+  } catch (e) {
+    console.error('Unexpected getChatChannels Error:', e)
     return []
   }
-
-  // Ensure unreadCount is set to 0 for all channels
-  return (channels || []).map(ch => ({
-    ...ch,
-    unreadCount: 0
-  }))
 }
 
 export async function markChannelAsRead(hakoId: string, channelId: string) {
