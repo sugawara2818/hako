@@ -124,7 +124,6 @@ export async function getChatChannels(hakoId: string) {
       .select('*')
       .eq('hako_id', hakoId)
       // .order('last_message_at', { ascending: false, nullsFirst: true }) // Disabled until DB migration is run
-      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -132,8 +131,16 @@ export async function getChatChannels(hakoId: string) {
       return []
     }
 
+    // Sort pinned channels securely in JS to avoid crashing if DB migration isn't run yet
+    const sortedChannels = (channels || []).sort((a, b) => {
+      const aPinned = a.is_pinned ? 1 : 0
+      const bPinned = b.is_pinned ? 1 : 0
+      if (aPinned !== bPinned) return bPinned - aPinned
+      return 0 // Keep created_at relative ordering
+    })
+
     // Return channels with unreadCount 0
-    return (channels || []).map(ch => ({
+    return sortedChannels.map(ch => ({
       ...ch,
       unreadCount: 0
     }))
