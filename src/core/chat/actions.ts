@@ -115,12 +115,12 @@ export async function getChatChannels(hakoId: string) {
 
   if (!user) return []
 
-  // 1. Fetch channels (RLS will handle public/private filtering correctly)
+  // 1. Fetch channels for this hako OR created by this user
   const { data: channels, error } = await supabase
     .from('chat_channels')
     .select('*')
-    .eq('hako_id', hakoId)
-    .order('last_message_at', { ascending: false, nullsFirst: false })
+    .or(`hako_id.eq.${hakoId},created_by.eq.${user.id}`)
+    .order('last_message_at', { ascending: false, nullsFirst: true })
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -128,32 +128,11 @@ export async function getChatChannels(hakoId: string) {
     return []
   }
 
-  // 2. Fetch current user's membership info for these channels
-  const { data: memberships } = await supabase
-    .from('chat_channel_members')
-    .select('channel_id, last_read_at')
-    .in('channel_id', channels.map(c => c.id))
-    .eq('user_id', user.id)
-
-  const membershipMap = new Map(memberships?.map(m => [m.channel_id, m.last_read_at]))
-
-  // 3. For each channel, count messages created after last_read_at
-  const channelsWithUnread = await Promise.all((channels || []).map(async (ch: any) => {
-    const lastReadAt = membershipMap.get(ch.id) || '1970-01-01'
-
-    const { count } = await supabase
-      .from('chat_messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('channel_id', ch.id)
-      .gt('created_at', lastReadAt)
-
-    return {
-      ...ch,
-      unreadCount: count || 0
-    }
+  // Ensure unreadCount is set to 0 for all channels
+  return (channels || []).map(ch => ({
+    ...ch,
+    unreadCount: 0
   }))
-
-  return channelsWithUnread
 }
 
 export async function markChannelAsRead(hakoId: string, channelId: string) {
