@@ -27,7 +27,7 @@ interface ChannelSidebarProps {
   activeChannelId: string
   onChannelSelect: (id: string) => void
   onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
-  onDeleteChannel: (id: string) => Promise<void>
+  onHideChannel?: (id: string) => void
   onPinToggle?: (id: string, isPinned: boolean) => Promise<void>
   isOwner: boolean
 }
@@ -39,7 +39,7 @@ export function ChannelSidebar({
   activeChannelId, 
   onChannelSelect, 
   onCreateChannel,
-  onDeleteChannel,
+  onHideChannel,
   onPinToggle,
   isOwner
 }: ChannelSidebarProps) {
@@ -155,18 +155,16 @@ export function ChannelSidebar({
                     <Plus className={`w-4 h-4 transition-transform ${ch.is_pinned ? 'rotate-45' : ''}`} />
                   </button>
 
-                  {/* Delete Button */}
-                  {isOwner && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setDeleteConfirmId(ch.id)
-                      }}
-                      className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  {/* Hide Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onHideChannel?.(ch.id)
+                    }}
+                    className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )
@@ -284,9 +282,9 @@ export function ChannelSidebar({
               <Trash2 className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-bold">チャットを削除</h3>
+              <h3 className="text-lg font-bold">チャットを非表示にする</h3>
               <p className="text-xs theme-muted leading-relaxed">
-                このチャットとすべてのメッセージが完全に削除されます。よろしいですか？
+                この端末のチャット一覧から非表示にします。（他のメンバーには影響しません）よろしいですか？
               </p>
             </div>
             <div className="flex gap-3">
@@ -299,14 +297,14 @@ export function ChannelSidebar({
               <button
                 onClick={async () => {
                    setIsSubmitting(true)
-                   await onDeleteChannel(deleteConfirmId)
+                   if (onHideChannel) await onHideChannel(deleteConfirmId)
                    setDeleteConfirmId(null)
                    setIsSubmitting(false)
                 }}
                 disabled={isSubmitting}
                 className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all disabled:opacity-50"
               >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : '削除する'}
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : '非表示にする'}
               </button>
             </div>
           </div>

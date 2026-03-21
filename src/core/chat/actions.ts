@@ -245,16 +245,15 @@ export async function deleteChatChannel(hakoId: string, channelId: string) {
     return { success: false, error: '認証が必要です' }
   }
 
-  // Check if owner
-  const { data: member } = await supabase
-    .from('hako_members')
-    .select('role')
-    .eq('hako_id', hakoId)
-    .eq('user_id', user.id)
+  // Check if user is the creator
+  const { data: channel } = await supabase
+    .from('chat_channels')
+    .select('created_by')
+    .eq('id', channelId)
     .single()
 
-  if (member?.role !== 'owner') {
-    return { success: false, error: 'オーナーのみ削除可能です' }
+  if (channel?.created_by !== user.id) {
+    return { success: false, error: '作成者のみがチャンネルを削除できます' }
   }
 
   // Prevent deleting the last channel (optional but recommended)

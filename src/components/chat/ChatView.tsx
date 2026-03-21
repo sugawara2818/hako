@@ -22,6 +22,7 @@ interface ChatChannel {
   name: string
   description: string | null
   type?: 'public' | 'private'
+  created_by?: string
   last_message_content?: string | null
   last_message_at?: string | null
   unreadCount?: number
@@ -49,6 +50,14 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isChannelsLoading, setIsChannelsLoading] = useState(false)
+  const [hiddenChannels, setHiddenChannels] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return JSON.parse(localStorage.getItem(`hidden_channels_${hakoId}_${currentUserId}`) || '[]')
+      } catch (e) { return [] }
+    }
+    return []
+  })
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -220,10 +229,22 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
+  const handleHideChannel = (channelId: string) => {
+    setHiddenChannels(prev => {
+      const next = [...prev, channelId]
+      localStorage.setItem(`hidden_channels_${hakoId}_${currentUserId}`, JSON.stringify(next))
+      return next
+    })
+    if (activeChannelId === channelId) {
+      setActiveChannelId(null)
+    }
+  }
+
   const handleDeleteChannel = async (channelId: string) => {
-    // confirmation handled in sidebar modal already
+    if (!confirm('本当に削除しますか？すべてのメッセージとメンバー履歴が消えます。')) return
     const res = await deleteChatChannel(hakoId, channelId)
     if (res.success) {
+      setShowSettings(false)
       setChannels(prev => {
         const remaining = prev.filter(c => c.id !== channelId)
         if (activeChannelId === channelId) {
@@ -261,13 +282,15 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     )
   }
 
+  const visibleChannels = channels.filter(c => !hiddenChannels.includes(c.id))
+
   return (
     <div className="flex-1 flex overflow-hidden theme-bg">
       {/* 1. Channel List (Home View) */}
       {!activeChannelId ? (
         <div className="flex-1 flex flex-col min-w-0 h-full">
            <ChannelSidebar 
-            channels={channels}
+            channels={visibleChannels}
             members={members}
             currentUserId={currentUserId}
             activeChannelId=""
@@ -275,7 +298,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               setActiveChannelId(id)
             }}
             onCreateChannel={handleCreateChannel}
-            onDeleteChannel={handleDeleteChannel}
+            onHideChannel={handleHideChannel}
             onPinToggle={handlePinToggle}
             isOwner={isOwner}
           />
@@ -285,7 +308,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           {/* 2. Sidebar - Desktop (Only shown on very large screens if preferred, but here we go full chat) */}
           <div className="hidden lg:block w-80 border-r theme-border shrink-0">
             <ChannelSidebar 
-              channels={channels}
+              channels={visibleChannels}
               members={members}
               currentUserId={currentUserId}
               activeChannelId={activeChannelId}
@@ -293,7 +316,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                 setActiveChannelId(id)
               }}
               onCreateChannel={handleCreateChannel}
-              onDeleteChannel={handleDeleteChannel}
+              onHideChannel={handleHideChannel}
               onPinToggle={handlePinToggle}
               isOwner={isOwner}
             />
@@ -500,13 +523,24 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               </div>
             </div>
 
-            <div className="p-8 border-t theme-border bg-white/5">
+            <div className="p-8 border-t theme-border bg-white/5 space-y-4">
               <button
                 onClick={() => setShowSettings(false)}
                 className="w-full py-4 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-black text-sm transition-all active:scale-95"
               >
                 閉じる
               </button>
+              {activeChannel?.created_by === currentUserId && (
+                <button
+                  onClick={() => {
+                    if (activeChannelId) handleDeleteChannel(activeChannelId)
+                  }}
+                  className="w-full py-4 text-red-500 hover:bg-red-500/10 border border-transparent rounded-2xl font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  管理：このルームをデータベースから完全に削除
+                </button>
+              )}
             </div>
           </div>
         </div>
