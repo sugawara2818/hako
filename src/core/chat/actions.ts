@@ -124,6 +124,7 @@ export async function getChatChannels(hakoId: string) {
       .select('*')
       .eq('hako_id', hakoId)
       // .order('last_message_at', { ascending: false, nullsFirst: true }) // Disabled until DB migration is run
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -273,3 +274,62 @@ export async function deleteChatChannel(hakoId: string, channelId: string) {
   revalidatePath(`/hako/${hakoId}/chat`)
   return { success: true }
 }
+
+export async function togglePinChannel(hakoId: string, channelId: string, isPinned: boolean) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: '認証が必要です' }
+  }
+
+  const { error } = await supabase
+    .from('chat_channels')
+    .update({ 
+      is_pinned: isPinned,
+      pinned_at: isPinned ? new Date().toISOString() : null
+    })
+    .eq('id', channelId)
+    .eq('hako_id', hakoId)
+
+  if (error) {
+    console.error('togglePinChannel Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
+  return { success: true }
+}
+
+export async function getChannelMembers(hakoId: string, channelId: string) {
+  const supabase = await createServerSupabaseClient()
+  
+  // First get member IDs
+  const { data: memberIds, error: mError } = await supabase
+    .from('chat_channel_members')
+    .select('user_id')
+    .eq('channel_id', channelId)
+
+  if (mError) {
+    console.error('getChannelMembers Error (Ids):', mError)
+    return []
+  }
+
+  const ids = memberIds.map(m => m.user_id)
+  if (ids.length === 0) return []
+
+  // Then get display info
+  const { data: profiles, error: pError } = await supabase
+    .from('hako_members')
+    .select('user_id, display_name, avatar_url, role')
+    .eq('hako_id', hakoId)
+    .in('user_id', ids)
+
+  if (pError) {
+    console.error('getChannelMembers Error (Profiles):', pError)
+    return []
+  }
+
+  return profiles || []
+}
+

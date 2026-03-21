@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead } from '@/core/chat/actions'
-import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft } from 'lucide-react'
+import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead, togglePinChannel, getChannelMembers } from '@/core/chat/actions'
+import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft, Settings, X, Shield, Pin } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
 
@@ -25,6 +25,7 @@ interface ChatChannel {
   last_message_content?: string | null
   last_message_at?: string | null
   unreadCount?: number
+  is_pinned?: boolean
 }
 
 interface Member {
@@ -52,6 +53,9 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [showSettings, setShowSettings] = useState(false)
+  const [channelMembers, setChannelMembers] = useState<any[]>([])
+  const [isSettingsLoading, setIsSettingsLoading] = useState(false)
 
   // 1. Fetch Members
   useEffect(() => {
@@ -209,7 +213,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const handleCreateChannel = async (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => {
     const res = await createChatChannel(hakoId, name, description, type, memberIds)
     if (res.success) {
-      setChannels(prev => [...prev, res.data])
+      setChannels(prev => [res.data, ...prev])
       setActiveChannelId(res.data.id)
     } else {
       alert(res.error)
@@ -217,7 +221,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   }
 
   const handleDeleteChannel = async (channelId: string) => {
-    if (!confirm('チャンネルを削除してもよろしいですか？メッセージもすべて削除されます。')) return
+    // confirmation handled in sidebar modal already
     const res = await deleteChatChannel(hakoId, channelId)
     if (res.success) {
       setChannels(prev => {
@@ -227,6 +231,20 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
         }
         return remaining
       })
+    } else {
+      alert(res.error)
+    }
+  }
+  const handlePinToggle = async (channelId: string, isPinned: boolean) => {
+    const res = await togglePinChannel(hakoId, channelId, isPinned)
+    if (res.success) {
+      setChannels(prev => prev.map(c => 
+        c.id === channelId ? { ...c, is_pinned: isPinned } : c
+      ).sort((a, b) => {
+        if (a.is_pinned && !b.is_pinned) return -1
+        if (!a.is_pinned && b.is_pinned) return 1
+        return 0 
+      }))
     } else {
       alert(res.error)
     }
@@ -258,6 +276,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             }}
             onCreateChannel={handleCreateChannel}
             onDeleteChannel={handleDeleteChannel}
+            onPinToggle={handlePinToggle}
             isOwner={isOwner}
           />
         </div>
@@ -275,6 +294,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               }}
               onCreateChannel={handleCreateChannel}
               onDeleteChannel={handleDeleteChannel}
+              onPinToggle={handlePinToggle}
               isOwner={isOwner}
             />
           </div>
@@ -300,6 +320,23 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                     {activeChannel?.name || 'チャット'}
                   </h1>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    if (!activeChannelId) return
+                    setIsSettingsLoading(true)
+                    setShowSettings(true)
+                    const m = await getChannelMembers(hakoId, activeChannelId)
+                    setChannelMembers(m)
+                    setIsSettingsLoading(false)
+                  }}
+                  className="p-2 theme-muted hover:theme-text transition-colors"
+                  title="チャンネル設定"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
@@ -400,6 +437,81 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
         </>
       )}
+
+      {/* Channel Settings / Management Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-md glass-card p-0 rounded-[2.5rem] theme-border shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-8 border-b theme-border flex items-center justify-between bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-brand-primary/20 flex items-center justify-center border border-brand-primary/30">
+                  <Settings className="w-6 h-6 text-brand-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black theme-text">チャンネル設定</h3>
+                  <p className="text-xs theme-muted font-bold uppercase tracking-widest">{activeChannel?.name}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="p-2 theme-muted hover:theme-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black theme-muted uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+                  <Users className="w-3 h-3" />
+                  参加メンバー ({channelMembers.length})
+                </h4>
+                <div className="grid gap-3">
+                  {isSettingsLoading ? (
+                    <div className="flex flex-col items-center justify-center py-10 gap-3">
+                      <Loader2 className="w-6 h-6 animate-spin theme-muted" />
+                      <p className="text-[10px] font-black theme-muted uppercase tracking-widest">メンバーを読込中...</p>
+                    </div>
+                  ) : channelMembers.length === 0 ? (
+                    <p className="text-sm theme-muted py-4 text-center font-medium">メンバーはいません</p>
+                  ) : (
+                    channelMembers.map((m) => (
+                      <div key={m.user_id} className="flex items-center justify-between p-3 theme-surface border theme-border rounded-2xl group transition-all">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand-primary/20 shrink-0 border theme-border">
+                            {m.avatar_url ? (
+                              <Image src={m.avatar_url} alt="" width={40} height={40} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-brand-primary/20 text-brand-primary font-black text-sm">
+                                {m.display_name?.charAt(0) || 'U'}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold theme-text truncate">{m.display_name || 'ユーザー'}</span>
+                            <span className="text-[10px] theme-muted font-bold uppercase tracking-widest">{m.role === 'owner' ? 'オーナー' : '一般メンバー'}</span>
+                          </div>
+                        </div>
+                        {m.role === 'owner' && <Shield className="w-4 h-4 text-amber-500/50" />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-8 border-t theme-border bg-white/5">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-full py-4 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-black text-sm transition-all active:scale-95"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

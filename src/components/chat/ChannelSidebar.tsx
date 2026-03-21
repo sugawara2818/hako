@@ -11,6 +11,7 @@ interface Channel {
   last_message_content?: string | null
   last_message_at?: string | null
   unreadCount?: number
+  is_pinned?: boolean
 }
 
 interface Member {
@@ -27,6 +28,7 @@ interface ChannelSidebarProps {
   onChannelSelect: (id: string) => void
   onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
   onDeleteChannel: (id: string) => Promise<void>
+  onPinToggle?: (id: string, isPinned: boolean) => Promise<void>
   isOwner: boolean
 }
 
@@ -38,6 +40,7 @@ export function ChannelSidebar({
   onChannelSelect, 
   onCreateChannel,
   onDeleteChannel,
+  onPinToggle,
   isOwner
 }: ChannelSidebarProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -136,17 +139,35 @@ export function ChannelSidebar({
                   </div>
                 </button>
 
-                {isOwner && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {/* Pin Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      setDeleteConfirmId(ch.id)
+                      onPinToggle?.(ch.id, !ch.is_pinned)
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                    className={`p-1.5 rounded-lg transition-all ${
+                      ch.is_pinned 
+                        ? 'text-amber-500 bg-amber-500/10' 
+                        : 'text-gray-400/0 group-hover:text-gray-400/50 hover:bg-gray-400/10'
+                    }`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Plus className={`w-4 h-4 transition-transform ${ch.is_pinned ? 'rotate-45' : ''}`} />
                   </button>
-                )}
+
+                  {/* Delete Button */}
+                  {isOwner && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteConfirmId(ch.id)
+                      }}
+                      className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })
