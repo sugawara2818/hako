@@ -218,8 +218,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
                       >
-                        {Array.from({ length: 4 }).map((_, i) => {
-                          const val = (i * 15).toString().padStart(2, '0')
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const val = (i * 5).toString().padStart(2, '0')
                           return <option key={val} value={val}>{val}分</option>
                         })}
                       </select>
@@ -271,8 +271,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
                       >
-                        {Array.from({ length: 4 }).map((_, i) => {
-                          const val = (i * 15).toString().padStart(2, '0')
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const val = (i * 5).toString().padStart(2, '0')
                           return <option key={val} value={val}>{val}分</option>
                         })}
                       </select>
