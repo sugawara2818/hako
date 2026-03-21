@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel } from '@/core/chat/actions'
+import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead } from '@/core/chat/actions'
 import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
@@ -22,6 +22,9 @@ interface ChatChannel {
   name: string
   description: string | null
   type?: 'public' | 'private'
+  last_message_content?: string | null
+  last_message_at?: string | null
+  unreadCount?: number
 }
 
 interface Member {
@@ -125,6 +128,9 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
 
     fetchInitialMessages()
+    
+    // Mark as read when entering channel
+    markChannelAsRead(hakoId, activeChannelId)
 
     const channel = supabase
       .channel(`messages:${activeChannelId}`)
@@ -140,6 +146,9 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           const newMessage = payload.new
           const isMe = newMessage.user_id === currentUserId
           
+          // Mark as read if we are looking at this channel
+          markChannelAsRead(hakoId, activeChannelId)
+
           let displayMsg: ChatMessage;
           if (isMe) {
             displayMsg = {

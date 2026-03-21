@@ -27,6 +27,15 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
     return { success: false, error: error.message }
   }
 
+  // Update channel snippet
+  await supabase
+    .from('chat_channels')
+    .update({
+      last_message_content: content,
+      last_message_at: new Date().toISOString()
+    })
+    .eq('id', channelId)
+
   return { success: true, data }
 }
 
@@ -106,21 +115,61 @@ export async function getChatChannels(hakoId: string) {
 
   if (!user) return []
 
-  // This query relies on RLS policies to show:
-  // 1. All public channels in the Hako
-  // 2. Private channels the user is a member of
-  const { data, error } = await supabase
+  // Get channels and the current user's membership info (for last_read_at)
+  const { data: channels, error } = await supabase
     .from('chat_channels')
-    .select('*')
+    .select(`
+      *,
+      chat_channel_members(last_read_at)
+    `)
     .eq('hako_id', hakoId)
-    .order('created_at', { ascending: true })
+    .eq('chat_channel_members.user_id', user.id)
+    .order('last_message_at', { ascending: false, nullsFirst: false })
 
   if (error) {
     console.error('getChatChannels Error:', error)
     return []
   }
 
-  return data || []
+  // For each channel, count messages created after last_read_at
+  const channelsWithUnread = await Promise.all((channels || []).map(async (ch: any) => {
+    const membership = ch.chat_channel_members?.[0]
+    const lastReadAt = membership?.last_read_at || '1970-01-01'
+
+    const { count } = await supabase
+      .from('chat_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('channel_id', ch.id)
+      .gt('created_at', lastReadAt)
+
+    return {
+      ...ch,
+      unreadCount: count || 0
+    }
+  }))
+
+  return channelsWithUnread
+}
+
+export async function markChannelAsRead(hakoId: string, channelId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false }
+
+  const { error } = await supabase
+    .from('chat_channel_members')
+    .update({ last_read_at: new Date().toISOString() })
+    .eq('channel_id', channelId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('markChannelAsRead Error:', error)
+    return { success: false }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
+  return { success: true }
 }
 
 export async function createChatChannel(

@@ -8,6 +8,9 @@ interface Channel {
   name: string
   description: string | null
   type?: 'public' | 'private'
+  last_message_content?: string | null
+  last_message_at?: string | null
+  unreadCount?: number
 }
 
 interface Member {
@@ -85,34 +88,65 @@ export function ChannelSidebar({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-1">
-        {channels.map((ch) => (
-          <div key={ch.id} className="group flex items-center gap-1">
-            <button
-              onClick={() => onChannelSelect(ch.id)}
-              className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                activeChannelId === ch.id 
-                  ? 'bg-brand-primary/10 text-brand-primary' 
-                  : 'theme-text hover:bg-white/5 opacity-70 hover:opacity-100'
-              }`}
-            >
-              {ch.type === 'private' ? (
-                <Users className={`w-4 h-4 ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-muted'}`} />
-              ) : (
-                <Hash className={`w-4 h-4 ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-muted'}`} />
-              )}
-              <span className="truncate">{ch.name}</span>
-            </button>
-            {isOwner && (
+      <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0.5 custom-scrollbar">
+        {channels.map((ch) => {
+          const lastTime = ch.last_message_at 
+            ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+            : ''
+          
+          return (
+            <div key={ch.id} className="group relative">
               <button
-                onClick={() => onDeleteChannel(ch.id)}
-                className="w-8 h-8 rounded-lg text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                onClick={() => onChannelSelect(ch.id)}
+                className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
+                  activeChannelId === ch.id 
+                    ? 'bg-brand-primary/10' 
+                    : 'hover:bg-white/5 opacity-90 hover:opacity-100'
+                }`}
               >
-                <Trash2 className="w-4 h-4" />
+                {/* Avatar */}
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                  {ch.name.charAt(0).toUpperCase()}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5">
+                  <div className="flex justify-between items-baseline gap-2">
+                    <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
+                      {ch.name}
+                    </span>
+                    <span className="text-[10px] theme-muted font-medium shrink-0">
+                      {lastTime}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center gap-2 h-5">
+                    <p className="text-xs theme-muted truncate font-medium">
+                      {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                    </p>
+                    {ch.unreadCount && ch.unreadCount > 0 ? (
+                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#06C755] text-white text-[10px] font-black flex items-center justify-center shadow-sm shrink-0">
+                        {ch.unreadCount > 99 ? '99+' : ch.unreadCount}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </button>
-            )}
-          </div>
-        ))}
+
+              {isOwner && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDeleteChannel(ch.id)
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {showCreateModal && (
