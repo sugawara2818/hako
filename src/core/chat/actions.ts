@@ -106,16 +106,13 @@ export async function getChatChannels(hakoId: string) {
 
   if (!user) return []
 
-  // Get only channels where the user is a member
-  // This satisfies "入ってないチャンネルは表示しないように"
+  // This query relies on RLS policies to show:
+  // 1. All public channels in the Hako
+  // 2. Private channels the user is a member of
   const { data, error } = await supabase
     .from('chat_channels')
-    .select(`
-      *,
-      chat_channel_members!inner(user_id)
-    `)
+    .select('*')
     .eq('hako_id', hakoId)
-    .eq('chat_channel_members.user_id', user.id)
     .order('created_at', { ascending: true })
 
   if (error) {
@@ -123,7 +120,7 @@ export async function getChatChannels(hakoId: string) {
     return []
   }
 
-  return (data || []).map(({ chat_channel_members, ...rest }: any) => rest)
+  return data || []
 }
 
 export async function createChatChannel(
