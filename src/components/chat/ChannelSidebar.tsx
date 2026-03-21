@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check } from 'lucide-react'
+import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check, MessageCircle } from 'lucide-react'
 
 interface Channel {
   id: string
@@ -77,77 +77,85 @@ export function ChannelSidebar({
   }
 
   return (
-    <div className="w-full h-full flex flex-col theme-surface">
-      <div className="p-6 border-b theme-border flex items-center justify-between">
-        <h2 className="text-sm font-black uppercase tracking-widest theme-muted">チャット</h2>
-        <button 
-          onClick={() => setShowCreateModal(true)}
-          className="w-6 h-6 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center hover:bg-brand-primary/20 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
+    <div className="w-full h-full flex flex-col theme-surface relative">
 
       <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0.5 custom-scrollbar">
-        {channels.map((ch) => {
-          const lastTime = ch.last_message_at 
-            ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
-            : ''
-          
-          return (
-            <div key={ch.id} className="group relative">
-              <button
-                onClick={() => onChannelSelect(ch.id)}
-                className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
-                  activeChannelId === ch.id 
-                    ? 'bg-brand-primary/10' 
-                    : 'hover:bg-white/5 opacity-90 hover:opacity-100'
-                }`}
-              >
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
-                  {ch.name.charAt(0).toUpperCase()}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5">
-                  <div className="flex justify-between items-baseline gap-2">
-                    <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
-                      {ch.name}
-                    </span>
-                    <span className="text-[10px] theme-muted font-medium shrink-0">
-                      {lastTime}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center gap-2 h-5">
-                    <p className="text-xs theme-muted truncate font-medium">
-                      {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
-                    </p>
-                    {ch.unreadCount && ch.unreadCount > 0 ? (
-                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#06C755] text-white text-[10px] font-black flex items-center justify-center shadow-sm shrink-0">
-                        {ch.unreadCount > 99 ? '99+' : ch.unreadCount}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </button>
-
-              {isOwner && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDeleteChannel(ch.id)
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+        {channels.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full py-20 px-8 text-center opacity-40">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+               <MessageCircle className="w-8 h-8" />
             </div>
-          )
-        })}
+            <p className="text-sm font-bold leading-relaxed">まだチャットがありません。<br />右下のボタンから作成してみましょう。</p>
+          </div>
+        ) : (
+          channels.map((ch) => {
+            const lastTime = ch.last_message_at 
+              ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+              : ''
+            
+            return (
+              <div key={ch.id} className="group relative">
+                <button
+                  onClick={() => onChannelSelect(ch.id)}
+                  className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
+                    activeChannelId === ch.id 
+                      ? 'bg-brand-primary/10' 
+                      : 'hover:bg-white/5 opacity-90 hover:opacity-100'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                    {ch.name.charAt(0).toUpperCase()}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
+                        {ch.name}
+                      </span>
+                      <span className="text-[10px] theme-muted font-medium shrink-0">
+                        {lastTime}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center gap-2 h-5">
+                      <p className="text-xs theme-muted truncate font-medium">
+                        {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                      </p>
+                      {ch.unreadCount && ch.unreadCount > 0 ? (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#06C755] text-white text-[10px] font-black flex items-center justify-center shadow-sm shrink-0">
+                          {ch.unreadCount > 99 ? '99+' : ch.unreadCount}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </button>
+
+                {isOwner && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteChannel(ch.id)
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )
+          })
+        )}
       </div>
+
+      {/* FAB - Create Channel */}
+      <button
+        onClick={() => setShowCreateModal(true)}
+        className="absolute right-6 bottom-12 w-16 h-16 rounded-full bg-[#06C755] text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all z-10"
+      >
+        <Plus className="w-8 h-8 stroke-[3]" />
+      </button>
 
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
