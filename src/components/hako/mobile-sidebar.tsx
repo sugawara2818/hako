@@ -29,10 +29,11 @@ interface MobileSidebarProps {
   onClose: () => void
   hasNewTimeline?: boolean
   hasNewDiary?: boolean
+  hasNewChat?: boolean
 }
 
 export function MobileSidebar({
-  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary
+  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary, hasNewChat
 }: MobileSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -170,6 +171,9 @@ export function MobileSidebar({
                 >
                   <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
                   チャット
+                  {hasNewChat && (
+                    <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                  )}
                 </Link>
               )
             }

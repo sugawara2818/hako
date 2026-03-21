@@ -210,6 +210,22 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     setInputText('')
     setIsSending(true)
 
+    // Optimistically update the channel list sorting
+    const now = new Date().toISOString()
+    setChannels(prev => {
+      const updated = prev.map(c => c.id === activeChannelId 
+        ? { ...c, last_message_content: messageContent, last_message_at: now } 
+        : c)
+      return updated.sort((a, b) => {
+        const aPinned = a.is_pinned ? 1 : 0
+        const bPinned = b.is_pinned ? 1 : 0
+        if (aPinned !== bPinned) return bPinned - aPinned
+        const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0
+        const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0
+        return bTime - aTime
+      })
+    })
+
     try {
       const result = await sendChatMessage(hakoId, activeChannelId, messageContent)
       if (!result.success) {

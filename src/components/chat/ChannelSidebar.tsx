@@ -118,7 +118,7 @@ export function ChannelSidebar({
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5">
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5 pr-16">
                     <div className="flex justify-between items-baseline gap-2">
                       <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
                         {ch.name}
@@ -133,9 +133,7 @@ export function ChannelSidebar({
                         {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
                       </p>
                       {ch.unreadCount && ch.unreadCount > 0 ? (
-                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#06C755] text-white text-[10px] font-black flex items-center justify-center shadow-sm shrink-0">
-                          {ch.unreadCount > 99 ? '99+' : ch.unreadCount}
-                        </span>
+                        <span className="w-2 h-2 rounded-full bg-[#06C755] flex-shrink-0" />
                       ) : null}
                     </div>
                   </div>

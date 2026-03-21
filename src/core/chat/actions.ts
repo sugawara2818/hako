@@ -131,6 +131,19 @@ export async function getChatChannels(hakoId: string) {
       return []
     }
 
+    const channelIds = channels.map(c => c.id)
+    let readStateMap = new Map()
+    
+    if (channelIds.length > 0) {
+      const { data: readStates } = await supabase
+        .from('chat_channel_members')
+        .select('channel_id, last_read_at')
+        .in('channel_id', channelIds)
+        .eq('user_id', user.id)
+      
+      readStateMap = new Map(readStates?.map(r => [r.channel_id, r.last_read_at]))
+    }
+
     // Sort pinned channels and recent messages securely in JS to avoid crashing if DB migration isn't run yet
     const sortedChannels = (channels || []).sort((a, b) => {
       const aPinned = a.is_pinned ? 1 : 0
@@ -142,11 +155,15 @@ export async function getChatChannels(hakoId: string) {
       return bTime - aTime
     })
 
-    // Return channels with unreadCount 0
-    return sortedChannels.map(ch => ({
-      ...ch,
-      unreadCount: 0
-    }))
+    // Return channels with unreadCount
+    return sortedChannels.map(ch => {
+      const lastRead = readStateMap.get(ch.id)
+      const isUnread = ch.last_message_at && (!lastRead || new Date(ch.last_message_at) > new Date(lastRead))
+      return {
+        ...ch,
+        unreadCount: isUnread ? 1 : 0
+      }
+    })
   } catch (e) {
     console.error('Unexpected getChatChannels Error:', e)
     return []

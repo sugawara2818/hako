@@ -7,16 +7,18 @@ import { revalidatePath } from 'next/cache'
 export async function getLatestTimestamps(hakoId: string) {
   const supabase = await createServerSupabaseClient()
   
-  const [postRes, diaryRes] = await Promise.all([
+  const [postRes, diaryRes, chatRes] = await Promise.all([
     supabase.from('hako_timeline_posts').select('created_at, user_id').eq('hako_id', hakoId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-    supabase.from('hako_diaries').select('created_at, user_id').eq('hako_id', hakoId).eq('is_public', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+    supabase.from('hako_diaries').select('created_at, user_id').eq('hako_id', hakoId).eq('is_public', true).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('chat_channels').select('last_message_at, created_by').eq('hako_id', hakoId).order('last_message_at', { ascending: false, nullsFirst: false }).limit(1).maybeSingle()
   ])
   
   return {
     latestPost: postRes.data?.created_at || null,
     latestPostUserId: postRes.data?.user_id || null,
     latestDiary: diaryRes.data?.created_at || null,
-    latestDiaryUserId: diaryRes.data?.user_id || null
+    latestDiaryUserId: diaryRes.data?.user_id || null,
+    latestChat: chatRes.data?.last_message_at || null
   }
 }
 // オーナーが箱作成

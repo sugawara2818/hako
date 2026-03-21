@@ -43,9 +43,11 @@ export function HakoViewerLayout({
   
   const [hasNewTimeline, setHasNewTimeline] = useState(false)
   const [hasNewDiary, setHasNewDiary] = useState(false)
+  const [hasNewChat, setHasNewChat] = useState(false)
 
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
+  const isChatActive = pathname.includes(`/hako/${hakoId}/chat`)
 
   const touchStartX = useRef<number | null>(null)
   const touchX = useRef<number>(0)
@@ -130,15 +132,19 @@ export function HakoViewerLayout({
   useEffect(() => {
     const checkNotifications = async () => {
       try {
-        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId } = await getLatestTimestamps(hakoId)
+        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId, latestChat } = await getLatestTimestamps(hakoId)
         const lastTimeline = localStorage.getItem(`hako_${hakoId}_last_timeline`)
         const lastDiary = localStorage.getItem(`hako_${hakoId}_last_diary`)
+        const lastChatLocal = localStorage.getItem(`hako_${hakoId}_last_chat`)
         
         if (latestPost && latestPostUserId !== userId && (!lastTimeline || new Date(latestPost) > new Date(lastTimeline))) {
             if (!isTimelineActive) setHasNewTimeline(true)
         }
         if (latestDiary && latestDiaryUserId !== userId && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
             if (!isDiaryActive) setHasNewDiary(true)
+        }
+        if (latestChat && (!lastChatLocal || new Date(latestChat) > new Date(lastChatLocal))) {
+            if (!isChatActive) setHasNewChat(true)
         }
       } catch (e) {
         console.error("Failed to check notifications:", e)
@@ -149,7 +155,7 @@ export function HakoViewerLayout({
     // Check every 5 minutes
     const interval = setInterval(checkNotifications, 1000 * 60 * 5)
     return () => clearInterval(interval)
-  }, [hakoId, isTimelineActive, isDiaryActive])
+  }, [hakoId, isTimelineActive, isDiaryActive, isChatActive, userId])
 
   useEffect(() => {
     // Determine if the current path is a "Main Hub"
@@ -175,7 +181,11 @@ export function HakoViewerLayout({
         localStorage.setItem(`hako_${hakoId}_last_diary`, new Date().toISOString())
         setHasNewDiary(false)
     }
-  }, [isTimelineActive, isDiaryActive, hakoId, pathname])
+    if (isChatActive) {
+        localStorage.setItem(`hako_${hakoId}_last_chat`, new Date().toISOString())
+        setHasNewChat(false)
+    }
+  }, [isTimelineActive, isDiaryActive, isChatActive, hakoId, pathname])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -301,6 +311,9 @@ export function HakoViewerLayout({
                   >
                     <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
                     チャット
+                    {hasNewChat && (
+                      <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                    )}
                   </Link>
                 )
               }
@@ -386,6 +399,7 @@ export function HakoViewerLayout({
             onClose={handleClose}
             hasNewTimeline={hasNewTimeline}
             hasNewDiary={hasNewDiary}
+            hasNewChat={hasNewChat}
           />
         </div>
       </div>
