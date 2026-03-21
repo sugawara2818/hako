@@ -22,6 +22,7 @@ interface Member {
 interface ChannelSidebarProps {
   channels: Channel[]
   members: Member[]
+  currentUserId: string
   activeChannelId: string
   onChannelSelect: (id: string) => void
   onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
@@ -32,6 +33,7 @@ interface ChannelSidebarProps {
 export function ChannelSidebar({ 
   channels, 
   members,
+  currentUserId,
   activeChannelId, 
   onChannelSelect, 
   onCreateChannel,
@@ -39,6 +41,7 @@ export function ChannelSidebar({
   isOwner
 }: ChannelSidebarProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [channelType, setChannelType] = useState<'public' | 'private'>('public')
@@ -47,11 +50,12 @@ export function ChannelSidebar({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const filteredMembers = useMemo(() => {
-    if (!memberSearch.trim()) return members
-    return members.filter(m => 
+    const others = members.filter(m => m.user_id !== currentUserId)
+    if (!memberSearch.trim()) return others
+    return others.filter(m => 
       (m.display_name || '').toLowerCase().includes(memberSearch.toLowerCase())
     )
-  }, [members, memberSearch])
+  }, [members, memberSearch, currentUserId])
 
   const toggleMember = (userId: string) => {
     setSelectedMemberIds(prev => 
@@ -136,7 +140,7 @@ export function ChannelSidebar({
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      onDeleteChannel(ch.id)
+                      setDeleteConfirmId(ch.id)
                     }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
                   >
@@ -175,14 +179,14 @@ export function ChannelSidebar({
                 <button
                   type="button"
                   onClick={() => setChannelType('public')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'public' ? 'bg-brand-primary text-gray-900' : 'theme-muted hover:theme-text'}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'public' ? 'bg-[#06C755] text-white' : 'theme-muted hover:theme-text'}`}
                 >
                   パブリック
                 </button>
                 <button
                   type="button"
                   onClick={() => setChannelType('private')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'private' ? 'bg-brand-primary text-gray-900' : 'theme-muted hover:theme-text'}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'private' ? 'bg-[#06C755] text-white' : 'theme-muted hover:theme-text'}`}
                 >
                   非公開（メンバー指定）
                 </button>
@@ -210,7 +214,7 @@ export function ChannelSidebar({
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                       placeholder="メンバーを検索..."
-                      className="w-full theme-elevated border theme-border rounded-xl pl-10 pr-4 py-2 text-sm theme-text focus:outline-none focus:border-brand-primary/50"
+                      className="w-full theme-elevated border theme-border rounded-xl pl-10 pr-4 py-2 text-sm theme-text focus:outline-none focus:border-[#06C755]/50"
                     />
                   </div>
                   <div className="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
@@ -219,7 +223,7 @@ export function ChannelSidebar({
                         key={member.user_id}
                         type="button"
                         onClick={() => toggleMember(member.user_id)}
-                        className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(member.user_id) ? 'bg-brand-primary/10 text-brand-primary' : 'hover:bg-white/5 theme-text'}`}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(member.user_id) ? 'bg-[#06C755]/10 text-[#06C755]' : 'hover:bg-white/5 theme-text'}`}
                       >
                         <span className="truncate">{member.display_name || 'ユーザー'}</span>
                         {selectedMemberIds.includes(member.user_id) && <Check className="w-4 h-4" />}
@@ -242,11 +246,48 @@ export function ChannelSidebar({
               <button
                 type="submit"
                 disabled={!newName.trim() || isSubmitting}
-                className="w-full py-4 bg-brand-primary text-gray-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full py-4 bg-[#06C755] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
               >
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '作成する'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-xs glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200 text-center">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold">チャットを削除</h3>
+              <p className="text-xs theme-muted leading-relaxed">
+                このチャットとすべてのメッセージが完全に削除されます。よろしいですか？
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-3 bg-white/5 theme-text rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={async () => {
+                   setIsSubmitting(true)
+                   await onDeleteChannel(deleteConfirmId)
+                   setDeleteConfirmId(null)
+                   setIsSubmitting(false)
+                }}
+                disabled={isSubmitting}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : '削除する'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -282,6 +282,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
            <ChannelSidebar 
             channels={channels}
             members={members}
+            currentUserId={currentUserId}
             activeChannelId=""
             onChannelSelect={(id) => {
               setActiveChannelId(id)
@@ -298,6 +299,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             <ChannelSidebar 
               channels={channels}
               members={members}
+              currentUserId={currentUserId}
               activeChannelId={activeChannelId}
               onChannelSelect={(id) => {
                 setActiveChannelId(id)
@@ -319,7 +321,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <div className="flex items-center gap-2 min-w-0 text-brand-primary">
+                <div className="flex items-center gap-2 min-w-0 text-[#06C755]">
                   {activeChannel?.type === 'private' ? (
                     <Users className="w-4 h-4 shrink-0 opacity-50" />
                   ) : (
@@ -339,7 +341,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
         >
           {isMessagesLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-4">
-              <Loader2 className="w-10 h-10 animate-spin text-brand-primary/50" />
+              <Loader2 className="w-10 h-10 animate-spin text-[#06C755]/50" />
               <p className="text-xs font-black theme-muted uppercase tracking-widest">メッセージを読み込み中...</p>
             </div>
           ) : messages.length === 0 ? (
@@ -415,7 +417,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             <button
               type="submit"
               disabled={!inputText.trim() || isSending || !activeChannelId}
-              className="w-12 h-12 rounded-2xl bg-brand-primary text-gray-800 flex items-center justify-center shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+              className="w-12 h-12 rounded-2xl bg-[#06C755] text-white flex items-center justify-center shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
             >
               {isSending ? (
                  <Loader2 className="w-5 h-5 animate-spin" />

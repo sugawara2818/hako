@@ -115,15 +115,11 @@ export async function getChatChannels(hakoId: string) {
 
   if (!user) return []
 
-  // Get channels and the current user's membership info (for last_read_at)
+  // 1. Fetch channels (RLS will handle public/private filtering correctly)
   const { data: channels, error } = await supabase
     .from('chat_channels')
-    .select(`
-      *,
-      chat_channel_members(last_read_at)
-    `)
+    .select('*')
     .eq('hako_id', hakoId)
-    .eq('chat_channel_members.user_id', user.id)
     .order('last_message_at', { ascending: false, nullsFirst: false })
 
   if (error) {
@@ -131,10 +127,18 @@ export async function getChatChannels(hakoId: string) {
     return []
   }
 
-  // For each channel, count messages created after last_read_at
+  // 2. Fetch current user's membership info for these channels
+  const { data: memberships } = await supabase
+    .from('chat_channel_members')
+    .select('channel_id, last_read_at')
+    .in('channel_id', channels.map(c => c.id))
+    .eq('user_id', user.id)
+
+  const membershipMap = new Map(memberships?.map(m => [m.channel_id, m.last_read_at]))
+
+  // 3. For each channel, count messages created after last_read_at
   const channelsWithUnread = await Promise.all((channels || []).map(async (ch: any) => {
-    const membership = ch.chat_channel_members?.[0]
-    const lastReadAt = membership?.last_read_at || '1970-01-01'
+    const lastReadAt = membershipMap.get(ch.id) || '1970-01-01'
 
     const { count } = await supabase
       .from('chat_messages')
@@ -159,9 +163,13 @@ export async function markChannelAsRead(hakoId: string, channelId: string) {
 
   const { error } = await supabase
     .from('chat_channel_members')
-    .update({ last_read_at: new Date().toISOString() })
-    .eq('channel_id', channelId)
-    .eq('user_id', user.id)
+    .upsert({ 
+      channel_id: channelId, 
+      user_id: user.id,
+      last_read_at: new Date().toISOString() 
+    }, {
+      onConflict: 'channel_id,user_id'
+    })
 
   if (error) {
     console.error('markChannelAsRead Error:', error)
