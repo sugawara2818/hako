@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead, togglePinChannel, getChannelMembers } from '@/core/chat/actions'
-import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft, Settings, X, Shield, Pin } from 'lucide-react'
+import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead, togglePinChannel, getChannelMembers, updateChannelName, addChannelMembers } from '@/core/chat/actions'
+import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft, Settings, X, Shield, Pin, Edit2, UserPlus, Check, Search } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
 
@@ -65,6 +65,11 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [showSettings, setShowSettings] = useState(false)
   const [channelMembers, setChannelMembers] = useState<any[]>([])
   const [isSettingsLoading, setIsSettingsLoading] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [showInvite, setShowInvite] = useState(false)
+  const [memberSearch, setMemberSearch] = useState('')
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([])
 
   // 1. Fetch Members
   useEffect(() => {
@@ -240,6 +245,11 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
+  const handleRestoreHiddenChannels = () => {
+    setHiddenChannels([])
+    localStorage.removeItem(`hidden_channels_${hakoId}_${currentUserId}`)
+  }
+
   const handleDeleteChannel = async (channelId: string) => {
     if (!confirm('本当に削除しますか？すべてのメッセージとメンバー履歴が消えます。')) return
     const res = await deleteChatChannel(hakoId, channelId)
@@ -299,6 +309,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             }}
             onCreateChannel={handleCreateChannel}
             onHideChannel={handleHideChannel}
+            onRestoreHiddenChannels={handleRestoreHiddenChannels}
             onPinToggle={handlePinToggle}
             isOwner={isOwner}
           />
@@ -317,6 +328,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               }}
               onCreateChannel={handleCreateChannel}
               onHideChannel={handleHideChannel}
+              onRestoreHiddenChannels={handleRestoreHiddenChannels}
               onPinToggle={handlePinToggle}
               isOwner={isOwner}
             />
@@ -351,6 +363,11 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                     if (!activeChannelId) return
                     setIsSettingsLoading(true)
                     setShowSettings(true)
+                    setEditName(activeChannel?.name || '')
+                    setIsEditingName(false)
+                    setShowInvite(false)
+                    setSelectedMemberIds([])
+                    setMemberSearch('')
                     const m = await getChannelMembers(hakoId, activeChannelId)
                     setChannelMembers(m)
                     setIsSettingsLoading(false)
@@ -483,7 +500,137 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar">
+              
+              {/* --- 管理者用メニュー --- */}
+              {activeChannel?.created_by === currentUserId && (
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black theme-muted uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+                    <Shield className="w-3 h-3" />
+                    ルーム管理
+                  </h4>
+                  <div className="p-4 bg-white/5 border theme-border rounded-3xl space-y-4">
+                    
+                    {/* ルーム名変更 */}
+                    {isEditingName ? (
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="flex-1 theme-elevated border theme-border rounded-xl px-4 py-2 text-sm theme-text focus:outline-none focus:border-[#06C755]/50"
+                        />
+                        <button 
+                          disabled={!editName.trim() || editName === activeChannel.name}
+                          onClick={async () => {
+                            if (!activeChannelId) return
+                            const res = await updateChannelName(hakoId, activeChannelId, editName)
+                            if (res.success) {
+                              setChannels(prev => prev.map(c => c.id === activeChannelId ? { ...c, name: editName } : c))
+                              setIsEditingName(false)
+                            } else {
+                              alert(res.error)
+                            }
+                          }}
+                          className="px-4 py-2 bg-[#06C755] text-white rounded-xl text-sm font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
+                        >
+                          保存
+                        </button>
+                        <button 
+                          onClick={() => setIsEditingName(false)}
+                          className="px-3 py-2 theme-muted hover:theme-text rounded-xl"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setIsEditingName(true)}
+                        className="w-full flex items-center gap-3 p-3 theme-surface border theme-border rounded-2xl hover:theme-elevated transition-all group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:bg-blue-500/20 transition-all">
+                          <Edit2 className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="block text-sm font-bold theme-text">ルーム名を変更</span>
+                          <span className="block text-[10px] theme-muted font-bold mt-0.5">{activeChannel?.name}</span>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* メンバー招待 */}
+                    {showInvite ? (
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 theme-muted" />
+                          <input
+                            type="text"
+                            value={memberSearch}
+                            onChange={(e) => setMemberSearch(e.target.value)}
+                            placeholder="追加するメンバーを検索..."
+                            className="w-full theme-elevated border theme-border rounded-xl pl-10 pr-4 py-2 text-sm theme-text focus:outline-none focus:border-[#06C755]/50"
+                          />
+                        </div>
+                        <div className="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                          {members
+                            .filter(m => !channelMembers.some(cm => cm.user_id === m.user_id))
+                            .filter(m => !memberSearch || m.display_name?.toLowerCase().includes(memberSearch.toLowerCase()))
+                            .map(m => (
+                              <button
+                                key={m.user_id}
+                                onClick={() => setSelectedMemberIds(prev => prev.includes(m.user_id) ? prev.filter(id => id !== m.user_id) : [...prev, m.user_id])}
+                                className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(m.user_id) ? 'bg-[#06C755]/10 text-[#06C755]' : 'hover:bg-white/5 theme-text'}`}
+                              >
+                                <span>{m.display_name}</span>
+                                {selectedMemberIds.includes(m.user_id) && <Check className="w-4 h-4" />}
+                              </button>
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            disabled={selectedMemberIds.length === 0}
+                            onClick={async () => {
+                              if (!activeChannelId) return
+                              const res = await addChannelMembers(hakoId, activeChannelId, selectedMemberIds)
+                              if (res.success) {
+                                setShowInvite(false)
+                                setSelectedMemberIds([])
+                                setMemberSearch('')
+                                const updatedM = await getChannelMembers(hakoId, activeChannelId)
+                                setChannelMembers(updatedM)
+                              } else {
+                                alert(res.error)
+                              }
+                            }}
+                            className="flex-1 py-2 bg-[#06C755] text-white rounded-xl text-sm font-bold disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
+                          >
+                            {selectedMemberIds.length}人を追加
+                          </button>
+                          <button onClick={() => setShowInvite(false)} className="flex-1 py-2 theme-muted hover:theme-text border theme-border rounded-xl text-sm font-bold">
+                            キャンセル
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setShowInvite(true)}
+                        className="w-full flex items-center gap-3 p-3 theme-surface border theme-border rounded-2xl hover:theme-elevated transition-all group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-[#06C755]/10 text-[#06C755] flex items-center justify-center group-hover:bg-[#06C755]/20 transition-all">
+                          <UserPlus className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="block text-sm font-bold theme-text">メンバーを追加招待</span>
+                          <span className="block text-[10px] theme-muted font-bold mt-0.5">現在 {channelMembers.length}名</span>
+                        </div>
+                      </button>
+                    )}
+
+                  </div>
+                </div>
+              )}
+
+              {/* --- メンバー一覧 --- */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black theme-muted uppercase tracking-[0.2em] px-1 flex items-center gap-2">
                   <Users className="w-3 h-3" />

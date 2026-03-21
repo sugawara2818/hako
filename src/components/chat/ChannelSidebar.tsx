@@ -28,6 +28,7 @@ interface ChannelSidebarProps {
   onChannelSelect: (id: string) => void
   onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
   onHideChannel?: (id: string) => void
+  onRestoreHiddenChannels?: () => void
   onPinToggle?: (id: string, isPinned: boolean) => Promise<void>
   isOwner: boolean
 }
@@ -40,6 +41,7 @@ export function ChannelSidebar({
   onChannelSelect, 
   onCreateChannel,
   onHideChannel,
+  onRestoreHiddenChannels,
   onPinToggle,
   isOwner
 }: ChannelSidebarProps) {
@@ -171,6 +173,18 @@ export function ChannelSidebar({
           })
         )}
       </div>
+
+      {/* Restore Hidden Channels Button */}
+      {onRestoreHiddenChannels && (
+        <div className="p-4 border-t theme-border bg-white/5 pb-safe shrink-0">
+          <button
+            onClick={onRestoreHiddenChannels}
+            className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-bold text-xs transition-all active:scale-95 text-center"
+          >
+            非表示のルームを復元する
+          </button>
+        </div>
+      )}
 
       {/* FAB - Create Channel */}
       <button

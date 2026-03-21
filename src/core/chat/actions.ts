@@ -27,14 +27,14 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
     return { success: false, error: error.message }
   }
 
-  // Update channel info (temporarily disabled snippet update until DB migration is run)
-  // await supabase
-  //   .from('chat_channels')
-  //   .update({
-  //     last_message_content: content,
-  //     last_message_at: new Date().toISOString()
-  //   })
-  //   .eq('id', channelId)
+  // Update channel info
+  await supabase
+    .from('chat_channels')
+    .update({
+      last_message_content: content,
+      last_message_at: new Date().toISOString()
+    })
+    .eq('id', channelId)
 
   return { success: true, data }
 }
@@ -131,12 +131,15 @@ export async function getChatChannels(hakoId: string) {
       return []
     }
 
-    // Sort pinned channels securely in JS to avoid crashing if DB migration isn't run yet
+    // Sort pinned channels and recent messages securely in JS to avoid crashing if DB migration isn't run yet
     const sortedChannels = (channels || []).sort((a, b) => {
       const aPinned = a.is_pinned ? 1 : 0
       const bPinned = b.is_pinned ? 1 : 0
       if (aPinned !== bPinned) return bPinned - aPinned
-      return 0 // Keep created_at relative ordering
+      
+      const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : new Date(a.created_at).getTime()
+      const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : new Date(b.created_at).getTime()
+      return bTime - aTime
     })
 
     // Return channels with unreadCount 0
@@ -337,5 +340,62 @@ export async function getChannelMembers(hakoId: string, channelId: string) {
   }
 
   return profiles || []
+}
+
+export async function updateChannelName(hakoId: string, channelId: string, name: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, error: '認証が必要です' }
+
+  // Check if owner
+  const { data: channel } = await supabase
+    .from('chat_channels')
+    .select('created_by')
+    .eq('id', channelId)
+    .single()
+
+  if (channel?.created_by !== user.id) {
+    return { success: false, error: '作成者のみが変更可能です' }
+  }
+
+  const { error } = await supabase
+    .from('chat_channels')
+    .update({ name })
+    .eq('id', channelId)
+
+  if (error) {
+    console.error('updateChannelName Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
+  return { success: true }
+}
+
+export async function addChannelMembers(hakoId: string, channelId: string, userIds: string[]) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, error: '認証が必要です' }
+
+  if (userIds.length === 0) return { success: true }
+
+  const membersToInsert = userIds.map(uid => ({
+    channel_id: channelId,
+    user_id: uid
+  }))
+
+  const { error } = await supabase
+    .from('chat_channel_members')
+    .upsert(membersToInsert, { onConflict: 'channel_id,user_id' })
+
+  if (error) {
+    console.error('addChannelMembers Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/hako/${hakoId}/chat`)
+  return { success: true }
 }
 
