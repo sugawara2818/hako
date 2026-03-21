@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check, MessageCircle } from 'lucide-react'
+import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check, MessageCircle, Pin } from 'lucide-react'
 
 interface Channel {
   id: string
@@ -149,10 +149,10 @@ export function ChannelSidebar({
                     className={`p-1.5 rounded-lg transition-all ${
                       ch.is_pinned 
                         ? 'text-amber-500 bg-amber-500/10' 
-                        : 'text-gray-400/0 group-hover:text-gray-400/50 hover:bg-gray-400/10'
+                        : 'text-gray-400/40 md:text-gray-400/0 group-hover:text-gray-400/50 hover:text-gray-400 hover:bg-gray-400/10'
                     }`}
                   >
-                    <Plus className={`w-4 h-4 transition-transform ${ch.is_pinned ? 'rotate-45' : ''}`} />
+                    <Pin className="w-4 h-4" fill={ch.is_pinned ? "currentColor" : "none"} />
                   </button>
 
                   {/* Hide Button */}

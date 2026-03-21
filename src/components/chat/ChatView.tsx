@@ -138,6 +138,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     
     // Mark as read when entering channel
     markChannelAsRead(hakoId, activeChannelId)
+    // Instantly clear the local badge
+    setChannels(prev => prev.map(c => c.id === activeChannelId ? { ...c, unreadCount: 0 } : c))
 
     const channel = supabase
       .channel(`messages:${activeChannelId}`)
@@ -597,7 +599,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                                 onClick={() => setSelectedMemberIds(prev => prev.includes(m.user_id) ? prev.filter(id => id !== m.user_id) : [...prev, m.user_id])}
                                 className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(m.user_id) ? 'bg-[#06C755]/10 text-[#06C755]' : 'hover:bg-white/5 theme-text'}`}
                               >
-                                <span>{m.display_name}</span>
+                                <span>{m.display_name || `名無しメンバー (${m.user_id.substring(0, 4)})`}</span>
                                 {selectedMemberIds.includes(m.user_id) && <Check className="w-4 h-4" />}
                               </button>
                             ))}
