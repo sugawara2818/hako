@@ -109,7 +109,7 @@ export async function deleteChatMessage(messageId: string, hakoId: string) {
   return { success: true }
 }
 
-import { createAdminSupabaseClient } from '@/lib/supabase/admin'
+
 
 export async function getChatChannels(hakoId: string) {
   try {
@@ -117,10 +117,7 @@ export async function getChatChannels(hakoId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
-    // Use admin client to bypass RLS for fetching list
-    // This confirms if the data EXISTS in the DB
-    const adminSupabase = createAdminSupabaseClient()
-    const { data: channels, error } = await adminSupabase
+    const { data: channels, error } = await supabase
       .from('chat_channels')
       .select('*')
       .eq('hako_id', hakoId)
@@ -128,7 +125,7 @@ export async function getChatChannels(hakoId: string) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('getChatChannels (Admin) Error:', error)
+      console.error('getChatChannels Error:', error)
       return []
     }
 
