@@ -75,10 +75,10 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
       const start = new Date(initialDate)
       const end = new Date(initialDate)
       
-      // Round to nearest 5 minutes
-      const roundTo5Min = (date: Date) => {
+      // Round to nearest 15 minutes
+      const roundTo15Min = (date: Date) => {
         const minutes = date.getMinutes()
-        const roundedMinutes = Math.round(minutes / 5) * 5
+        const roundedMinutes = Math.round(minutes / 15) * 15
         date.setMinutes(roundedMinutes, 0, 0)
         return date
       }
@@ -89,7 +89,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
         end.setHours(10, 0, 0, 0)
       } else {
         // Otherwise use the provided time and default to 1 hour duration
-        roundTo5Min(start)
+        roundTo15Min(start)
         end.setTime(start.getTime() + 60 * 60 * 1000)
       }
       
@@ -218,8 +218,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
                       >
-                        {Array.from({ length: 12 }).map((_, i) => {
-                          const val = (i * 5).toString().padStart(2, '0')
+                        {Array.from({ length: 4 }).map((_, i) => {
+                          const val = (i * 15).toString().padStart(2, '0')
                           return <option key={val} value={val}>{val}分</option>
                         })}
                       </select>
@@ -271,8 +271,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
                       >
-                        {Array.from({ length: 12 }).map((_, i) => {
-                          const val = (i * 5).toString().padStart(2, '0')
+                        {Array.from({ length: 4 }).map((_, i) => {
+                          const val = (i * 15).toString().padStart(2, '0')
                           return <option key={val} value={val}>{val}分</option>
                         })}
                       </select>
