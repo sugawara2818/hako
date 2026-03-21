@@ -294,7 +294,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       ) : (
         <>
           {/* 2. Sidebar - Desktop (Only shown on very large screens if preferred, but here we go full chat) */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block w-80 border-r theme-border shrink-0">
             <ChannelSidebar 
               channels={channels}
               members={members}

@@ -77,7 +77,7 @@ export function ChannelSidebar({
   }
 
   return (
-    <div className="w-64 h-full flex flex-col theme-surface">
+    <div className="w-full h-full flex flex-col theme-surface">
       <div className="p-6 border-b theme-border flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-widest theme-muted">チャット</h2>
         <button 
