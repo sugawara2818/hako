@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead } from '@/core/chat/actions'
-import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle } from 'lucide-react'
+import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
 
@@ -50,7 +50,6 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const [showSidebar, setShowSidebar] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // 1. Fetch Members
@@ -72,9 +71,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
       const channelsData = await getChatChannels(hakoId)
       setChannels(channelsData)
       
-      if (channelsData.length > 0 && !activeChannelId) {
-        setActiveChannelId(channelsData[0].id)
-      }
+      // Removed automatic selection of first channel to show list first
       setIsChannelsLoading(false)
     }
 
@@ -279,45 +276,61 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
   return (
     <div className="flex-1 flex overflow-hidden theme-bg">
-      {/* Sidebar - Desktop */}
-      <div className="hidden lg:block">
-        <ChannelSidebar 
-          channels={channels}
-          members={members}
-          activeChannelId={activeChannelId || ''}
-          onChannelSelect={(id) => {
-            setActiveChannelId(id)
-            setShowSidebar(false)
-          }}
-          onCreateChannel={handleCreateChannel}
-          onDeleteChannel={handleDeleteChannel}
-          isOwner={isOwner}
-        />
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        {/* Unified Header (Visible everywhere) */}
-        <div className="h-14 border-b theme-border flex items-center px-4 md:px-6 bg-white/5 backdrop-blur-md justify-between shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <button 
-              onClick={() => setShowSidebar(true)}
-              className="lg:hidden p-2 -ml-2 theme-muted hover:theme-text transition-colors"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-2 min-w-0 text-brand-primary">
-              {activeChannel?.type === 'private' ? (
-                <Users className="w-4 h-4 shrink-0 opacity-50" />
-              ) : (
-                <Hash className="w-4 h-4 shrink-0 opacity-50" />
-              )}
-              <h1 className="font-bold text-sm md:text-base truncate theme-text">
-                {activeChannel?.name || 'チャット'}
-              </h1>
-            </div>
-          </div>
+      {/* 1. Channel List (Home View) */}
+      {!activeChannelId ? (
+        <div className="flex-1 flex flex-col min-w-0 h-full">
+           <ChannelSidebar 
+            channels={channels}
+            members={members}
+            activeChannelId=""
+            onChannelSelect={(id) => {
+              setActiveChannelId(id)
+            }}
+            onCreateChannel={handleCreateChannel}
+            onDeleteChannel={handleDeleteChannel}
+            isOwner={isOwner}
+          />
         </div>
+      ) : (
+        <>
+          {/* 2. Sidebar - Desktop (Only shown on very large screens if preferred, but here we go full chat) */}
+          <div className="hidden lg:block">
+            <ChannelSidebar 
+              channels={channels}
+              members={members}
+              activeChannelId={activeChannelId}
+              onChannelSelect={(id) => {
+                setActiveChannelId(id)
+              }}
+              onCreateChannel={handleCreateChannel}
+              onDeleteChannel={handleDeleteChannel}
+              isOwner={isOwner}
+            />
+          </div>
+
+          {/* 3. Main Chat Area */}
+          <div className="flex-1 flex flex-col min-w-0 h-full relative">
+            {/* Unified Header */}
+            <div className="h-14 border-b theme-border flex items-center px-4 md:px-6 bg-white/5 backdrop-blur-md justify-between shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <button 
+                  onClick={() => setActiveChannelId(null)}
+                  className="p-2 -ml-2 theme-muted hover:theme-text transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-2 min-w-0 text-brand-primary">
+                  {activeChannel?.type === 'private' ? (
+                    <Users className="w-4 h-4 shrink-0 opacity-50" />
+                  ) : (
+                    <Hash className="w-4 h-4 shrink-0 opacity-50" />
+                  )}
+                  <h1 className="font-bold text-sm md:text-base truncate theme-text">
+                    {activeChannel?.name || 'チャット'}
+                  </h1>
+                </div>
+              </div>
+            </div>
 
         {/* Chat Messages */}
         <div 
@@ -414,28 +427,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
         </div>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {showSidebar && (
-        <div className="fixed inset-0 z-[200] lg:hidden flex animate-in fade-in duration-200">
-          <div className="w-72 bg-white dark:bg-[#121212] animate-in slide-in-from-left duration-300 shadow-2xl">
-            <ChannelSidebar 
-              channels={channels}
-              members={members}
-              activeChannelId={activeChannelId || ''}
-              onChannelSelect={(id) => {
-                setActiveChannelId(id)
-                setShowSidebar(false)
-              }}
-              onCreateChannel={handleCreateChannel}
-              onDeleteChannel={handleDeleteChannel}
-              isOwner={isOwner}
-            />
-          </div>
-          <div 
-            className="flex-1 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowSidebar(false)}
-          />
-        </div>
+        </>
       )}
     </div>
   )
