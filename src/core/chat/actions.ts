@@ -121,6 +121,7 @@ export async function getChatChannels(hakoId: string) {
     .select('*')
     .eq('hako_id', hakoId)
     .order('last_message_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('getChatChannels Error:', error)
@@ -206,9 +207,9 @@ export async function createChatChannel(
     .select()
     .single()
 
-  if (error) {
+  if (error || !channel) {
     console.error('createChatChannel Error:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error?.message || 'チャンネルの作成に失敗しました' }
   }
 
   // If private, or if we just want to track creator as member
@@ -229,7 +230,17 @@ export async function createChatChannel(
   }
 
   revalidatePath(`/hako/${hakoId}/chat`)
-  return { success: true, data: channel }
+  
+  // Return the channel with unreadCount 0 and other display fields
+  return { 
+    success: true, 
+    data: {
+      ...channel,
+      unreadCount: 0,
+      last_message_content: null,
+      last_message_at: null
+    } 
+  }
 }
 
 export async function deleteChatChannel(hakoId: string, channelId: string) {
