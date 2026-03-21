@@ -37,6 +37,26 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEditable = !editingEvent || editingEvent.user_id === currentUserId
+  const isSubmittingRef = React.useRef(false)
+
+  const handleStartAtChange = (newStartAt: string) => {
+    try {
+      const oldStart = new Date(startAt)
+      const oldEnd = new Date(endAt)
+      const duration = oldEnd.getTime() - oldStart.getTime()
+      
+      setStartAt(newStartAt)
+      
+      const newStart = new Date(newStartAt)
+      if (!isNaN(newStart.getTime()) && !isNaN(duration)) {
+        const newEnd = new Date(newStart.getTime() + duration)
+        setEndAt(format(newEnd, "yyyy-MM-dd'T'HH:mm"))
+      }
+    } catch (e) {
+      console.error('Time shift failed', e)
+      setStartAt(newStartAt)
+    }
+  }
 
   useEffect(() => {
     if (editingEvent) {
@@ -166,7 +186,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                     value={startAt.split('T')[0]}
                     onChange={e => {
                       const time = startAt.split('T')[1] || '09:00'
-                      setStartAt(`${e.target.value}T${time}`)
+                      handleStartAtChange(`${e.target.value}T${time}`)
                     }}
                     className="w-full bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-3 py-3 theme-text text-sm focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark] font-bold"
                     required
@@ -179,7 +199,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         onChange={e => {
                           const date = startAt.split('T')[0]
                           const mins = startAt.split('T')[1]?.split(':')[1] || '00'
-                          setStartAt(`${date}T${e.target.value}:${mins}`)
+                          handleStartAtChange(`${date}T${e.target.value}:${mins}`)
                         }}
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"
@@ -193,7 +213,7 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, edi
                         onChange={e => {
                           const date = startAt.split('T')[0]
                           const hour = startAt.split('T')[1]?.split(':')[0] || '09'
-                          setStartAt(`${date}T${hour}:${e.target.value}`)
+                          handleStartAtChange(`${date}T${hour}:${e.target.value}`)
                         }}
                         disabled={!isEditable}
                         className="flex-1 bg-black/5 dark:bg-white/5 border theme-border rounded-xl px-2 py-2 theme-text text-sm font-bold focus:outline-none focus:border-purple-500/50 transition-all [color-scheme:light_dark]"

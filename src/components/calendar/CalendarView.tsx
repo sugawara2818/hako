@@ -687,17 +687,32 @@ export function CalendarView({ hakoId, currentUserId, initialEvents, onAddEvent,
                   className="flex min-h-full"
                 >
               {/* Time Axis */}
-              <div className="w-14 shrink-0 border-r theme-border pt-6 z-10 theme-bg">
+              <div 
+                className="w-14 shrink-0 border-r theme-border pt-6 z-10 theme-bg cursor-pointer"
+                onClick={(e) => {
+                  if (draggingEvent) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const y = e.clientY - rect.top - 24; // Subtract pt-6
+                  
+                  // Snap to 5 minutes and clamp
+                  const rawMinutes = y;
+                  const snappedMinutes = Math.max(0, Math.min(23.75 * 60, Math.round(rawMinutes / 5) * 5));
+                  
+                  const clickedTime = new Date(selectedDay);
+                  clickedTime.setHours(Math.floor(snappedMinutes / 60), snappedMinutes % 60, 0, 0);
+                  onAddEvent(clickedTime);
+                }}
+              >
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div key={hour} className="h-[60px] relative">
-                    <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit">
+                    <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit pointer-events-none">
                         {hour === 0 ? '0:00' : `${hour}:00`}
                     </div>
                   </div>
                 ))}
                 {/* 24:00 label at the bottom */}
                 <div className="h-0 relative">
-                  <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit">
+                  <div className="absolute top-0 left-0 right-0 text-[10px] theme-muted font-bold text-center pr-2 -translate-y-1/2 bg-inherit pointer-events-none">
                     24:00
                   </div>
                 </div>

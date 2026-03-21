@@ -36,6 +36,28 @@ export async function createHakoForOwner(userId: string, name: string, descripti
     role: 'owner',
   })
 
+  // Create default chat channel if feature enabled
+  if (features.includes('chat')) {
+    const { data: channel } = await supabase
+      .from('chat_channels')
+      .insert({
+        hako_id: hako.id,
+        name: 'メインチャット',
+        description: 'デフォルトのチャットルームです',
+        type: 'public',
+        created_by: userId
+      })
+      .select()
+      .single()
+
+    if (channel) {
+      await supabase.from('chat_channel_members').insert({
+        channel_id: channel.id,
+        user_id: userId
+      })
+    }
+  }
+
   return hako
 }
 
@@ -49,6 +71,22 @@ export async function joinHako(userId: string, hakoId: string) {
     .maybeSingle()
 
   if (error) throw error
+
+  // Join default "Main Chat" if it exists
+  const { data: mainChannel } = await supabase
+    .from('chat_channels')
+    .select('id')
+    .eq('hako_id', hakoId)
+    .eq('name', 'メインチャット')
+    .maybeSingle()
+
+  if (mainChannel) {
+    await supabase.from('chat_channel_members').upsert({
+      channel_id: mainChannel.id,
+      user_id: userId
+    })
+  }
+
   return member
 }
 

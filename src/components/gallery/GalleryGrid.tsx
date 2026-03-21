@@ -162,7 +162,7 @@ export function GalleryGrid({
               
               {/* Selection Overlay */}
               {isSelectionMode && (
-                <div className={`absolute inset-0 transition-colors duration-200 ${isSelected ? 'bg-[#82d9bc]/10' : 'bg-black/20 group-hover:bg-black/10'}`}>
+                <div className={`absolute inset-0 transition-colors duration-200 pointer-events-none ${isSelected ? 'bg-[#82d9bc]/10' : 'bg-black/20 group-hover:bg-black/10'}`}>
                   <div className={`absolute top-2 right-2 w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-200 ${
                     isSelected 
                       ? 'bg-[#82d9bc] border-[#82d9bc] shadow-lg shadow-[#82d9bc]/20' 
@@ -173,7 +173,7 @@ export function GalleryGrid({
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end pointer-events-none">
                 {image.isPinned && !isSelectionMode && (
                   <div className="absolute top-2 right-2 p-1 bg-[#82d9bc] rounded-lg shadow-lg">
                     <ImageIcon className="w-3 h-3 text-gray-700" />

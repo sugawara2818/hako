@@ -109,16 +109,16 @@ export function GalleryCinemaMode({ images, onClose }: GalleryCinemaModeProps) {
         </div>
 
         {/* Navigation Overlays */}
-        <button onClick={prev} className="absolute left-4 p-4 text-white/20 hover:text-white transition-all hover:bg-white/5 rounded-full">
+        <button onClick={prev} className="absolute left-4 p-4 text-white/20 hover:text-white transition-all hover:bg-white/5 rounded-full opacity-0 md:opacity-100">
           <ChevronLeft className="w-10 h-10" />
         </button>
-        <button onClick={next} className="absolute right-4 p-4 text-white/20 hover:text-white transition-all hover:bg-white/5 rounded-full">
+        <button onClick={next} className="absolute right-4 p-4 text-white/20 hover:text-white transition-all hover:bg-white/5 rounded-full opacity-0 md:opacity-100">
           <ChevronRight className="w-10 h-10" />
         </button>
       </div>
 
       {/* Caption Overlay - Cinematic Style */}
-      <div className="absolute bottom-0 inset-x-0 p-12 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center z-10">
+      <div className="absolute bottom-0 inset-x-0 p-12 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center z-10 pointer-events-none">
         <div className="max-w-3xl mx-auto space-y-4 animate-in slide-in-from-bottom-8 duration-700">
           {current.caption && (
             <p className="text-2xl md:text-3xl font-medium text-white/90 leading-tight italic">

@@ -106,7 +106,8 @@ export async function getChatChannels(hakoId: string) {
 
   if (!user) return []
 
-  // Get all public channels + private channels the user is a member of
+  // Get only channels where the user is a member
+  // This satisfies "入ってないチャンネルは表示しないように"
   const { data, error } = await supabase
     .from('chat_channels')
     .select(`
@@ -114,40 +115,15 @@ export async function getChatChannels(hakoId: string) {
       chat_channel_members!inner(user_id)
     `)
     .eq('hako_id', hakoId)
-    .or(`type.eq.public,chat_channel_members.user_id.eq.${user.id}`)
+    .eq('chat_channel_members.user_id', user.id)
     .order('created_at', { ascending: true })
 
   if (error) {
-    // Fallback: If the inner join fails (no members yet for private channels), just get public ones
-    const { data: publicData, error: publicError } = await supabase
-      .from('chat_channels')
-      .select('*')
-      .eq('hako_id', hakoId)
-      .eq('type', 'public')
-      .order('created_at', { ascending: true })
-
-    if (publicError) {
-      console.error('getChatChannels Error:', publicError)
-      return []
-    }
-    
-    // We also need private ones where the user is a member
-    const { data: privateData } = await supabase
-      .from('chat_channels')
-      .select('*, chat_channel_members!inner(user_id)')
-      .eq('hako_id', hakoId)
-      .eq('type', 'private')
-      .eq('chat_channel_members.user_id', user.id)
-
-    const combined = [...(publicData || []), ...(privateData || [])].sort((a, b) => 
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-
-    // Remove the temporary join field from output
-    return combined.map(({ chat_channel_members, ...rest }) => rest)
+    console.error('getChatChannels Error:', error)
+    return []
   }
 
-  return (data || []).map(({ chat_channel_members, ...rest }) => rest)
+  return (data || []).map(({ chat_channel_members, ...rest }: any) => rest)
 }
 
 export async function createChatChannel(
