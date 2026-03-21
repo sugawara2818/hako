@@ -196,6 +196,43 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }, [hakoId, activeChannelId, currentUserId, currentUserName, currentUserAvatar, members])
 
+  // 4. Fetch Active Channel Members and Listen for Read Status Updates
+  useEffect(() => {
+    if (!activeChannelId) {
+      setChannelMembers([])
+      return
+    }
+
+    const fetchActiveChannelMembers = async () => {
+      const m = await getChannelMembers(hakoId, activeChannelId)
+      setChannelMembers(m)
+    }
+
+    fetchActiveChannelMembers()
+
+    // Real-time subscription for member read updates
+    const channel = supabase
+      .channel(`active_members:${activeChannelId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_channel_members',
+          filter: `channel_id=eq.${activeChannelId}`,
+        },
+        async () => {
+          const m = await getChannelMembers(hakoId, activeChannelId)
+          setChannelMembers(m)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [hakoId, activeChannelId])
+
   const scrollToBottom = () => {
     setTimeout(() => {
       if (scrollRef.current) {
@@ -449,9 +486,28 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                     }`}>
                       {msg.content}
                     </div>
-                    <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
-                      {new Date(msg.created_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <div className={`flex items-baseline gap-1.5 ${isMe ? 'flex-row-reverse self-end' : 'flex-row self-start'}`}>
+                      <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
+                        {new Date(msg.created_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {isMe && (() => {
+                        const othersReadCount = channelMembers.filter(m => 
+                          m.user_id !== currentUserId && 
+                          m.last_read_at && 
+                          new Date(m.last_read_at) >= new Date(msg.created_at)
+                        ).length
+                        
+                        if (othersReadCount > 0) {
+                          const totalOthers = channelMembers.length - 1
+                          return (
+                            <span className="text-[9px] font-black text-[#06C755] animate-in fade-in slide-in-from-right-1 duration-500">
+                              {totalOthers > 1 ? `既読 ${othersReadCount}` : '既読'}
+                            </span>
+                          )
+                        }
+                        return null
+                      })()}
+                    </div>
                   </div>
                 </div>
               )
@@ -599,7 +655,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                                 onClick={() => setSelectedMemberIds(prev => prev.includes(m.user_id) ? prev.filter(id => id !== m.user_id) : [...prev, m.user_id])}
                                 className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(m.user_id) ? 'bg-[#06C755]/10 text-[#06C755]' : 'hover:bg-white/5 theme-text'}`}
                               >
-                                <span>{m.display_name || `名無しメンバー (${m.user_id.substring(0, 4)})`}</span>
+                                <span>{(m.display_name && m.display_name.trim()) || `名無しメンバー (${m.user_id.substring(0, 4)})`}</span>
                                 {selectedMemberIds.includes(m.user_id) && <Check className="w-4 h-4" />}
                               </button>
                             ))}

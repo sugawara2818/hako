@@ -340,10 +340,10 @@ export async function togglePinChannel(hakoId: string, channelId: string, isPinn
 export async function getChannelMembers(hakoId: string, channelId: string) {
   const supabase = await createServerSupabaseClient()
   
-  // First get member IDs
-  const { data: memberIds, error: mError } = await supabase
+  // First get member IDs and read statuses
+  const { data: memberData, error: mError } = await supabase
     .from('chat_channel_members')
-    .select('user_id')
+    .select('user_id, last_read_at')
     .eq('channel_id', channelId)
 
   if (mError) {
@@ -351,8 +351,13 @@ export async function getChannelMembers(hakoId: string, channelId: string) {
     return []
   }
 
-  const ids = memberIds.map(m => m.user_id)
+  const ids = memberData.map(m => m.user_id)
   if (ids.length === 0) return []
+
+  const readStatusMap: Record<string, string | null> = {}
+  memberData.forEach(m => {
+    readStatusMap[m.user_id] = m.last_read_at
+  })
 
   // Then get display info
   const { data: profiles, error: pError } = await supabase
@@ -366,7 +371,10 @@ export async function getChannelMembers(hakoId: string, channelId: string) {
     return []
   }
 
-  return profiles || []
+  return (profiles || []).map(p => ({
+    ...p,
+    last_read_at: readStatusMap[p.user_id] || null
+  }))
 }
 
 export async function updateChannelName(hakoId: string, channelId: string, name: string) {
