@@ -27,14 +27,14 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
     return { success: false, error: error.message }
   }
 
-  // Update channel snippet
-  await supabase
-    .from('chat_channels')
-    .update({
-      last_message_content: content,
-      last_message_at: new Date().toISOString()
-    })
-    .eq('id', channelId)
+  // Update channel info (temporarily disabled snippet update until DB migration is run)
+  // await supabase
+  //   .from('chat_channels')
+  //   .update({
+  //     last_message_content: content,
+  //     last_message_at: new Date().toISOString()
+  //   })
+  //   .eq('id', channelId)
 
   return { success: true, data }
 }
@@ -125,7 +125,7 @@ export async function getChatChannels(hakoId: string) {
       .from('chat_channels')
       .select('*')
       .eq('hako_id', hakoId)
-      .order('last_message_at', { ascending: false, nullsFirst: true })
+      // .order('last_message_at', { ascending: false, nullsFirst: true }) // Disabled until DB migration is run
       .order('created_at', { ascending: false })
 
     if (error) {

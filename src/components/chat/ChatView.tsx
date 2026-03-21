@@ -192,37 +192,14 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     setInputText('')
     setIsSending(true)
 
-    // Optimistic Update
-    const tempId = `temp-${Date.now()}`
-    const optimisticMessage: ChatMessage = {
-      id: tempId,
-      content: messageContent,
-      created_at: new Date().toISOString(),
-      user_id: currentUserId,
-      userName: currentUserName,
-      userAvatar: currentUserAvatar,
-      channel_id: activeChannelId
-    }
-    
-    setMessages(prev => [...prev, optimisticMessage])
-    scrollToBottom()
-
     try {
       const result = await sendChatMessage(hakoId, activeChannelId, messageContent)
-      if (result.success) {
-        setMessages(prev => prev.map(m => m.id === tempId ? {
-          ...m,
-          id: result.data.id,
-          created_at: result.data.created_at
-        } : m))
-      } else {
+      if (!result.success) {
         alert(result.error)
-        setMessages(prev => prev.filter(m => m.id !== tempId))
         setInputText(messageContent)
       }
     } catch (err) {
       console.error('Failed to send message:', err)
-      setMessages(prev => prev.filter(m => m.id !== tempId))
       setInputText(messageContent)
     } finally {
       setIsSending(false)
