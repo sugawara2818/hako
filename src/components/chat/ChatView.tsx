@@ -50,29 +50,56 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [showSidebar, setShowSidebar] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 1. Fetch Channels & Members
+  // 1. Fetch Members
   useEffect(() => {
-    const init = async () => {
+    const fetchMembers = async () => {
+      const { data } = await supabase
+        .from('hako_members')
+        .select('user_id, display_name, avatar_url')
+        .eq('hako_id', hakoId)
+      setMembers(data || [])
+    }
+    fetchMembers()
+  }, [hakoId])
+
+  // 2. Fetch Channels and Setup Channel Subscription
+  useEffect(() => {
+    const fetchChannels = async () => {
       setIsChannelsLoading(true)
-      const [channelsData, membersData] = await Promise.all([
-        getChatChannels(hakoId),
-        supabase.from('hako_members').select('user_id, display_name, avatar_url').eq('hako_id', hakoId)
-      ])
-      
+      const channelsData = await getChatChannels(hakoId)
       setChannels(channelsData)
-      setMembers(membersData.data || [])
       
-      if (channelsData.length > 0) {
-        if (!activeChannelId) {
-          setActiveChannelId(channelsData[0].id)
-        }
+      if (channelsData.length > 0 && !activeChannelId) {
+        setActiveChannelId(channelsData[0].id)
       }
       setIsChannelsLoading(false)
     }
-    init()
+
+    fetchChannels()
+
+    const channel = supabase
+      .channel(`channels:${hakoId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_channels',
+          filter: `hako_id=eq.${hakoId}`,
+        },
+        async () => {
+          const updatedChannels = await getChatChannels(hakoId)
+          setChannels(updatedChannels)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [hakoId])
 
-  // 2. Fetch Messages and Setup Subscription
+  // 3. Fetch Messages and Setup Message Subscription
   useEffect(() => {
     if (!activeChannelId) return
 
@@ -87,7 +114,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     fetchInitialMessages()
 
     const channel = supabase
-      .channel(`chat:${activeChannelId}`)
+      .channel(`messages:${activeChannelId}`)
       .on(
         'postgres_changes',
         {
@@ -96,64 +123,42 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           table: 'chat_messages',
           filter: `channel_id=eq.${activeChannelId}`,
         },
-        async (payload: { new: { id: string; content: string; created_at: string; user_id: string; channel_id: string } }) => {
-          setMessages((prev) => {
-            const exists = prev.some(m => m.id === payload.new.id)
-            if (exists) return prev
-
-            const isMe = payload.new.user_id === currentUserId
-            
-            if (isMe) {
-               return [...prev, {
-                  id: payload.new.id,
-                  content: payload.new.content,
-                  created_at: payload.new.created_at,
-                  user_id: payload.new.user_id,
-                  userName: currentUserName,
-                  userAvatar: currentUserAvatar,
-                  channel_id: payload.new.channel_id
-               }]
+        async (payload: any) => {
+          const newMessage = payload.new
+          const isMe = newMessage.user_id === currentUserId
+          
+          let displayMsg: ChatMessage;
+          if (isMe) {
+            displayMsg = {
+              id: newMessage.id,
+              content: newMessage.content,
+              created_at: newMessage.created_at,
+              user_id: newMessage.user_id,
+              userName: currentUserName,
+              userAvatar: currentUserAvatar,
+              channel_id: newMessage.channel_id
             }
+          } else {
+            const member = members.find(m => m.user_id === newMessage.user_id)
+            displayMsg = {
+                id: newMessage.id,
+                content: newMessage.content,
+                created_at: newMessage.created_at,
+                user_id: newMessage.user_id,
+                userName: member?.display_name || 'ユーザー',
+                userAvatar: member?.avatar_url || null,
+                channel_id: newMessage.channel_id
+            }
+          }
 
-            fetchMemberInfo(payload.new)
-            return prev
+          setMessages((prev) => {
+            if (prev.some(m => m.id === displayMsg.id)) return prev
+            return [...prev, displayMsg]
           })
           scrollToBottom()
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chat_channels',
-          filter: `hako_id=eq.${hakoId}`,
-        },
-        () => {
-           // Refresh channels on any change
-           getChatChannels(hakoId).then(setChannels)
-        }
-      )
       .subscribe()
-
-    const fetchMemberInfo = async (msgPayload: any) => {
-      const member = members.find(m => m.user_id === msgPayload.user_id)
-
-      const newMessage: ChatMessage = {
-        id: msgPayload.id,
-        content: msgPayload.content,
-        created_at: msgPayload.created_at,
-        user_id: msgPayload.user_id,
-        userName: member?.display_name || 'ユーザー',
-        userAvatar: member?.avatar_url || null,
-        channel_id: msgPayload.channel_id
-      }
-
-      setMessages((prev) => {
-        if (prev.some(m => m.id === newMessage.id)) return prev
-        return [...prev, newMessage]
-      })
-    }
 
     return () => {
       supabase.removeChannel(channel)
