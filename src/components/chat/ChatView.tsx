@@ -122,6 +122,19 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           setChannels(updatedChannels)
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `hako_id=eq.${hakoId}`,
+        },
+        async () => {
+          const updatedChannels = await getChatChannels(hakoId)
+          setChannels(updatedChannels)
+        }
+      )
       .subscribe()
 
     return () => {
