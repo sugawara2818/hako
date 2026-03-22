@@ -292,3 +292,53 @@ export async function reorderHakos(hakoIds: string[]) {
   revalidatePath('/')
   return { success: true }
 }
+
+// ユーザーの全チャンネルにまたがる未読メッセージ数を取得
+export async function getUnreadChatCount(hakoId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+
+  try {
+    const { data: channels } = await supabase
+      .from('chat_channels')
+      .select('id')
+      .eq('hako_id', hakoId)
+    
+    if (!channels || channels.length === 0) return 0
+    
+    const channelIds = channels.map(c => c.id)
+
+    const { data: readStates } = await supabase
+      .from('chat_channel_members')
+      .select('channel_id, last_read_at')
+      .in('channel_id', channelIds)
+      .eq('user_id', user.id)
+
+    const readStateMap = new Map(readStates?.map(r => [r.channel_id, r.last_read_at]) || [])
+
+    const countPromises = channelIds.map(async (cid) => {
+      const lastRead = readStateMap.get(cid)
+      let query = supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('channel_id', cid)
+        .neq('user_id', user.id) // 自分が送ったメッセージは未読にカウントしない
+      
+      if (lastRead) {
+        // 2秒のNTP等タイムズレ補正を考慮して、過去2秒以内からのメッセージを対象外とする
+        const driftedTime = new Date(new Date(lastRead).getTime() + 2000).toISOString()
+        query = query.gt('created_at', driftedTime)
+      }
+      
+      const { count } = await query
+      return count || 0
+    })
+
+    const counts = await Promise.all(countPromises)
+    return counts.reduce((a, b) => a + b, 0)
+  } catch (e) {
+    console.error('getUnreadChatCount Error:', e)
+    return 0
+  }
+}

@@ -128,8 +128,9 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
 
     const fetchInitialMessages = async () => {
       setIsMessagesLoading(true)
-      const msgs = await getChatMessages(hakoId, activeChannelId)
+      const { messages: msgs, members: channelMembersData } = await getChatMessages(hakoId, activeChannelId)
       setMessages(msgs)
+      setChannelMembers(channelMembersData)
       setIsMessagesLoading(false)
       scrollToBottom()
     }
@@ -196,19 +197,12 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }, [hakoId, activeChannelId, currentUserId, currentUserName, currentUserAvatar, members])
 
-  // 4. Fetch Active Channel Members and Listen for Read Status Updates
+  // 4. Listen for Read Status Updates ONLY (initial members come from getChatMessages)
   useEffect(() => {
     if (!activeChannelId) {
       setChannelMembers([])
       return
     }
-
-    const fetchActiveChannelMembers = async () => {
-      const m = await getChannelMembers(hakoId, activeChannelId)
-      setChannelMembers(m)
-    }
-
-    fetchActiveChannelMembers()
 
     // Real-time subscription for member read updates
     const channel = supabase
@@ -222,6 +216,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           filter: `channel_id=eq.${activeChannelId}`,
         },
         async () => {
+          // We still need to fetch members occasionally if they update their profiles or read status
           const m = await getChannelMembers(hakoId, activeChannelId)
           setChannelMembers(m)
         }

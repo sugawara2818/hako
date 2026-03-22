@@ -1,5 +1,6 @@
 'use client'
 
+// v2.1.0 - Refined Chat Notification & Realtime System
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
@@ -9,7 +10,7 @@ import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
 import Image from 'next/image'
-import { getLatestTimestamps } from '@/core/hako/actions'
+import { getLatestTimestamps, getUnreadChatCount } from '@/core/hako/actions'
 import { supabase } from '@/lib/supabase/client'
 
 interface HakoViewerLayoutProps {
@@ -44,7 +45,7 @@ export function HakoViewerLayout({
   
   const [hasNewTimeline, setHasNewTimeline] = useState(false)
   const [hasNewDiary, setHasNewDiary] = useState(false)
-  const [hasNewChat, setHasNewChat] = useState(false)
+  const [unreadChatCount, setUnreadChatCount] = useState<number>(0)
 
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
@@ -144,9 +145,9 @@ export function HakoViewerLayout({
         if (latestDiary && latestDiaryUserId !== userId && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
             if (!isDiaryActive) setHasNewDiary(true)
         }
-        if (latestChat && latestChatUserId !== userId && (!lastChatLocal || new Date(latestChat) > new Date(lastChatLocal))) {
-            if (!isChatActive) setHasNewChat(true)
-        }
+        
+        const currentChatCount = await getUnreadChatCount(hakoId)
+        setUnreadChatCount(currentChatCount)
       } catch (e) {
         console.error("Failed to check notifications:", e)
       }
@@ -159,7 +160,11 @@ export function HakoViewerLayout({
     // Realtime listeners for instant notifications
     const channel = supabase
       .channel(`global_notifications:${hakoId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `hako_id=eq.${hakoId}` }, (payload) => {
+         if (payload.new.user_id !== userId) {
+             setUnreadChatCount(prev => prev + 1)
+         }
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_timeline_posts', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_diaries', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
       .subscribe()
@@ -195,8 +200,8 @@ export function HakoViewerLayout({
         setHasNewDiary(false)
     }
     if (isChatActive) {
-        localStorage.setItem(`hako_${hakoId}_last_chat`, new Date().toISOString())
-        setHasNewChat(false)
+        // We no longer clear chat notifications just by being on the page.
+        // Clearing is handled per-channel in ChatView.tsx via database updates.
     }
   }, [isTimelineActive, isDiaryActive, isChatActive, hakoId, pathname])
 
@@ -324,8 +329,10 @@ export function HakoViewerLayout({
                   >
                     <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
                     チャット
-                    {hasNewChat && (
-                      <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                    {unreadChatCount > 0 && (
+                      <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
+                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                      </span>
                     )}
                   </Link>
                 )
@@ -412,7 +419,7 @@ export function HakoViewerLayout({
             onClose={handleClose}
             hasNewTimeline={hasNewTimeline}
             hasNewDiary={hasNewDiary}
-            hasNewChat={hasNewChat}
+            unreadChatCount={unreadChatCount}
           />
         </div>
       </div>

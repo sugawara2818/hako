@@ -73,49 +73,64 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
 export async function getChatMessages(hakoId: string, channelId: string, limit = 50) {
   const supabase = await createServerSupabaseClient()
   
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .select(`
-      id,
-      content,
-      created_at,
-      user_id,
-      metadata,
-      channel_id
-    `)
-    .eq('hako_id', hakoId)
-    .eq('channel_id', channelId)
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  // Fetch messages, members, and read statuses concurrently
+  const [msgRes, memberStatusRes, allHakoMembersRes] = await Promise.all([
+    supabase
+      .from('chat_messages')
+      .select(`id, content, created_at, user_id, channel_id`)
+      .eq('hako_id', hakoId)
+      .eq('channel_id', channelId)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    supabase
+      .from('chat_channel_members')
+      .select('user_id, last_read_at')
+      .eq('channel_id', channelId),
+    supabase
+      .from('hako_members')
+      .select('user_id, display_name, avatar_url, role')
+      .eq('hako_id', hakoId)
+  ])
 
-  if (error) {
-    console.error('getChatMessages Error:', error)
-    return []
+  if (msgRes.error) {
+    console.error('getChatMessages Error:', msgRes.error)
+    return { messages: [], members: [] }
   }
 
-  // Fetch member info for display names and avatars
-  const { data: members, error: memberError } = await supabase
-    .from('hako_members')
-    .select('user_id, display_name, avatar_url')
-    .eq('hako_id', hakoId)
+  // Map member names/avatars
+  const hakoMemberMap = new Map(allHakoMembersRes.data?.map(m => [m.user_id, m]) || [])
+  
+  // Map read statuses
+  const readStatusMap = new Map(memberStatusRes.data?.map(m => [m.user_id, m.last_read_at]) || [])
 
-  const memberMap: Record<string, { display_name: string; avatar_url: string | null }> = {}
-  if (!memberError && members) {
-    members.forEach(m => {
-      memberMap[m.user_id] = {
-        display_name: m.display_name,
-        avatar_url: m.avatar_url
+  // Process messages
+  const processedMessages = (msgRes.data || [])
+    .reverse()
+    .map(msg => {
+      const profile = hakoMemberMap.get(msg.user_id)
+      return {
+        ...msg,
+        userName: profile?.display_name || 'ユーザー',
+        userAvatar: profile?.avatar_url || null
       }
     })
-  }
 
-  return (data || [])
-    .reverse() // Display in chronological order
-    .map(msg => ({
-      ...msg,
-      userName: memberMap[msg.user_id]?.display_name || 'ユーザー',
-      userAvatar: memberMap[msg.user_id]?.avatar_url || null
-    }))
+  // Process members with their read statuses for this specific channel
+  const channelMembers = (memberStatusRes.data || []).map(ms => {
+    const profile = hakoMemberMap.get(ms.user_id)
+    return {
+      user_id: ms.user_id,
+      last_read_at: ms.last_read_at,
+      display_name: profile?.display_name || 'ユーザー',
+      avatar_url: profile?.avatar_url || null,
+      role: profile?.role || 'member'
+    }
+  })
+
+  return { 
+    messages: processedMessages, 
+    members: channelMembers 
+  }
 }
 
 export async function deleteChatMessage(messageId: string, hakoId: string) {

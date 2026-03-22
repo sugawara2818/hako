@@ -1,5 +1,6 @@
 'use client'
 
+// v2.1.0
 import { useState, useMemo } from 'react'
 import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check, MessageCircle, Pin } from 'lucide-react'
 
