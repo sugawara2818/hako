@@ -3,8 +3,15 @@ import { redirect } from 'next/navigation'
 import { ChatView } from '@/components/chat/ChatView'
 import { getChatChannels } from '@/core/chat/actions'
 
-export default async function ChatPage({ params }: { params: Promise<{ hakoId: string }> }) {
+export default async function ChatPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ hakoId: string }>,
+  searchParams: Promise<{ c?: string }>
+}) {
   const { hakoId } = await params
+  const { c: initialChannelId } = await searchParams
   const supabase = await createServerSupabaseClient()
 
   // 1. Fetch current user and check authentication
@@ -40,6 +47,7 @@ export default async function ChatPage({ params }: { params: Promise<{ hakoId: s
       currentUserAvatar={member.avatar_url || null} 
       isOwner={member.role === 'owner'}
       initialChannels={initialChannels}
+      initialChannelId={initialChannelId}
     />
   )
 }

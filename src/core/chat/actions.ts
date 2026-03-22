@@ -190,7 +190,25 @@ export async function getChatChannels(hakoId: string) {
       readStateMap = new Map(readStates?.map(r => [r.channel_id, r.last_read_at]))
     }
 
-    // Sort pinned channels and recent messages securely in JS to avoid crashing if DB migration isn't run yet
+    // Get detailed message counts per channel to ensure consistency with the global badge
+    const counts = await Promise.all(channelIds.map(async (cid) => {
+      const lastRead = readStateMap.get(cid)
+      let q = supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('channel_id', cid)
+        .neq('user_id', user.id)
+      
+      if (lastRead) {
+        const dTime = new Date(new Date(lastRead).getTime() + 2000).toISOString()
+        q = q.gt('created_at', dTime)
+      }
+      const { count } = await q
+      return { id: cid, count: count || 0 }
+    }))
+    const countMap = new Map(counts.map(c => [c.id, c.count]))
+
+    // Sort pinned channels and recent messages securely
     const sortedChannels = (channels || []).sort((a, b) => {
       const aPinned = a.is_pinned ? 1 : 0
       const bPinned = b.is_pinned ? 1 : 0
@@ -201,15 +219,11 @@ export async function getChatChannels(hakoId: string) {
       return bTime - aTime
     })
 
-    // Return channels with unreadCount, allowing 2000ms drift
-    return sortedChannels.map(ch => {
-      const lastRead = readStateMap.get(ch.id)
-      const isUnread = ch.last_message_at && (!lastRead || new Date(ch.last_message_at).getTime() - new Date(lastRead).getTime() > 2000)
-      return {
-        ...ch,
-        unreadCount: isUnread ? 1 : 0
-      }
-    })
+    // Return channels with precise unreadCount matching the global badge
+    return sortedChannels.map(ch => ({
+      ...ch,
+      unreadCount: countMap.get(ch.id) || 0
+    }))
   } catch (e) {
     console.error('Unexpected getChatChannels Error:', e)
     return []

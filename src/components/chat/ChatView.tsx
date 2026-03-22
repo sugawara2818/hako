@@ -42,12 +42,19 @@ interface ChatViewProps {
   currentUserAvatar: string | null
   isOwner: boolean
   initialChannels: any[]
+  initialChannelId?: string
 }
 
-export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner, initialChannels }: ChatViewProps) {
+import { useSearchParams, useRouter } from 'next/navigation'
+
+export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner, initialChannels, initialChannelId }: ChatViewProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlChannelId = searchParams.get('c')
+  
   const [channels, setChannels] = useState<ChatChannel[]>(initialChannels)
   const [members, setMembers] = useState<Member[]>([])
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
+  const [activeChannelId, setActiveChannelId] = useState<string | null>(urlChannelId || initialChannelId || null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isChannelsLoading, setIsChannelsLoading] = useState(false)
   const [hiddenChannels, setHiddenChannels] = useState<string[]>(() => {
@@ -372,9 +379,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               channels={visibleChannels}
               members={members}
               currentUserId={currentUserId}
-              activeChannelId={activeChannelId}
+              activeChannelId={activeChannelId || ""}
               onChannelSelect={(id) => {
                 setActiveChannelId(id)
+                router.push(`/hako/${hakoId}/chat?c=${id}`)
               }}
               onCreateChannel={handleCreateChannel}
               onHideChannel={handleHideChannel}
@@ -390,7 +398,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             <div className="h-14 border-b theme-border flex items-center px-4 md:px-6 bg-white/5 backdrop-blur-md justify-between shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 <button 
-                  onClick={() => setActiveChannelId(null)}
+                  onClick={() => {
+                    setActiveChannelId(null)
+                    router.push(`/hako/${hakoId}/chat`)
+                  }}
                   className="p-2 -ml-2 theme-muted hover:theme-text transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />

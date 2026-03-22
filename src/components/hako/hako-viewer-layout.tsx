@@ -28,7 +28,7 @@ interface HakoViewerLayoutProps {
   children: React.ReactNode
 }
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const DRAWER_WIDTH = Math.min(320, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 320)
 const OPEN_THRESHOLD = 0.4 // 40% of drawer must be visible to snap open
@@ -38,6 +38,8 @@ export function HakoViewerLayout({
   hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], userId, children
 }: HakoViewerLayoutProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const activeChannelIdFromUrl = searchParams.get('c')
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
   const [dragProgress, setDragProgress] = useState(0)
@@ -161,7 +163,8 @@ export function HakoViewerLayout({
     const channel = supabase
       .channel(`global_notifications:${hakoId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `hako_id=eq.${hakoId}` }, (payload) => {
-         if (payload.new.user_id !== userId) {
+         // Skip notification if we are already viewing this specific channel
+         if (payload.new.user_id !== userId && payload.new.channel_id !== activeChannelIdFromUrl) {
              setUnreadChatCount(prev => prev + 1)
          }
       })
@@ -174,6 +177,15 @@ export function HakoViewerLayout({
       supabase.removeChannel(channel)
     }
   }, [hakoId, isTimelineActive, isDiaryActive, isChatActive, userId])
+
+  // Trigger re-check when switching channels to clear badge immediately
+  useEffect(() => {
+    const check = async () => {
+       const count = await getUnreadChatCount(hakoId)
+       setUnreadChatCount(count)
+    }
+    check()
+  }, [activeChannelIdFromUrl, hakoId])
 
   useEffect(() => {
     // Determine if the current path is a "Main Hub"
