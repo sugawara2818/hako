@@ -10,6 +10,7 @@ import { MobileSidebar } from '@/components/hako/mobile-sidebar'
 import { ThemeToggle } from '@/components/hako/theme-toggle'
 import Image from 'next/image'
 import { getLatestTimestamps } from '@/core/hako/actions'
+import { supabase } from '@/lib/supabase/client'
 
 interface HakoViewerLayoutProps {
   hakoId: string
@@ -152,9 +153,21 @@ export function HakoViewerLayout({
     }
     checkNotifications()
     
-    // Check every 5 minutes
+    // Check every 5 minutes as a fallback
     const interval = setInterval(checkNotifications, 1000 * 60 * 5)
-    return () => clearInterval(interval)
+
+    // Realtime listeners for instant notifications
+    const channel = supabase
+      .channel(`global_notifications:${hakoId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_timeline_posts', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_diaries', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
+      .subscribe()
+
+    return () => {
+      clearInterval(interval)
+      supabase.removeChannel(channel)
+    }
   }, [hakoId, isTimelineActive, isDiaryActive, isChatActive, userId])
 
   useEffect(() => {

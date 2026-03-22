@@ -494,7 +494,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                         const othersReadCount = channelMembers.filter(m => 
                           m.user_id !== currentUserId && 
                           m.last_read_at && 
-                          new Date(m.last_read_at) >= new Date(msg.created_at)
+                          new Date(m.last_read_at).getTime() + 2000 >= new Date(msg.created_at).getTime()
                         ).length
                         
                         if (othersReadCount > 0) {

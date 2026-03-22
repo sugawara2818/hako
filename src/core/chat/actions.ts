@@ -29,22 +29,43 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
 
   // Update channel info and member read status
   const now = new Date().toISOString()
-  await Promise.all([
-    supabase
-      .from('chat_channels')
-      .update({
-        last_message_content: content,
-        last_message_at: now
-      })
-      .eq('id', channelId),
-    supabase
-      .from('chat_channel_members')
-      .upsert({
-        channel_id: channelId,
-        user_id: user.id,
-        last_read_at: now
-      }, { onConflict: 'channel_id,user_id' })
-  ])
+  
+  let adminWorked = false
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const { createClient } = await import('@supabase/supabase-js')
+    const adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    
+    const [chRes, memRes] = await Promise.all([
+      adminSupabase
+        .from('chat_channels')
+        .update({ last_message_content: content, last_message_at: now })
+        .eq('id', channelId),
+      adminSupabase
+        .from('chat_channel_members')
+        .upsert({ channel_id: channelId, user_id: user.id, last_read_at: now }, { onConflict: 'channel_id,user_id' })
+    ])
+    
+    if (!chRes.error && !memRes.error) adminWorked = true
+  }
+
+  if (!adminWorked) {
+    await Promise.all([
+      supabase
+        .from('chat_channels')
+        .update({
+          last_message_content: content,
+          last_message_at: now
+        })
+        .eq('id', channelId),
+      supabase
+        .from('chat_channel_members')
+        .upsert({
+          channel_id: channelId,
+          user_id: user.id,
+          last_read_at: now
+        }, { onConflict: 'channel_id,user_id' })
+    ])
+  }
 
   return { success: true, data }
 }
@@ -165,10 +186,10 @@ export async function getChatChannels(hakoId: string) {
       return bTime - aTime
     })
 
-    // Return channels with unreadCount
+    // Return channels with unreadCount, allowing 2000ms drift
     return sortedChannels.map(ch => {
       const lastRead = readStateMap.get(ch.id)
-      const isUnread = ch.last_message_at && (!lastRead || new Date(ch.last_message_at) > new Date(lastRead))
+      const isUnread = ch.last_message_at && (!lastRead || new Date(ch.last_message_at).getTime() - new Date(lastRead).getTime() > 2000)
       return {
         ...ch,
         unreadCount: isUnread ? 1 : 0
@@ -186,9 +207,8 @@ export async function markChannelAsRead(hakoId: string, channelId: string) {
 
   if (!user) return { success: false }
 
-  // Add 10 seconds to current time to compensate for potential NTP clock drift
-  // between Vercel Node servers and Supabase Postgres servers.
-  const now = new Date(Date.now() + 10000).toISOString()
+  // Use current time. Comparisons will handle up to 2 seconds of NTP drift.
+  const now = new Date().toISOString()
 
   // Use admin client if available to bypass any skipped RLS SQL policies
   let success = false
