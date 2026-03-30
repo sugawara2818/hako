@@ -197,7 +197,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               user_id: newMessage.user_id,
               userName: currentUserName,
               userAvatar: currentUserAvatar,
-              channel_id: newMessage.channel_id
+              channel_id: newMessage.channel_id,
+              metadata: newMessage.metadata
             }
           } else {
             const member = members.find(m => m.user_id === newMessage.user_id)
@@ -208,7 +209,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                 user_id: newMessage.user_id,
                 userName: member?.display_name || 'ユーザー',
                 userAvatar: member?.avatar_url || null,
-                channel_id: newMessage.channel_id
+                channel_id: newMessage.channel_id,
+                metadata: newMessage.metadata
             }
           }
 
