@@ -551,7 +551,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                               onClick={() => setZoomImageUrl(msg.metadata?.image_url || null)}
                             >
                               <Image 
-                                src={msg.metadata.image_url!} 
+                                src={msg.metadata!.image_url!} 
                                 alt="Chat Image" 
                                 width={400} 
                                 height={300} 
