@@ -24,6 +24,8 @@ interface Member {
 interface ChannelSidebarProps {
   channels: Channel[]
   hiddenChannels: Channel[]
+  showHiddenModal: boolean
+  onSetShowHiddenModal: (open: boolean) => void
   members: Member[]
   currentUserId: string
   activeChannelId: string
@@ -38,6 +40,8 @@ interface ChannelSidebarProps {
 export function ChannelSidebar({ 
   channels, 
   hiddenChannels,
+  showHiddenModal,
+  onSetShowHiddenModal,
   members,
   currentUserId,
   activeChannelId, 
@@ -49,7 +53,6 @@ export function ChannelSidebar({
   isOwner
 }: ChannelSidebarProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showHidden, setShowHidden] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
@@ -174,7 +177,6 @@ export function ChannelSidebar({
                 </div>
               )
             })}
-
           </>
         )}
       </div>
@@ -183,7 +185,7 @@ export function ChannelSidebar({
       {hiddenChannels.length > 0 && (
         <div className="p-4 border-t theme-border bg-white/5 pb-safe shrink-0">
           <button
-            onClick={() => setShowHidden(true)}
+            onClick={() => onSetShowHiddenModal(true)}
             className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-bold text-xs transition-all active:scale-95 text-center"
           >
             非表示のルームを表示 ({hiddenChannels.length})
@@ -200,13 +202,13 @@ export function ChannelSidebar({
       </button>
 
       {/* Restore Modal */}
-      {showHidden && (
+      {showHiddenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md glass-card p-0 rounded-3xl theme-border overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-6 border-b theme-border bg-white/5">
               <h3 className="text-xl font-bold">非表示のルーム ({hiddenChannels.length})</h3>
               <button 
-                onClick={() => setShowHidden(false)}
+                onClick={() => onSetShowHiddenModal(false)}
                 className="theme-muted hover:theme-text transition-colors p-2"
               >
                 <X className="w-6 h-6" />
@@ -224,7 +226,7 @@ export function ChannelSidebar({
                     <button
                       onClick={() => {
                         onChannelSelect(ch.id)
-                        setShowHidden(false)
+                        onSetShowHiddenModal(false)
                       }}
                       className="w-full flex items-start gap-3 px-6 py-4 hover:bg-white/5 transition-all text-left"
                     >
@@ -249,7 +251,7 @@ export function ChannelSidebar({
                       onClick={(e) => {
                         e.stopPropagation()
                         onRestoreHiddenChannel?.(ch.id)
-                        if (hiddenChannels.length <= 1) setShowHidden(false)
+                        if (hiddenChannels.length <= 1) onSetShowHiddenModal(false)
                       }}
                       className="absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#06C755] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all"
                     >

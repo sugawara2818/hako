@@ -85,6 +85,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   
   const [isImageUploading, setIsImageUploading] = useState(false)
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 1. Fetch Members
@@ -416,6 +417,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
            <ChannelSidebar 
             channels={visibleChannels}
             hiddenChannels={channels.filter(c => hiddenChannels.includes(c.id))}
+            showHiddenModal={isRestoreModalOpen}
+            onSetShowHiddenModal={setIsRestoreModalOpen}
             members={members}
             currentUserId={currentUserId}
             activeChannelId=""
@@ -436,6 +439,8 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             <ChannelSidebar 
               channels={visibleChannels}
               hiddenChannels={channels.filter(c => hiddenChannels.includes(c.id))}
+              showHiddenModal={isRestoreModalOpen}
+              onSetShowHiddenModal={setIsRestoreModalOpen}
               members={members}
               currentUserId={currentUserId}
               activeChannelId={activeChannelId || ""}
@@ -458,6 +463,9 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               <div className="flex items-center gap-2 min-w-0">
                 <button 
                   onClick={() => {
+                    if (activeChannelId && hiddenChannels.includes(activeChannelId)) {
+                      setIsRestoreModalOpen(true)
+                    }
                     setActiveChannelId(null)
                     router.push(`/hako/${hakoId}/chat`)
                   }}
