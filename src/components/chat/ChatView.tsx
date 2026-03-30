@@ -346,6 +346,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   }
 
   const handleHideChannel = (channelId: string) => {
+    if (!confirm('このルームを非表示にしますか？（後で戻すことも可能です）')) return
     setHiddenChannels(prev => {
       const next = [...prev, channelId]
       localStorage.setItem(`hidden_channels_${hakoId}_${currentUserId}`, JSON.stringify(next))
