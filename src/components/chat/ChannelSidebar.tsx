@@ -202,35 +202,67 @@ export function ChannelSidebar({
       {/* Restore Modal */}
       {showHidden && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[80vh]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold">非表示のルーム</h3>
+          <div className="w-full max-w-md glass-card p-0 rounded-3xl theme-border overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between p-6 border-b theme-border bg-white/5">
+              <h3 className="text-xl font-bold">非表示のルーム ({hiddenChannels.length})</h3>
               <button 
                 onClick={() => setShowHidden(false)}
-                className="theme-muted hover:theme-text transition-colors"
+                className="theme-muted hover:theme-text transition-colors p-2"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
             
-            <div className="space-y-2">
-              {hiddenChannels.map(ch => (
-                <div key={ch.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border theme-border group">
-                  <div className="min-w-0 pr-4">
-                    <p className="text-sm font-bold truncate">{ch.name}</p>
-                    {ch.description && <p className="text-[10px] theme-muted truncate">{ch.description}</p>}
+            <div className="flex-1 overflow-y-auto px-1 py-2 custom-scrollbar">
+              {hiddenChannels.map(ch => {
+                const lastTime = ch.last_message_at 
+                  ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                  : ''
+                  
+                return (
+                  <div key={ch.id} className="group relative">
+                    <button
+                      onClick={() => {
+                        onChannelSelect(ch.id)
+                        setShowHidden(false)
+                      }}
+                      className="w-full flex items-start gap-3 px-6 py-4 hover:bg-white/5 transition-all text-left"
+                    >
+                      {/* Avatar */}
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                        {ch.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5 pr-16">
+                        <div className="flex justify-between items-baseline gap-2">
+                          <span className="text-[15px] font-bold truncate theme-text">{ch.name}</span>
+                          <span className="text-[10px] theme-muted font-medium shrink-0">{lastTime}</span>
+                        </div>
+                        <p className="text-xs theme-muted truncate font-medium">
+                          {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onRestoreHiddenChannel?.(ch.id)
+                        if (hiddenChannels.length <= 1) setShowHidden(false)
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#06C755] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      復元
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      onRestoreHiddenChannel?.(ch.id)
-                      if (hiddenChannels.length <= 1) setShowHidden(false)
-                    }}
-                    className="px-4 py-2 bg-[#06C755] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all shrink-0"
-                  >
-                    復元
-                  </button>
-                </div>
-              ))}
+                )})}
+            </div>
+            
+            <div className="p-4 bg-white/5 text-center">
+              <p className="text-[10px] theme-muted font-bold opacity-60">
+                表示したいルームを選んでください
+              </p>
             </div>
           </div>
         </div>
