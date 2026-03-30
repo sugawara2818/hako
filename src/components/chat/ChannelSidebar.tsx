@@ -175,44 +175,66 @@ export function ChannelSidebar({
               )
             })}
 
-            {hiddenChannels.length > 0 && (
-              <div className="mt-8 px-4 pb-12">
-                <button 
-                  onClick={() => setShowHidden(!showHidden)}
-                  className="w-full flex items-center justify-between py-2 text-[10px] font-black theme-muted uppercase tracking-widest border-b theme-border mb-2 px-1"
-                >
-                  <span>非表示のルーム ({hiddenChannels.length})</span>
-                  <Plus className={`w-3 h-3 transition-transform ${showHidden ? 'rotate-45' : ''}`} />
-                </button>
-                
-                {showHidden && (
-                  <div className="space-y-1 animate-in fade-in slide-in-from-top-1">
-                    {hiddenChannels.map(ch => (
-                      <div key={ch.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 transition-all group">
-                        <span className="text-xs font-bold theme-muted truncate flex-1">{ch.name}</span>
-                        <button
-                          onClick={() => onRestoreHiddenChannel?.(ch.id)}
-                          className="px-3 py-1 bg-white/10 hover:bg-[#06C755] hover:text-white rounded-lg text-[10px] font-bold transition-all"
-                        >
-                          復元
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </>
         )}
       </div>
 
+      {/* Restore Hidden Channels Button - Fixed at bottom */}
+      {hiddenChannels.length > 0 && (
+        <div className="p-4 border-t theme-border bg-white/5 pb-safe shrink-0">
+          <button
+            onClick={() => setShowHidden(true)}
+            className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-bold text-xs transition-all active:scale-95 text-center"
+          >
+            非表示のルームを表示 ({hiddenChannels.length})
+          </button>
+        </div>
+      )}
+
       {/* FAB - Create Channel */}
       <button
         onClick={() => setShowCreateModal(true)}
-        className="absolute right-6 bottom-12 w-16 h-16 rounded-full bg-[#06C755] text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all z-10"
+        className="absolute right-6 bottom-24 w-16 h-16 rounded-full bg-[#06C755] text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all z-10"
       >
         <Plus className="w-8 h-8 stroke-[3]" />
       </button>
+
+      {/* Restore Modal */}
+      {showHidden && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[80vh]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold">非表示のルーム</h3>
+              <button 
+                onClick={() => setShowHidden(false)}
+                className="theme-muted hover:theme-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {hiddenChannels.map(ch => (
+                <div key={ch.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border theme-border group">
+                  <div className="min-w-0 pr-4">
+                    <p className="text-sm font-bold truncate">{ch.name}</p>
+                    {ch.description && <p className="text-[10px] theme-muted truncate">{ch.description}</p>}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onRestoreHiddenChannel?.(ch.id)
+                      if (hiddenChannels.length <= 1) setShowHidden(false)
+                    }}
+                    className="px-4 py-2 bg-[#06C755] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all shrink-0"
+                  >
+                    復元
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
