@@ -539,34 +539,46 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                         {msg.userName}
                       </span>
                     )}
-                    <div className={`px-4 py-2.5 rounded-2xl text-[15px] font-medium break-words shadow-sm line-clamp-none leading-relaxed ${
-                      isMe 
-                        ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
-                        : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
-                    }`}>
-                      {msg.metadata?.type === 'image' && msg.metadata.image_url ? (
-                        <div className="space-y-2">
-                          <div 
-                            className="relative aspect-auto max-w-full rounded-lg overflow-hidden cursor-zoom-in"
-                            onClick={() => setZoomImageUrl(msg.metadata?.image_url || null)}
-                          >
-                            <Image 
-                              src={msg.metadata.image_url} 
-                              alt="Chat Image" 
-                              width={400} 
-                              height={300} 
-                              className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                              loading="lazy"
-                            />
+                    {(() => {
+                      const isImage = msg.metadata?.type === 'image' && msg.metadata.image_url
+                      const hasText = msg.content && msg.content !== '[画像]'
+                      
+                      if (isImage) {
+                        return (
+                          <div className={`${hasText ? 'bg-white dark:bg-zinc-800 p-1 rounded-2xl border theme-border shadow-sm overflow-hidden' : ''}`}>
+                            <div 
+                              className={`relative aspect-auto max-w-full rounded-xl overflow-hidden cursor-zoom-in ${!hasText ? 'shadow-md border theme-border' : ''}`}
+                              onClick={() => setZoomImageUrl(msg.metadata?.image_url || null)}
+                            >
+                              <Image 
+                                src={msg.metadata.image_url!} 
+                                alt="Chat Image" 
+                                width={400} 
+                                height={300} 
+                                className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                                unoptimized
+                                loading="lazy"
+                              />
+                            </div>
+                            {hasText && (
+                              <div className="px-3 py-2 text-[15px] theme-text font-medium break-words leading-relaxed">
+                                {msg.content}
+                              </div>
+                            )}
                           </div>
-                          {msg.content && msg.content !== '[画像]' && (
-                            <p className="mt-1">{msg.content}</p>
-                          )}
+                        )
+                      }
+
+                      return (
+                        <div className={`px-4 py-2.5 rounded-2xl text-[15px] font-medium break-words shadow-sm line-clamp-none leading-relaxed ${
+                          isMe 
+                            ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
+                            : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
+                        }`}>
+                          {msg.content}
                         </div>
-                      ) : (
-                        msg.content
-                      )}
-                    </div>
+                      )
+                    })()}
                     <div className={`flex items-baseline gap-1.5 ${isMe ? 'flex-row-reverse self-end' : 'flex-row self-start'}`}>
                       <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
                         {new Date(msg.created_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
