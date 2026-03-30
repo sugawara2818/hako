@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { getChatMessages, sendChatMessage, getChatChannels, createChatChannel, deleteChatChannel, markChannelAsRead, togglePinChannel, getChannelMembers, updateChannelName, addChannelMembers } from '@/core/chat/actions'
-import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft, Settings, X, Shield, Pin, Edit2, UserPlus, Check, Search } from 'lucide-react'
+import { uploadChatImage } from '@/core/chat/upload'
+import { Hash, Send, Loader2, Menu, Trash2, Users, MessageCircle, ChevronLeft, Settings, X, Shield, Pin, Edit2, UserPlus, Check, Search, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { ChannelSidebar } from './ChannelSidebar'
 
@@ -15,6 +16,10 @@ interface ChatMessage {
   userName: string
   userAvatar: string | null
   channel_id: string
+  metadata?: {
+    type?: 'image'
+    image_url?: string
+  }
 }
 
 interface ChatChannel {
@@ -77,6 +82,10 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   const [showInvite, setShowInvite] = useState(false)
   const [memberSearch, setMemberSearch] = useState('')
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([])
+  
+  const [isImageUploading, setIsImageUploading] = useState(false)
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 1. Fetch Members
   useEffect(() => {
@@ -294,6 +303,36 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !activeChannelId) return
+
+    setIsImageUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const uploadRes = await uploadChatImage(formData)
+      if (!uploadRes.success || !uploadRes.url) {
+        alert(uploadRes.error || '画像のアップロードに失敗しました')
+        return
+      }
+
+      // Send message with image metadata
+      const res = await sendChatMessage(hakoId, activeChannelId, '[画像]', {
+        type: 'image',
+        image_url: uploadRes.url
+      })
+
+      if (!res.success) {
+        alert(res.error)
+      }
+    } finally {
+      setIsImageUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleCreateChannel = async (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => {
     const res = await createChatChannel(hakoId, name, description, type, memberIds)
     if (res.success) {
@@ -503,7 +542,28 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                         ? 'bg-[#95ec69] text-gray-900 rounded-tr-none' 
                         : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-100 dark:border-zinc-700/50 rounded-tl-none'
                     }`}>
-                      {msg.content}
+                      {msg.metadata?.type === 'image' && msg.metadata.image_url ? (
+                        <div className="space-y-2">
+                          <div 
+                            className="relative aspect-auto max-w-full rounded-lg overflow-hidden cursor-zoom-in"
+                            onClick={() => setZoomImageUrl(msg.metadata?.image_url || null)}
+                          >
+                            <Image 
+                              src={msg.metadata.image_url} 
+                              alt="Chat Image" 
+                              width={400} 
+                              height={300} 
+                              className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                              loading="lazy"
+                            />
+                          </div>
+                          {msg.content && msg.content !== '[画像]' && (
+                            <p className="mt-1">{msg.content}</p>
+                          )}
+                        </div>
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                     <div className={`flex items-baseline gap-1.5 ${isMe ? 'flex-row-reverse self-end' : 'flex-row self-start'}`}>
                       <span className="text-[8px] font-bold theme-muted opacity-40 px-1">
@@ -553,6 +613,25 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                 }}
               />
             </div>
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleImageSelect}
+            />
+            <button
+              type="button"
+              disabled={isImageUploading || !activeChannelId}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-12 h-12 rounded-2xl bg-white/5 border theme-border flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-50"
+            >
+              {isImageUploading ? (
+                <Loader2 className="w-5 h-5 animate-spin theme-muted" />
+              ) : (
+                <ImageIcon className="w-5 h-5 theme-muted" />
+              )}
+            </button>
             <button
               type="submit"
               disabled={!inputText.trim() || isSending || !activeChannelId}
@@ -567,8 +646,33 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           </form>
         </div>
       </div>
-
-        </>
+    </>
+  )}
+      
+      {/* Image Zoom Overlay */}
+      {zoomImageUrl && (
+        <div 
+          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-300"
+          onClick={() => setZoomImageUrl(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+          {zoomImageUrl && (
+            <Image 
+              src={zoomImageUrl} 
+              alt="Zoomed" 
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          )}
+            <button 
+              className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all"
+              onClick={() => setZoomImageUrl(null)}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Channel Settings / Management Modal */}
@@ -616,7 +720,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                         <button 
                           disabled={!editName.trim() || editName === activeChannel.name}
                           onClick={async () => {
-                            if (!activeChannelId) return
+                            if (!activeChannelId || !activeChannel) return
                             const res = await updateChannelName(hakoId, activeChannelId, editName)
                             if (res.success) {
                               setChannels(prev => prev.map(c => c.id === activeChannelId ? { ...c, name: editName } : c))

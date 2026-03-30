@@ -3,7 +3,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function sendChatMessage(hakoId: string, channelId: string, content: string) {
+export async function sendChatMessage(hakoId: string, channelId: string, content: string, metadata: any = {}) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -18,6 +18,7 @@ export async function sendChatMessage(hakoId: string, channelId: string, content
       channel_id: channelId,
       user_id: user.id,
       content,
+      metadata,
     })
     .select()
     .single()
@@ -77,7 +78,7 @@ export async function getChatMessages(hakoId: string, channelId: string, limit =
   const [msgRes, memberStatusRes, allHakoMembersRes] = await Promise.all([
     supabase
       .from('chat_messages')
-      .select(`id, content, created_at, user_id, channel_id`)
+      .select(`id, content, created_at, user_id, channel_id, metadata`)
       .eq('hako_id', hakoId)
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false })
