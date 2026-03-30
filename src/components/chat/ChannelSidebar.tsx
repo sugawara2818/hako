@@ -23,30 +23,33 @@ interface Member {
 
 interface ChannelSidebarProps {
   channels: Channel[]
+  hiddenChannels: Channel[]
   members: Member[]
   currentUserId: string
   activeChannelId: string
   onChannelSelect: (id: string) => void
   onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
   onHideChannel?: (id: string) => void
-  onRestoreHiddenChannels?: () => void
+  onRestoreHiddenChannel?: (id: string) => void
   onPinToggle?: (id: string, isPinned: boolean) => Promise<void>
   isOwner: boolean
 }
 
 export function ChannelSidebar({ 
   channels, 
+  hiddenChannels,
   members,
   currentUserId,
   activeChannelId, 
   onChannelSelect, 
   onCreateChannel,
   onHideChannel,
-  onRestoreHiddenChannels,
+  onRestoreHiddenChannel,
   onPinToggle,
   isOwner
 }: ChannelSidebarProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showHidden, setShowHidden] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
@@ -90,7 +93,7 @@ export function ChannelSidebar({
     <div className="w-full h-full flex flex-col theme-surface relative">
 
       <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0.5 custom-scrollbar">
-        {channels.length === 0 ? (
+        {channels.length === 0 && hiddenChannels.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-20 px-8 text-center opacity-40">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
                <MessageCircle className="w-8 h-8" />
@@ -98,92 +101,110 @@ export function ChannelSidebar({
             <p className="text-sm font-bold leading-relaxed">まだチャットがありません。<br />右下のボタンから作成してみましょう。</p>
           </div>
         ) : (
-          channels.map((ch) => {
-            const lastTime = ch.last_message_at 
-              ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
-              : ''
-            
-            return (
-              <div key={ch.id} className="group relative">
-                <button
-                  onClick={() => onChannelSelect(ch.id)}
-                  className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
-                    activeChannelId === ch.id 
-                      ? 'bg-brand-primary/10' 
-                      : 'hover:bg-white/5 opacity-90 hover:opacity-100'
-                  }`}
-                >
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
-                    {ch.name.charAt(0).toUpperCase()}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5 pr-16">
-                    <div className="flex justify-between items-baseline gap-2">
-                      <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
-                        {ch.name}
-                      </span>
-                      <span className="text-[10px] theme-muted font-medium shrink-0">
-                        {lastTime}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center gap-2 h-5">
-                      <p className="text-xs theme-muted truncate font-medium">
-                        {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
-                      </p>
-                      {ch.unreadCount && ch.unreadCount > 0 ? (
-                        <span className="w-2 h-2 rounded-full bg-[#06C755] flex-shrink-0" />
-                      ) : null}
-                    </div>
-                  </div>
-                </button>
-
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  {/* Pin Button */}
+          <>
+            {channels.map((ch) => {
+              const lastTime = ch.last_message_at 
+                ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                : ''
+              
+              return (
+                <div key={ch.id} className="group relative">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onPinToggle?.(ch.id, !ch.is_pinned)
-                    }}
-                    className={`p-1.5 rounded-lg transition-all ${
-                      ch.is_pinned 
-                        ? 'text-amber-500 bg-amber-500/10' 
-                        : 'text-gray-400/40 md:text-gray-400/0 group-hover:text-gray-400/50 hover:text-gray-400 hover:bg-gray-400/10'
+                    onClick={() => onChannelSelect(ch.id)}
+                    className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
+                      activeChannelId === ch.id 
+                        ? 'bg-brand-primary/10' 
+                        : 'hover:bg-white/5 opacity-90 hover:opacity-100'
                     }`}
                   >
-                    <Pin className="w-4 h-4" fill={ch.is_pinned ? "currentColor" : "none"} />
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                      {ch.name.charAt(0).toUpperCase()}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5 pr-16">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
+                          {ch.name}
+                        </span>
+                        <span className="text-[10px] theme-muted font-medium shrink-0">
+                          {lastTime}
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center gap-2 h-5">
+                        <p className="text-xs theme-muted truncate font-medium">
+                          {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                        </p>
+                        {ch.unreadCount && ch.unreadCount > 0 ? (
+                          <span className="w-2 h-2 rounded-full bg-[#06C755] flex-shrink-0" />
+                        ) : null}
+                      </div>
+                    </div>
                   </button>
 
-                  {/* Hide Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onHideChannel?.(ch.id)
-                    }}
-                    className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {/* Pin Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onPinToggle?.(ch.id, !ch.is_pinned)
+                      }}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        ch.is_pinned 
+                          ? 'text-amber-500 bg-amber-500/10' 
+                          : 'text-gray-400/40 md:text-gray-400/0 group-hover:text-gray-400/50 hover:text-gray-400 hover:bg-gray-400/10'
+                      }`}
+                    >
+                      <Pin className="w-4 h-4" fill={ch.is_pinned ? "currentColor" : "none"} />
+                    </button>
+
+                    {/* Hide Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteConfirmId(ch.id)
+                      }}
+                      className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
+              )
+            })}
+
+            {hiddenChannels.length > 0 && (
+              <div className="mt-8 px-4 pb-12">
+                <button 
+                  onClick={() => setShowHidden(!showHidden)}
+                  className="w-full flex items-center justify-between py-2 text-[10px] font-black theme-muted uppercase tracking-widest border-b theme-border mb-2 px-1"
+                >
+                  <span>非表示のルーム ({hiddenChannels.length})</span>
+                  <Plus className={`w-3 h-3 transition-transform ${showHidden ? 'rotate-45' : ''}`} />
+                </button>
+                
+                {showHidden && (
+                  <div className="space-y-1 animate-in fade-in slide-in-from-top-1">
+                    {hiddenChannels.map(ch => (
+                      <div key={ch.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 transition-all group">
+                        <span className="text-xs font-bold theme-muted truncate flex-1">{ch.name}</span>
+                        <button
+                          onClick={() => onRestoreHiddenChannel?.(ch.id)}
+                          className="px-3 py-1 bg-white/10 hover:bg-[#06C755] hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                        >
+                          復元
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )
-          })
+            )}
+          </>
         )}
       </div>
-
-      {/* Restore Hidden Channels Button */}
-      {onRestoreHiddenChannels && (
-        <div className="p-4 border-t theme-border bg-white/5 pb-safe shrink-0">
-          <button
-            onClick={onRestoreHiddenChannels}
-            className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-bold text-xs transition-all active:scale-95 text-center"
-          >
-            非表示のルームを復元する
-          </button>
-        </div>
-      )}
 
       {/* FAB - Create Channel */}
       <button
@@ -309,15 +330,12 @@ export function ChannelSidebar({
               </button>
               <button
                 onClick={async () => {
-                   setIsSubmitting(true)
                    if (onHideChannel) await onHideChannel(deleteConfirmId)
                    setDeleteConfirmId(null)
-                   setIsSubmitting(false)
                 }}
-                disabled={isSubmitting}
-                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all disabled:opacity-50"
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all"
               >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : '非表示にする'}
+                非表示にする
               </button>
             </div>
           </div>

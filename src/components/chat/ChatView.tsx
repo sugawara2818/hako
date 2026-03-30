@@ -346,7 +346,6 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
   }
 
   const handleHideChannel = (channelId: string) => {
-    if (!confirm('このルームを非表示にしますか？（後で戻すことも可能です）')) return
     setHiddenChannels(prev => {
       const next = [...prev, channelId]
       localStorage.setItem(`hidden_channels_${hakoId}_${currentUserId}`, JSON.stringify(next))
@@ -357,9 +356,12 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
     }
   }
 
-  const handleRestoreHiddenChannels = () => {
-    setHiddenChannels([])
-    localStorage.removeItem(`hidden_channels_${hakoId}_${currentUserId}`)
+  const handleRestoreHiddenChannel = (channelId: string) => {
+    setHiddenChannels(prev => {
+      const next = prev.filter(id => id !== channelId)
+      localStorage.setItem(`hidden_channels_${hakoId}_${currentUserId}`, JSON.stringify(next))
+      return next
+    })
   }
 
   const handleDeleteChannel = async (channelId: string) => {
@@ -413,6 +415,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
         <div className="flex-1 flex flex-col min-w-0 h-full">
            <ChannelSidebar 
             channels={visibleChannels}
+            hiddenChannels={channels.filter(c => hiddenChannels.includes(c.id))}
             members={members}
             currentUserId={currentUserId}
             activeChannelId=""
@@ -421,7 +424,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
             }}
             onCreateChannel={handleCreateChannel}
             onHideChannel={handleHideChannel}
-            onRestoreHiddenChannels={handleRestoreHiddenChannels}
+            onRestoreHiddenChannel={handleRestoreHiddenChannel}
             onPinToggle={handlePinToggle}
             isOwner={isOwner}
           />
@@ -432,6 +435,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
           <div className="hidden lg:block w-80 border-r theme-border shrink-0">
             <ChannelSidebar 
               channels={visibleChannels}
+              hiddenChannels={channels.filter(c => hiddenChannels.includes(c.id))}
               members={members}
               currentUserId={currentUserId}
               activeChannelId={activeChannelId || ""}
@@ -441,7 +445,7 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
               }}
               onCreateChannel={handleCreateChannel}
               onHideChannel={handleHideChannel}
-              onRestoreHiddenChannels={handleRestoreHiddenChannels}
+              onRestoreHiddenChannel={handleRestoreHiddenChannel}
               onPinToggle={handlePinToggle}
               isOwner={isOwner}
             />
