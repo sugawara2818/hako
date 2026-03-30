@@ -627,36 +627,38 @@ export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAv
                 }}
               />
             </div>
-            <input 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              ref={fileInputRef} 
-              onChange={handleImageSelect}
-            />
-            <button
-              type="button"
-              disabled={isImageUploading || !activeChannelId}
-              onClick={() => fileInputRef.current?.click()}
-              className="w-12 h-12 rounded-2xl bg-white/5 border theme-border flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-50"
-            >
-              {isImageUploading ? (
-                <Loader2 className="w-5 h-5 animate-spin theme-muted" />
-              ) : (
-                <ImageIcon className="w-5 h-5 theme-muted" />
-              )}
-            </button>
-            <button
-              type="submit"
-              disabled={!inputText.trim() || isSending || !activeChannelId}
-              className="w-12 h-12 rounded-2xl bg-[#06C755] text-white flex items-center justify-center shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
-            >
-              {isSending ? (
-                 <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                 <Send className="w-5 h-5" />
-              )}
-            </button>
+            <div className="flex items-center gap-2 h-12">
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                ref={fileInputRef} 
+                onChange={handleImageSelect}
+              />
+              <button
+                type="button"
+                disabled={isImageUploading || !activeChannelId}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-12 h-12 rounded-2xl bg-white/5 border theme-border flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-50"
+              >
+                {isImageUploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin theme-muted" />
+                ) : (
+                  <ImageIcon className="w-5 h-5 theme-muted" />
+                )}
+              </button>
+              <button
+                type="submit"
+                disabled={!inputText.trim() || isSending || !activeChannelId}
+                className="w-12 h-12 rounded-2xl bg-[#06C755] text-white flex items-center justify-center shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+              >
+                {isSending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </form>
         </div>
       </div>
