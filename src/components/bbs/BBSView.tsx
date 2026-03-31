@@ -200,17 +200,10 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full theme-bg overflow-hidden">
+    <div className="flex-1 flex flex-col h-full theme-bg overflow-hidden relative">
       {/* Header */}
-      <div className="h-24 flex items-center justify-between px-6 md:px-8 shrink-0">
-        <h1 className="text-3xl md:text-4xl font-black theme-text tracking-tighter">掲示板</h1>
-        <button 
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-purple-600 text-white font-bold shadow-xl shadow-purple-600/20 hover:scale-105 active:scale-95 transition-all"
-        >
-          <Plus className="w-5 h-5 stroke-[3]" />
-          <span className="hidden sm:inline">スレッドを立てる</span>
-        </button>
+      <div className="h-16 flex items-center justify-between px-6 md:px-8 shrink-0">
+        <h1 className="text-2xl md:text-3xl font-black theme-text tracking-tighter">掲示板</h1>
       </div>
 
       {/* Thread List */}
@@ -262,6 +255,17 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
           </div>
         )}
       </div>
+      
+      {/* FAB (Floating Action Button) */}
+      {!activeThreadId && (
+        <button 
+          onClick={() => setShowCreateModal(true)}
+          className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-2xl shadow-purple-600/40 hover:scale-110 active:scale-90 transition-all z-40"
+          title="スレッドを立てる"
+        >
+          <Plus className="w-8 h-8 stroke-[3]" />
+        </button>
+      )}
 
       {/* Create Modal */}
       {showCreateModal && (
