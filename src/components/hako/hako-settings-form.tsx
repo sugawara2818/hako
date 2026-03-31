@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, Hash, Calendar, Image as ImageIcon, MessageCircle } from 'lucide-react'
+import { Camera, Loader2, Check, AlertCircle, Trash2, AlertTriangle, BookOpen, Hash, Calendar, Image as ImageIcon, MessageCircle, MessageSquare } from 'lucide-react'
 import { updateHako, deleteHako } from '@/core/hako/actions'
 import { uploadPostImage } from '@/core/timeline/upload'
 import { useRouter } from 'next/navigation'
@@ -21,6 +21,7 @@ const FEATURE_PIECES = [
   { id: 'calendar', label: '共有カレンダー', desc: '共有のカレンダーで予定を管理・表示', icon: Calendar },
   { id: 'gallery', label: 'ギャラリー', desc: 'タイムラインに投稿された画像を一覧で表示', icon: ImageIcon },
   { id: 'chat', label: 'チャット', desc: 'メンバー同士でリアルタイムに会話を楽しむ', icon: MessageCircle },
+  { id: 'bbs', label: '掲示板', desc: 'トピックごとにじっくり会話を楽しむ', icon: MessageSquare },
 ]
 
 const PRESET_GRADIENTS = [

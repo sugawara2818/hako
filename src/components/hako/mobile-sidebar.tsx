@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar, Image as ImageIcon, Users, MessageCircle } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, UserMinus, X, BookOpen, Calendar, Image as ImageIcon, Users, MessageCircle, MessageSquare } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UsernameEditor } from '@/components/hako/username-editor'
 import { leaveHako } from '@/core/hako/actions'
@@ -29,17 +29,19 @@ interface MobileSidebarProps {
   onClose: () => void
   hasNewTimeline?: boolean
   hasNewDiary?: boolean
+  hasNewBbs?: boolean
   unreadChatCount?: number
 }
 
 export function MobileSidebar({
-  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary, unreadChatCount = 0
+  userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary, hasNewBbs, unreadChatCount = 0
 }: MobileSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
   
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
+  const isBbsActive = pathname.includes(`/hako/${hakoId}/bbs`)
 
   const shownName = displayName || email.split('@')[0]
 
@@ -175,6 +177,26 @@ export function MobileSidebar({
                       <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
                         {unreadChatCount > 99 ? '99+' : unreadChatCount}
                       </span>
+                    )}
+                  </Link>
+                )
+            }
+            if (featureId === 'bbs') {
+              return (
+                  <Link
+                    key="bbs"
+                    href={`/hako/${hakoId}/bbs`}
+                    onClick={onClose}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold relative active:scale-[0.98] ${
+                      pathname.includes(`/hako/${hakoId}/bbs`)
+                        ? 'theme-surface theme-text border theme-border shadow-sm bg-purple-500/10'
+                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                    }`}
+                  >
+                    <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
+                    <span className="text-[15px]">掲示板</span>
+                    {hasNewBbs && (
+                      <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     )}
                   </Link>
                 )

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createHakoForOwner } from '@/core/hako/actions'
 import { supabase } from '@/lib/supabase/client'
-import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles, Calendar, Image as ImageIcon, MessageCircle } from 'lucide-react'
+import { Blocks, Users, Globe, Shield, Loader2, ArrowRight, CheckCircle2, BookOpen, Sparkles, Calendar, Image as ImageIcon, MessageCircle, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
 const FEATURE_PIECES = [
@@ -13,6 +13,7 @@ const FEATURE_PIECES = [
   { id: 'calendar', label: '共有カレンダー', desc: '共有のカレンダーで予定を管理・表示', icon: Calendar },
   { id: 'gallery', label: 'ギャラリー', desc: '思い出の写真を一覧で管理', icon: ImageIcon },
   { id: 'chat', label: 'チャット', desc: 'メンバー同士のリアルタイムな会話', icon: MessageCircle },
+  { id: 'bbs', label: '掲示板', desc: 'トピックごとにじっくり会話を楽しむ', icon: MessageSquare },
 ]
 
 export default function CreateHakoPage() {

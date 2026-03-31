@@ -4,7 +4,7 @@
 import { getHakoGradient } from '@/lib/hako-utils'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon, Users, MessageCircle } from 'lucide-react'
+import { Hash, LayoutDashboard, Settings, ShieldAlert, AtSign, BookOpen, Calendar, Image as ImageIcon, Users, MessageCircle, MessageSquare } from 'lucide-react'
 import { InstallButton } from '@/components/hako/install-button'
 import { UserMenu } from '@/components/hako/user-menu'
 import { MobileSidebar } from '@/components/hako/mobile-sidebar'
@@ -47,11 +47,13 @@ export function HakoViewerLayout({
   
   const [hasNewTimeline, setHasNewTimeline] = useState(false)
   const [hasNewDiary, setHasNewDiary] = useState(false)
+  const [hasNewBbs, setHasNewBbs] = useState(false)
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0)
 
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
   const isChatActive = pathname.includes(`/hako/${hakoId}/chat`)
+  const isBbsActive = pathname.includes(`/hako/${hakoId}/bbs`)
 
   const touchStartX = useRef<number | null>(null)
   const touchX = useRef<number>(0)
@@ -136,16 +138,19 @@ export function HakoViewerLayout({
   useEffect(() => {
     const checkNotifications = async () => {
       try {
-        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId, latestChat, latestChatUserId } = await getLatestTimestamps(hakoId)
+        const { latestPost, latestPostUserId, latestDiary, latestDiaryUserId, latestChat, latestChatUserId, latestBbs, latestBbsUserId } = await getLatestTimestamps(hakoId)
         const lastTimeline = localStorage.getItem(`hako_${hakoId}_last_timeline`)
         const lastDiary = localStorage.getItem(`hako_${hakoId}_last_diary`)
-        const lastChatLocal = localStorage.getItem(`hako_${hakoId}_last_chat`)
+        const lastBbs = localStorage.getItem(`hako_${hakoId}_last_bbs`)
         
         if (latestPost && latestPostUserId !== userId && (!lastTimeline || new Date(latestPost) > new Date(lastTimeline))) {
             if (!isTimelineActive) setHasNewTimeline(true)
         }
         if (latestDiary && latestDiaryUserId !== userId && (!lastDiary || new Date(latestDiary) > new Date(lastDiary))) {
             if (!isDiaryActive) setHasNewDiary(true)
+        }
+        if (latestBbs && latestBbsUserId !== userId && (!lastBbs || new Date(latestBbs) > new Date(lastBbs))) {
+            if (!isBbsActive) setHasNewBbs(true)
         }
         
         const currentChatCount = await getUnreadChatCount(hakoId)
@@ -170,6 +175,7 @@ export function HakoViewerLayout({
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_timeline_posts', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hako_diaries', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bbs_posts', filter: `hako_id=eq.${hakoId}` }, checkNotifications)
       .subscribe()
 
     return () => {
@@ -198,8 +204,9 @@ export function HakoViewerLayout({
     const isDiaryHub = pathname === diaryPath
     const isCalendarHub = pathname === calendarPath
     const isGalleryHub = pathname === galleryPath
+    const isBbsHub = pathname === `/hako/${hakoId}/bbs`
 
-    if (isTimelineHub || isDiaryHub || isCalendarHub || isGalleryHub) {
+    if (isTimelineHub || isDiaryHub || isCalendarHub || isGalleryHub || isBbsHub) {
         localStorage.setItem(`hako_${hakoId}_last_hub`, pathname)
     }
 
@@ -210,6 +217,10 @@ export function HakoViewerLayout({
     if (isDiaryActive) {
         localStorage.setItem(`hako_${hakoId}_last_diary`, new Date().toISOString())
         setHasNewDiary(false)
+    }
+    if (isBbsActive) {
+        localStorage.setItem(`hako_${hakoId}_last_bbs`, new Date().toISOString())
+        setHasNewBbs(false)
     }
     if (isChatActive) {
         // We no longer clear chat notifications just by being on the page.
@@ -345,6 +356,24 @@ export function HakoViewerLayout({
                       <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
                         {unreadChatCount > 99 ? '99+' : unreadChatCount}
                       </span>
+                    )}
+                  </Link>
+                )
+              }
+              if (featureId === 'bbs') {
+                return (
+                  <Link
+                    key="bbs"
+                    href={`/hako/${hakoId}/bbs`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/bbs`)
+                        ? 'theme-surface theme-text border theme-border shadow-sm'
+                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
+                      }`}
+                  >
+                    <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
+                    掲示板
+                    {hasNewBbs && (
+                      <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     )}
                   </Link>
                 )
