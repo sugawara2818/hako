@@ -137,24 +137,56 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
         {/* Posts Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
           {activeThread.posts.map((post) => (
-            <div key={post.id} className="space-y-2 max-w-4xl mx-auto">
+            <div key={post.id} id={`post-${post.post_number}`} className="space-y-2 max-w-4xl mx-auto group/post">
               <div className="flex items-center justify-between text-[11px] font-bold">
                 <div className="flex items-center gap-2">
-                  <span className="text-brand-primary">{post.post_number} :</span>
+                  <button 
+                    onClick={() => setReplyContent(prev => `${prev}${prev ? '\n' : ''}>>${post.post_number}\n`)}
+                    className="text-brand-primary hover:underline cursor-pointer"
+                  >
+                    {post.post_number} :
+                  </button>
                   <span className="theme-text">{post.user_name || '名無しさん'}</span>
                   <span className="theme-muted">
                     {format(new Date(post.created_at), 'yyyy/MM/dd(E) HH:mm:ss', { locale: ja })}
                   </span>
                 </div>
-                {isOwner && (
-                  <button onClick={() => handleDeletePost(post.id)} className="text-red-500/50 hover:text-red-500 p-1">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <div className="flex items-center gap-2 opacity-0 group-hover/post:opacity-100 transition-opacity">
+                   <button 
+                    onClick={() => setReplyContent(prev => `${prev}${prev ? '\n' : ''}>>${post.post_number}\n`)}
+                    className="theme-muted hover:theme-text text-[10px]"
+                   >
+                     返信
+                   </button>
+                   {isOwner && (
+                    <button onClick={() => handleDeletePost(post.id)} className="text-red-500/50 hover:text-red-500 p-1">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-              <p className="text-sm theme-text leading-relaxed whitespace-pre-wrap break-all pl-2 border-l-2 theme-border py-1">
-                {post.content}
-              </p>
+              <div className="text-sm theme-text leading-relaxed whitespace-pre-wrap break-all pl-2 border-l-2 theme-border py-1">
+                {post.content.split(/(\>\>[0-9]+)/g).map((part, i) => {
+                  if (part.match(/^\>\>[0-9]+$/)) {
+                    const num = part.replace('>>', '')
+                    return (
+                      <span 
+                        key={i} 
+                        className="text-brand-primary font-bold cursor-pointer hover:underline"
+                        onClick={() => {
+                          const target = document.getElementById(`post-${num}`)
+                          target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                          target?.classList.add('bg-brand-primary/10')
+                          setTimeout(() => target?.classList.remove('bg-brand-primary/10'), 2000)
+                        }}
+                      >
+                        {part}
+                      </span>
+                    )
+                  }
+                  return part
+                })}
+              </div>
             </div>
           ))}
           <div ref={postsEndRef} className="h-20" />
