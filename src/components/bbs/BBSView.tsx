@@ -141,7 +141,11 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
               <div className="flex items-center justify-between text-[11px] font-bold">
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={() => setReplyContent(prev => `${prev}${prev ? '\n' : ''}>>${post.post_number}\n`)}
+                    onClick={() => {
+                      if (!replyContent.includes(`>>${post.post_number}`)) {
+                        setReplyContent(prev => `${prev}${prev && !prev.endsWith('\n') ? '\n' : ''}>>${post.post_number}\n`)
+                      }
+                    }}
                     className="text-brand-primary hover:underline cursor-pointer"
                   >
                     {post.post_number} :
@@ -153,7 +157,11 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover/post:opacity-100 transition-opacity">
                    <button 
-                    onClick={() => setReplyContent(prev => `${prev}${prev ? '\n' : ''}>>${post.post_number}\n`)}
+                    onClick={() => {
+                      if (!replyContent.includes(`>>${post.post_number}`)) {
+                        setReplyContent(prev => `${prev}${prev && !prev.endsWith('\n') ? '\n' : ''}>>${post.post_number}\n`)
+                      }
+                    }}
                     className="theme-muted hover:theme-text text-[10px]"
                    >
                      返信
