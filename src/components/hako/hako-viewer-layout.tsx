@@ -350,7 +350,7 @@ export function HakoViewerLayout({
                         : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                       }`}
                   >
-                    <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-teal-400' : ''}`} />
+                    <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-[#00c652]' : ''}`} />
                     チャット
                     {unreadChatCount > 0 && (
                       <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
