@@ -161,45 +161,45 @@ export function MobileSidebar({
             }
             if (featureId === 'chat') {
               return (
-                  <Link
-                    key="chat"
-                    href={`/hako/${hakoId}/chat`}
-                    onClick={onClose}
-                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold relative active:scale-[0.98] ${
-                      pathname.includes(`/hako/${hakoId}/chat`)
-                        ? 'theme-surface theme-text border theme-border shadow-sm bg-purple-500/10'
-                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
-                    }`}
-                  >
-                    <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
-                    <span className="text-[15px]">チャット</span>
-                    {unreadChatCount > 0 && (
-                      <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
-                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
-                      </span>
-                    )}
-                  </Link>
-                )
+                <Link
+                  key="chat"
+                  href={`/hako/${hakoId}/chat`}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    pathname.includes(`/hako/${hakoId}/chat`)
+                      ? 'bg-white/10 text-white border-white/5 shadow-sm'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
+                  <span>チャット</span>
+                  {unreadChatCount > 0 && (
+                    <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
+                      {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                    </span>
+                  )}
+                </Link>
+              )
             }
             if (featureId === 'bbs') {
               return (
-                  <Link
-                    key="bbs"
-                    href={`/hako/${hakoId}/bbs`}
-                    onClick={onClose}
-                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold relative active:scale-[0.98] ${
-                      pathname.includes(`/hako/${hakoId}/bbs`)
-                        ? 'theme-surface theme-text border theme-border shadow-sm bg-purple-500/10'
-                        : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
-                    }`}
-                  >
-                    <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
-                    <span className="text-[15px]">掲示板</span>
-                    {hasNewBbs && (
-                      <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                    )}
-                  </Link>
-                )
+                <Link
+                  key="bbs"
+                  href={`/hako/${hakoId}/bbs`}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
+                    pathname.includes(`/hako/${hakoId}/bbs`)
+                      ? 'bg-white/10 text-white border-white/5 shadow-sm'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
+                  <span>掲示板</span>
+                  {hasNewBbs && (
+                    <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                  )}
+                </Link>
+              )
             }
             return null
           })}
