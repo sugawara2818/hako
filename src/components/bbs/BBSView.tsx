@@ -202,21 +202,19 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
   return (
     <div className="flex-1 flex flex-col h-full theme-bg overflow-hidden">
       {/* Header */}
-      <div className="h-14 border-b theme-border flex items-center px-4 md:px-6 bg-white/5 backdrop-blur-md justify-between">
-        <h1 className="text-lg font-bold flex items-center gap-2">
-          <Hash className="w-5 h-5 text-purple-400" />
-          掲示板
-        </h1>
+      <div className="h-24 flex items-center justify-between px-6 md:px-8 shrink-0">
+        <h1 className="text-3xl md:text-4xl font-black theme-text tracking-tighter">掲示板</h1>
         <button 
           onClick={() => setShowCreateModal(true)}
-          className="p-2 rounded-xl bg-purple-500 text-white shadow-lg shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-purple-600 text-white font-bold shadow-xl shadow-purple-600/20 hover:scale-105 active:scale-95 transition-all"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 stroke-[3]" />
+          <span className="hidden sm:inline">スレッドを立てる</span>
         </button>
       </div>
 
       {/* Thread List */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
         {isLoading && threads.length === 0 ? (
           <div className="flex items-center justify-center h-full py-20">
             <Loader2 className="w-8 h-8 animate-spin theme-muted" />
@@ -267,7 +265,7 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">新しいスレッドを立てる</h2>
