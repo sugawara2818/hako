@@ -97,7 +97,7 @@ export function MobileSidebar({
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-purple-400' : ''}`} />
+                  <Hash className={`w-5 h-5 ${isTimelineActive ? 'text-indigo-400' : ''}`} />
                   タイムライン
                   {hasNewTimeline && (
                     <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
@@ -171,7 +171,7 @@ export function MobileSidebar({
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-purple-400' : ''}`} />
+                  <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-teal-400' : ''}`} />
                   <span>チャット</span>
                   {unreadChatCount > 0 && (
                     <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
