@@ -20,6 +20,7 @@ export function BBSThreadDetail({ hakoId, threadId, isOwner, defaultDisplayName,
   const [isPosting, setIsPosting] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [userName, setUserName] = useState(defaultDisplayName || '名無しさん')
+  const [postToDelete, setPostToDelete] = useState<string | null>(null)
 
   const postsEndRef = useRef<HTMLDivElement>(null)
 
@@ -61,10 +62,10 @@ export function BBSThreadDetail({ hakoId, threadId, isOwner, defaultDisplayName,
   }
 
   const handleDeletePost = async (id: string) => {
-    if (!confirm('投稿を削除しますか？')) return
     await deleteBbsPost(id)
     const res = await getBbsThread(threadId)
     setData(res)
+    setPostToDelete(null)
   }
 
   if (isLoading || !data) {
@@ -124,7 +125,7 @@ export function BBSThreadDetail({ hakoId, threadId, isOwner, defaultDisplayName,
                    返信
                  </button>
                  {isOwner && (
-                  <button onClick={() => handleDeletePost(post.id)} className="text-red-500/50 hover:text-red-500 p-1">
+                  <button onClick={() => setPostToDelete(post.id)} className="text-red-500/50 hover:text-red-500 p-1">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -192,6 +193,32 @@ export function BBSThreadDetail({ hakoId, threadId, isOwner, defaultDisplayName,
            </div>
         </form>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {postToDelete && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm glass-card p-6 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold">投稿を削除しますか？</h3>
+              <p className="text-sm theme-muted">この操作は取り消せません。</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPostToDelete(null)}
+                className="flex-1 py-3 bg-white/5 theme-text rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => handleDeletePost(postToDelete)}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all"
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

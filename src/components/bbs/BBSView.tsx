@@ -19,6 +19,7 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isPosting, setIsPosting] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [threadToDelete, setThreadToDelete] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newContent, setNewContent] = useState('')
   const [userName, setUserName] = useState(defaultDisplayName || '名無しさん')
@@ -57,11 +58,10 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
     }
   }
 
-  const handleDeleteThread = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!confirm('スレッドを削除しますか？')) return
+  const handleDeleteThread = async (id: string) => {
     await deleteBbsThread(id)
     setThreads(prev => prev.filter(t => t.id !== id))
+    setThreadToDelete(null)
   }
 
   // スレッド詳細が表示されている場合
@@ -125,7 +125,13 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
                   </div>
                 </div>
                 {isOwner && (
-                  <button onClick={(e) => handleDeleteThread(thread.id, e)} className="p-2 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setThreadToDelete(thread.id)
+                    }} 
+                    className="p-2 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -202,6 +208,32 @@ export function BBSView({ hakoId, isOwner, defaultDisplayName }: BBSViewProps) {
                 {isPosting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'スレッドを立てる'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Thread Delete Confirmation Modal */}
+      {threadToDelete && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm glass-card p-6 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold">スレッドを削除しますか？</h3>
+              <p className="text-sm theme-muted">このスレッド内のすべての投稿も削除されます。この操作は取り消せません。</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setThreadToDelete(null)}
+                className="flex-1 py-3 bg-white/5 theme-text rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => handleDeleteThread(threadToDelete)}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all"
+              >
+                削除する
+              </button>
+            </div>
           </div>
         </div>
       )}
