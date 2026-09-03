@@ -37,9 +37,9 @@ const DRAG_THRESHOLD = 10 // Px must move before considering it a meaningful dra
 export function HakoViewerLayout({
   hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], userId, children
 }: HakoViewerLayoutProps) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
-  const activeChannelIdFromUrl = searchParams.get('c')
+  const activeChannelIdFromUrl = searchParams?.get('c')
   const [isOpen, setIsOpen] = useState(false)
   // dragOffset: 0 = closed, 1 = fully open
   const [dragProgress, setDragProgress] = useState(0)

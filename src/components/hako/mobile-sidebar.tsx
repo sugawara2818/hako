@@ -37,7 +37,7 @@ export function MobileSidebar({
   userId, hakoId, hakoName, iconUrl, iconColor, email, isOwner, memberCount, displayName, avatarUrl, features = ['timeline'], isOpen, onClose, hasNewTimeline, hasNewDiary, hasNewBbs, unreadChatCount = 0
 }: MobileSidebarProps) {
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   
   const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
