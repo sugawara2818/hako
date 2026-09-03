@@ -51,23 +51,23 @@ interface InstallButtonProps {
 }
 
 export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showIOSModal, setShowIOSModal] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  
+  const [clientState, setClientState] = useState({
+    isMounted: false,
+    isIOS: false,
+    isStandalone: false
+  })
 
   useEffect(() => {
-    setIsMounted(true)
-    
-    // Check if the user is on an iOS device
     const userAgent = window.navigator.userAgent.toLowerCase()
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent)
-    setIsIOS(isIosDevice)
+    const isIOS = /iphone|ipad|ipod/.test(userAgent)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isStandalone = ('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches
 
-    // Check if the app is already running in standalone mode (installed)
-    const isInStandaloneMode = ('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches
-    setIsStandalone(isInStandaloneMode)
+    setClientState({ isMounted: true, isIOS, isStandalone })
 
     // Listen for the beforeinstallprompt event (Chrome/Android/Desktop)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -83,7 +83,7 @@ export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
   }, [])
 
   const handleInstallClick = async () => {
-    if (isIOS) {
+    if (clientState.isIOS) {
       setShowIOSModal(true)
       return
     }
@@ -101,15 +101,15 @@ export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
     
     if (outcome === 'accepted') {
        // Optional: force hide button by setting pretend-standalone
-       setIsStandalone(true) 
+       setClientState(prev => ({ ...prev, isStandalone: true }))
     }
   }
 
   // Hide entirely if already installed or not running in a browser environment yet
-  if (!isMounted || isStandalone) return null
+  if (!clientState.isMounted || clientState.isStandalone) return null
   
   // On Desktop/Android, if it doesn't fire beforeinstallprompt (e.g., Firefox, or unsupported), hide it unless it's iOS which needs manual flow
-  if (!isIOS && !deferredPrompt) return null
+  if (!clientState.isIOS && !deferredPrompt) return null
 
   if (variant === 'icon') {
     return (

@@ -1,0 +1,63 @@
+{
+  "project_name": "AI_Company_Template",
+  "commander": "💤 待機中",
+  "departments": [
+    {
+      "name": "web-dev-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "qa-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "security-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "deploy-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "memory-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "investigation-dept",
+      "status": "🔥 実行中",
+      "role": "部署"
+    },
+    {
+      "name": "secretary-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "research-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "design-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "audit-dept",
+      "status": "待機中",
+      "role": "部署"
+    },
+    {
+      "name": "planning-dept",
+      "status": "待機中",
+      "role": "部署"
+    }
+  ],
+  "secretary_logs": [],
+  "regent_content": ""
+}

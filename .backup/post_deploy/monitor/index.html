@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Mac-UI Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #1e1e2f, #151520);
+            color: #f1f1f1; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden; 
+        }
+        
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .node { 
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 20px;
+        }
+        
+        .active-node { 
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(56, 189, 248, 0.5) !important;
+            transform: scale(1.05); 
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.1);
+        }
+
+        .commander-active {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(250, 204, 21, 0.5) !important;
+            box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
+        }
+
+        /* Connecting Lines (Simulated by absolute positioning in JS if needed, but we keep it clean without lines for now to reduce clutter) */
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-size: 1.1em; font-weight: 600; margin-bottom: 8px; color: #e2e8f0; }
+        .markdown-body ul { list-style-type: disc; padding-left: 20px; margin-bottom: 8px; }
+        .markdown-body p { margin-bottom: 8px; }
+    </style>
+</head>
+<body class="min-h-screen flex text-sm">
+    
+    <!-- Background Blur Orbs -->
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[30%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="absolute top-4 left-6 text-slate-400 font-medium tracking-wider text-xs flex items-center z-50">
+        <div class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></div>
+        SYSTEM MONITOR ACTIVE <span id="project-name" class="ml-2 text-indigo-300 font-bold"></span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative w-full h-screen flex p-4 gap-4 z-10 box-border pt-12">
+        
+        <!-- Nodes Area (Left) -->
+        <div class="flex-1 glass rounded-3xl p-8 flex flex-col items-center justify-start overflow-y-auto">
+            <!-- Commander (Top Center) -->
+            <div id="commander" class="node glass flex flex-col items-center justify-center w-40 h-40 rounded-full mb-12 flex-shrink-0 mt-8">
+                <div class="text-3xl mb-1">👑</div>
+                <div class="font-semibold text-slate-200">Commander</div>
+                <div id="commander-status" class="text-xs text-slate-400 mt-1">待機中</div>
+            </div>
+
+            <!-- Depts (Horizontal Wrap) -->
+            <div class="w-full flex flex-wrap justify-center gap-6 max-w-2xl">
+                <div id="web-dev-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">💻</div>
+                    <div class="font-medium text-slate-300">Web Dev</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="qa-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🐛</div>
+                    <div class="font-medium text-slate-300">QA</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="security-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🛡️</div>
+                    <div class="font-medium text-slate-300">Security</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="deploy-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🚀</div>
+                    <div class="font-medium text-slate-300">Deploy</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="secretary-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">📝</div>
+                    <div class="font-medium text-slate-300">Secretary</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="memory-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🧠</div>
+                    <div class="font-medium text-slate-300">Memory</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="investigation-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🔍</div>
+                    <div class="font-medium text-slate-300">Investigate</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="research-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🌐</div>
+                    <div class="font-medium text-slate-300">Research</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="design-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">🎨</div>
+                    <div class="font-medium text-slate-300">Design</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="audit-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">📋</div>
+                    <div class="font-medium text-slate-300">Audit</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+
+                <div id="planning-dept" class="node glass flex flex-col items-center justify-center w-32 h-28">
+                    <div class="text-2xl mb-1">📈</div>
+                    <div class="font-medium text-slate-300">Planning</div>
+                    <div class="status-text text-xs text-slate-500 mt-1">待機中</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar (Right) -->
+        <div class="w-[450px] flex flex-col gap-4">
+            
+            <!-- Regent Panel -->
+            <div class="h-1/2 glass rounded-3xl p-6 flex flex-col">
+                <div class="flex items-center mb-4 pb-2 border-b border-white/10">
+                    <span class="text-xl mr-2">📜</span>
+                    <h3 class="font-semibold text-slate-200">Regent (執権)</h3>
+                </div>
+                <div id="regent-content" class="flex-1 overflow-y-auto text-slate-300 text-xs leading-relaxed markdown-body">
+                    <div class="text-slate-500 italic flex items-center justify-center h-full">Loading regent.md...</div>
+                </div>
+            </div>
+
+            <!-- Log Stream Panel -->
+            <div class="h-1/2 glass rounded-3xl p-6 flex flex-col">
+                <div class="flex items-center mb-4 pb-2 border-b border-white/10">
+                    <span class="text-xl mr-2">⏱️</span>
+                    <h3 class="font-semibold text-slate-200">Secretary Logs</h3>
+                </div>
+                <div id="log-list" class="flex-1 overflow-y-auto font-mono text-xs text-slate-400 space-y-3 pr-2">
+                    <div class="text-slate-500 italic flex items-center justify-center h-full">Waiting for logs...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Simple Markdown parser for Regent
+        function parseMarkdown(md) {
+            if (!md) return '<div class="text-slate-500 italic">No Regent data found.</div>';
+            return md
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                .replace(/<\/ul>\n<ul>/gim, '')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\n$/gim, '<br />');
+        }
+
+        async function fetchStatus() {
+            try {
+                if (window.location.protocol === 'file:') {
+                    document.body.innerHTML = '<div style="color:white; padding:50px; text-align:center; font-size:24px;">⚠️ 警告 ⚠️<br><br>このファイル (index.html) を直接ダブルクリックして開かないでください。<br><br>モニターを起動するには、チャット画面で司令塔AIに「モニターを起動して」と指示するか、AIが自動でブラウザを開くのをお待ちください。</div>';
+                    return;
+                }
+                const apiUrl = '/api/status';
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                
+                // Update Project Name
+                if(data.project_name) {
+                    document.getElementById('project-name').innerText = "[" + data.project_name + "]";
+                }
+                
+                // Update Commander
+                const cmdStatus = document.getElementById('commander-status');
+                const cmdNode = document.getElementById('commander');
+                cmdStatus.innerText = data.commander;
+                if(data.commander.includes('稼働中') || data.commander.includes('送信中')) {
+                    cmdNode.classList.add('commander-active');
+                } else {
+                    cmdNode.classList.remove('commander-active');
+                }
+                
+                // Update Depts
+                data.departments.forEach(dept => {
+                    const el = document.getElementById(dept.name);
+                    if(el) {
+                        el.querySelector('.status-text').innerText = dept.status;
+                        if(dept.status.includes('実行中')) {
+                            el.classList.add('active-node');
+                        } else {
+                            el.classList.remove('active-node');
+                        }
+                    }
+                });
+
+                // Update Logs
+                const logList = document.getElementById('log-list');
+                if(data.secretary_logs && data.secretary_logs.length > 0) {
+                    // Only update if changed to prevent scroll jumping
+                    const newLogHtml = data.secretary_logs.map(log => 
+                        `<div class="p-3 bg-white/5 rounded-lg border border-white/5 break-words">${log}</div>`
+                    ).join('');
+                    
+                    if (logList.innerHTML !== newLogHtml) {
+                        logList.innerHTML = newLogHtml;
+                        logList.scrollTop = logList.scrollHeight;
+                    }
+                } else {
+                    logList.innerHTML = '<div class="text-slate-500 italic flex items-center justify-center h-full">No logs found...</div>';
+                }
+
+                // Update Regent
+                const regentContent = document.getElementById('regent-content');
+                const newRegentHtml = parseMarkdown(data.regent_content);
+                if (regentContent.innerHTML !== newRegentHtml) {
+                    regentContent.innerHTML = newRegentHtml;
+                }
+
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        setInterval(fetchStatus, 1500);
+        fetchStatus();
+    </script>
+</body>
+</html>

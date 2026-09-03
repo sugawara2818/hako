@@ -5,24 +5,6 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { signOut } from '@/core/auth/actions'
 
 
-function PWADirector() {
-  return (
-    <script dangerouslySetInnerHTML={{
-      __html: `
-        (function() {
-          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-          if (isStandalone) {
-            const lastPath = localStorage.getItem('hako_last_visited_path');
-            if (lastPath && lastPath !== '/') {
-              window.location.href = lastPath;
-            }
-          }
-        })();
-      `
-    }} />
-  );
-}
-
 export default async function Home() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -44,7 +26,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden font-sans" data-theme="dark">
-      <PWADirector />
       {/* ... Dynamic Background ... */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />

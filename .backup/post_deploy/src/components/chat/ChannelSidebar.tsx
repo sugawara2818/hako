@@ -1,0 +1,402 @@
+'use client'
+
+// v2.1.0
+import { useState, useMemo } from 'react'
+import { Plus, Hash, X, Loader2, Trash2, Users, Search, Check, MessageCircle, Pin } from 'lucide-react'
+
+interface Channel {
+  id: string
+  name: string
+  description: string | null
+  type?: 'public' | 'private'
+  last_message_content?: string | null
+  last_message_at?: string | null
+  unreadCount?: number
+  is_pinned?: boolean
+}
+
+interface Member {
+  user_id: string
+  display_name: string | null
+  avatar_url: string | null
+}
+
+interface ChannelSidebarProps {
+  channels: Channel[]
+  hiddenChannels: Channel[]
+  showHiddenModal: boolean
+  onSetShowHiddenModal: (open: boolean) => void
+  members: Member[]
+  currentUserId: string
+  activeChannelId: string
+  onChannelSelect: (id: string) => void
+  onCreateChannel: (name: string, description: string, type: 'public' | 'private', memberIds: string[]) => Promise<void>
+  onHideChannel?: (id: string) => void
+  onRestoreHiddenChannel?: (id: string) => void
+  onPinToggle?: (id: string, isPinned: boolean) => Promise<void>
+  isOwner: boolean
+}
+
+export function ChannelSidebar({ 
+  channels, 
+  hiddenChannels,
+  showHiddenModal,
+  onSetShowHiddenModal,
+  members,
+  currentUserId,
+  activeChannelId, 
+  onChannelSelect, 
+  onCreateChannel,
+  onHideChannel,
+  onRestoreHiddenChannel,
+  onPinToggle,
+  isOwner
+}: ChannelSidebarProps) {
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [newName, setNewName] = useState('')
+  const [newDesc, setNewDesc] = useState('')
+  const [channelType, setChannelType] = useState<'public' | 'private'>('public')
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([])
+  const [memberSearch, setMemberSearch] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const filteredMembers = useMemo(() => {
+    const others = members.filter(m => m.user_id !== currentUserId)
+    if (!memberSearch.trim()) return others
+    return others.filter(m => 
+      (m.display_name || '').toLowerCase().includes(memberSearch.toLowerCase())
+    )
+  }, [members, memberSearch, currentUserId])
+
+  const toggleMember = (userId: string) => {
+    setSelectedMemberIds(prev => 
+      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+    )
+  }
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newName.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    try {
+      await onCreateChannel(newName, newDesc, channelType, selectedMemberIds)
+      setNewName('')
+      setNewDesc('')
+      setChannelType('public')
+      setSelectedMemberIds([])
+      setShowCreateModal(false)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="w-full h-full flex flex-col theme-surface relative">
+
+      <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0.5 custom-scrollbar">
+        {channels.length === 0 && hiddenChannels.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full py-20 px-8 text-center opacity-40">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+               <MessageCircle className="w-8 h-8" />
+            </div>
+            <p className="text-sm font-bold leading-relaxed">まだチャットがありません。<br />右下のボタンから作成してみましょう。</p>
+          </div>
+        ) : (
+          <>
+            {channels.map((ch) => {
+              const lastTime = ch.last_message_at 
+                ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                : ''
+              
+              return (
+                <div key={ch.id} className="group relative">
+                  <button
+                    onClick={() => onChannelSelect(ch.id)}
+                    className={`w-full flex items-start gap-3 px-4 py-3 transition-all ${
+                      activeChannelId === ch.id 
+                        ? 'bg-brand-primary/10' 
+                        : 'hover:bg-white/5 opacity-90 hover:opacity-100'
+                    }`}
+                  >
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                      {ch.name.charAt(0).toUpperCase()}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left pt-0.5 pr-16">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className={`text-[15px] font-bold truncate ${activeChannelId === ch.id ? 'text-brand-primary' : 'theme-text'}`}>
+                          {ch.name}
+                        </span>
+                        <span className="text-[10px] theme-muted font-medium shrink-0">
+                          {lastTime}
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center gap-2 h-5">
+                        <p className="text-xs theme-muted truncate font-medium">
+                          {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                        </p>
+                        {ch.unreadCount && ch.unreadCount > 0 ? (
+                          <span className="w-2 h-2 rounded-full bg-[#06C755] flex-shrink-0" />
+                        ) : null}
+                      </div>
+                    </div>
+                  </button>
+
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {/* Pin Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onPinToggle?.(ch.id, !ch.is_pinned)
+                      }}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        ch.is_pinned 
+                          ? 'text-amber-500 bg-amber-500/10' 
+                          : 'text-gray-400/40 md:text-gray-400/0 group-hover:text-gray-400/50 hover:text-gray-400 hover:bg-gray-400/10'
+                      }`}
+                    >
+                      <Pin className="w-4 h-4" fill={ch.is_pinned ? "currentColor" : "none"} />
+                    </button>
+
+                    {/* Hide Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteConfirmId(ch.id)
+                      }}
+                      className="p-1.5 rounded-lg text-red-500/40 md:text-red-500/0 group-hover:text-red-500/50 hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )}
+      </div>
+
+      {/* Restore Hidden Channels Button - Fixed at bottom */}
+      {hiddenChannels.length > 0 && (
+        <div className="p-4 border-t theme-border bg-white/5 pb-safe shrink-0">
+          <button
+            onClick={() => onSetShowHiddenModal(true)}
+            className="w-full py-3 theme-surface border theme-border theme-text hover:theme-elevated rounded-2xl font-bold text-xs transition-all active:scale-95 text-center"
+          >
+            非表示のルームを表示 ({hiddenChannels.length})
+          </button>
+        </div>
+      )}
+
+      {/* FAB - Create Channel */}
+      <button
+        onClick={() => setShowCreateModal(true)}
+        className="absolute right-6 bottom-24 w-16 h-16 rounded-full bg-[#06C755] text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all z-10"
+      >
+        <Plus className="w-8 h-8 stroke-[3]" />
+      </button>
+
+      {/* Restore Modal */}
+      {showHiddenModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md glass-card p-0 rounded-3xl theme-border overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between p-6 border-b theme-border bg-white/5">
+              <h3 className="text-xl font-bold">非表示のルーム ({hiddenChannels.length})</h3>
+              <button 
+                onClick={() => onSetShowHiddenModal(false)}
+                className="theme-muted hover:theme-text transition-colors p-2"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto px-1 py-2 custom-scrollbar">
+              {hiddenChannels.map(ch => {
+                const lastTime = ch.last_message_at 
+                  ? new Date(ch.last_message_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                  : ''
+                  
+                return (
+                  <div key={ch.id} className="group relative">
+                    <button
+                      onClick={() => {
+                        onChannelSelect(ch.id)
+                        onSetShowHiddenModal(false)
+                      }}
+                      className="w-full flex items-start gap-3 px-6 py-4 hover:bg-white/5 transition-all text-left"
+                    >
+                      {/* Avatar */}
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-primary/20 shrink-0 border theme-border flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                        {ch.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5 pr-16">
+                        <div className="flex justify-between items-baseline gap-2">
+                          <span className="text-[15px] font-bold truncate theme-text">{ch.name}</span>
+                          <span className="text-[10px] theme-muted font-medium shrink-0">{lastTime}</span>
+                        </div>
+                        <p className="text-xs theme-muted truncate font-medium">
+                          {ch.last_message_content || (ch.description || 'まだメッセージはありません')}
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onRestoreHiddenChannel?.(ch.id)
+                        if (hiddenChannels.length <= 1) onSetShowHiddenModal(false)
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#06C755] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#06C755]/20 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      復元
+                    </button>
+                  </div>
+                )})}
+            </div>
+            
+            <div className="p-4 bg-white/5 text-center">
+              <p className="text-[10px] theme-muted font-bold opacity-60">
+                表示したいルームを選んでください
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold">新しいチャット</h3>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="theme-muted hover:theme-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="flex p-1 bg-white/5 rounded-xl border theme-border">
+                <button
+                  type="button"
+                  onClick={() => setChannelType('public')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'public' ? 'bg-[#06C755] text-white' : 'theme-muted hover:theme-text'}`}
+                >
+                  パブリック
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChannelType('private')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${channelType === 'private' ? 'bg-[#06C755] text-white' : 'theme-muted hover:theme-text'}`}
+                >
+                  非公開（メンバー指定）
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black theme-muted uppercase tracking-widest px-1">名前</label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="例: グループA"
+                  className="w-full theme-elevated border theme-border rounded-xl px-4 py-3 text-sm theme-text focus:outline-none focus:border-brand-primary/50"
+                  required
+                />
+              </div>
+
+              {channelType === 'private' && (
+                <div className="space-y-2">
+                  <label className="text-xs font-black theme-muted uppercase tracking-widest px-1">メンバーを追加</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 theme-muted" />
+                    <input
+                      type="text"
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      placeholder="メンバーを検索..."
+                      className="w-full theme-elevated border theme-border rounded-xl pl-10 pr-4 py-2 text-sm theme-text focus:outline-none focus:border-[#06C755]/50"
+                    />
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                    {filteredMembers.map(member => (
+                      <button
+                        key={member.user_id}
+                        type="button"
+                        onClick={() => toggleMember(member.user_id)}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${selectedMemberIds.includes(member.user_id) ? 'bg-[#06C755]/10 text-[#06C755]' : 'hover:bg-white/5 theme-text'}`}
+                      >
+                        <span className="truncate">{member.display_name || 'ユーザー'}</span>
+                        {selectedMemberIds.includes(member.user_id) && <Check className="w-4 h-4" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-xs font-black theme-muted uppercase tracking-widest px-1">説明（任意）</label>
+                <textarea
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  rows={2}
+                  className="w-full theme-elevated border theme-border rounded-xl px-4 py-3 text-sm theme-text focus:outline-none focus:border-brand-primary/50 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!newName.trim() || isSubmitting}
+                className="w-full py-4 bg-[#06C755] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : '作成する'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-xs glass-card p-8 rounded-3xl theme-border space-y-6 animate-in zoom-in-95 duration-200 text-center">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold">チャットを非表示にする</h3>
+              <p className="text-xs theme-muted leading-relaxed">
+                この端末のチャット一覧から非表示にします。（他のメンバーには影響しません）よろしいですか？
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-3 bg-white/5 theme-text rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={async () => {
+                   if (onHideChannel) await onHideChannel(deleteConfirmId)
+                   setDeleteConfirmId(null)
+                }}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all"
+              >
+                非表示にする
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
