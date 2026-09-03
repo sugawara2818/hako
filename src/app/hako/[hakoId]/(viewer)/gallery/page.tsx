@@ -14,7 +14,7 @@ import { Check, Square, CheckSquare, Trash2, FolderPlus as FolderPlusIcon } from
 
 export default function GalleryPage() {
   const params = useParams()
-  const hakoId = params.hakoId as string
+  const hakoId = params?.hakoId as string
   const router = useRouter()
   
   const [images, setImages] = useState<any[]>([])
