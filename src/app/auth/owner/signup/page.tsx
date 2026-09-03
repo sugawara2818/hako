@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 function SignUpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const intent = searchParams.get('intent')
+  const intent = searchParams?.get('intent')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

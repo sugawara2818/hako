@@ -20,8 +20,8 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
   const [isPending, startTransition] = React.useTransition()
   
   // Local states for immediate feedback
-  const [view, setLocalView] = useState<'list' | 'calendar'>((searchParams.get('view') as 'list' | 'calendar') || 'list')
-  const [selectedFilterDate, setLocalSelectedFilterDate] = useState<string | null>(searchParams.get('date') || null)
+  const [view, setLocalView] = useState<'list' | 'calendar'>((searchParams?.get('view') as 'list' | 'calendar') || 'list')
+  const [selectedFilterDate, setLocalSelectedFilterDate] = useState<string | null>(searchParams?.get('date') || null)
   
   const [entries, setEntries] = useState(initialEntries)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'created_desc' | 'created_asc'>('date_desc')

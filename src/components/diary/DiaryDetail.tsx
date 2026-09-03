@@ -65,8 +65,8 @@ function ConfirmDialog({
 export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const from = searchParams.get('from')
-  const referralUserId = searchParams.get('userId')
+  const from = searchParams?.get('from')
+  const referralUserId = searchParams?.get('userId')
   
   const isAuthor = entry.user_id === currentUserId
   
@@ -107,7 +107,7 @@ export function DiaryDetail({ hakoId, currentUserId, entry }: DiaryDetailProps) 
     if (from === 'profile' && referralUserId) {
       return `/hako/${hakoId}/user/${referralUserId}?tab=diary`
     }
-    const diaryDate = searchParams.get('date')
+    const diaryDate = searchParams?.get('date')
     if (from === 'list' && diaryDate) {
       return `/hako/${hakoId}/diary?view=list&date=${diaryDate}`
     }
