@@ -55,7 +55,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 export function ChatView({ hakoId, currentUserId, currentUserName, currentUserAvatar, isOwner, initialChannels, initialChannelId }: ChatViewProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const urlChannelId = searchParams.get('c')
+  const urlChannelId = searchParams?.get('c')
   
   const [channels, setChannels] = useState<ChatChannel[]>(initialChannels)
   const [members, setMembers] = useState<Member[]>([])

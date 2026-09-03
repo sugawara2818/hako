@@ -28,7 +28,7 @@ export function DiaryPortal({ hakoId, currentUserId, initialEntries }: DiaryPort
 
   // Synchronize URL in the background
   const syncURL = (v: 'list' | 'calendar', d: string | null) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     params.set('view', v)
     if (d) params.set('date', d)
     else params.delete('date')

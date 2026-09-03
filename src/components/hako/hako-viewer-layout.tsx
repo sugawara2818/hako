@@ -50,10 +50,10 @@ export function HakoViewerLayout({
   const [hasNewBbs, setHasNewBbs] = useState(false)
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0)
 
-  const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
+  const isDiaryActive = pathname?.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
-  const isChatActive = pathname.includes(`/hako/${hakoId}/chat`)
-  const isBbsActive = pathname.includes(`/hako/${hakoId}/bbs`)
+  const isChatActive = pathname?.includes(`/hako/${hakoId}/chat`)
+  const isBbsActive = pathname?.includes(`/hako/${hakoId}/bbs`)
 
   const touchStartX = useRef<number | null>(null)
   const touchX = useRef<number>(0)
@@ -303,8 +303,7 @@ export function HakoViewerLayout({
                       }`}
                   >
                     <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
-                    日記
-                    {hasNewDiary && (
+                    日訁E                    {hasNewDiary && (
                       <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     )}
                   </Link>
@@ -315,12 +314,12 @@ export function HakoViewerLayout({
                   <Link
                     key="calendar"
                     href={`/hako/${hakoId}/calendar`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/calendar`)
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname?.includes(`/hako/${hakoId}/calendar`)
                         ? 'theme-surface theme-text border theme-border shadow-sm'
                         : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                       }`}
                   >
-                    <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
+                    <Calendar className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
                     カレンダー
                   </Link>
                 )
@@ -330,12 +329,12 @@ export function HakoViewerLayout({
                   <Link
                     key="gallery"
                     href={`/hako/${hakoId}/gallery`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/gallery`)
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname?.includes(`/hako/${hakoId}/gallery`)
                         ? 'theme-surface theme-text border theme-border shadow-sm'
                         : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                       }`}
                   >
-                    <ImageIcon className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
+                    <ImageIcon className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
                     ギャラリー
                   </Link>
                 )
@@ -345,13 +344,13 @@ export function HakoViewerLayout({
                   <Link
                     key="chat"
                     href={`/hako/${hakoId}/chat`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/chat`)
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname?.includes(`/hako/${hakoId}/chat`)
                         ? 'theme-surface theme-text border theme-border shadow-sm'
                         : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                       }`}
                   >
-                    <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-[#00c652]' : ''}`} />
-                    チャット
+                    <MessageCircle className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/chat`) ? 'text-[#00c652]' : ''}`} />
+                    チャチE��
                     {unreadChatCount > 0 && (
                       <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
                         {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -365,12 +364,12 @@ export function HakoViewerLayout({
                   <Link
                     key="bbs"
                     href={`/hako/${hakoId}/bbs`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname.includes(`/hako/${hakoId}/bbs`)
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold relative ${pathname?.includes(`/hako/${hakoId}/bbs`)
                         ? 'theme-surface theme-text border theme-border shadow-sm'
                         : 'theme-muted hover:theme-text hover:theme-elevated border border-transparent'
                       }`}
                   >
-                    <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
+                    <MessageSquare className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
                     掲示板
                     {hasNewBbs && (
                       <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
@@ -397,18 +396,16 @@ export function HakoViewerLayout({
               }`}
           >
             <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
-            メンバー
+            メンバ�E
           </Link>
 
           {isOwner && (
             <div className="space-y-1">
-              <p className="px-4 text-[10px] font-black text-blue-500/50 uppercase tracking-widest mb-2">管理ツール</p>
+              <p className="px-4 text-[10px] font-black text-blue-500/50 uppercase tracking-widest mb-2">管琁E��ール</p>
               <Link href="/owner/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-400/70 hover:text-blue-400 hover:bg-blue-500/10 transition-all font-bold">
-                <LayoutDashboard className="w-5 h-5" /> 一覧へ戻る
-              </Link>
+                <LayoutDashboard className="w-5 h-5" /> 一覧へ戻めE              </Link>
               <Link href={`/owner/hako/${hakoId}`} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-purple-400/70 hover:text-purple-400 hover:bg-purple-500/10 transition-all font-bold">
-                <Settings className="w-5 h-5" /> 箱の設定
-              </Link>
+                <Settings className="w-5 h-5" /> 箱の設宁E              </Link>
             </div>
           )}
 

@@ -39,9 +39,9 @@ export function MobileSidebar({
   const router = useRouter()
   const pathname = usePathname()
   
-  const isDiaryActive = pathname.includes(`/hako/${hakoId}/diary`)
+  const isDiaryActive = pathname?.includes(`/hako/${hakoId}/diary`)
   const isTimelineActive = pathname === `/hako/${hakoId}`
-  const isBbsActive = pathname.includes(`/hako/${hakoId}/bbs`)
+  const isBbsActive = pathname?.includes(`/hako/${hakoId}/bbs`)
 
   const shownName = displayName || email.split('@')[0]
 
@@ -52,7 +52,7 @@ export function MobileSidebar({
       await leaveHako(hakoId)
       router.push('/')
     } catch (e) {
-      alert('退会処理に失敗しました')
+      alert('退会�E琁E��失敗しました')
       console.error(e)
     }
   }
@@ -118,8 +118,7 @@ export function MobileSidebar({
                   }`}
                 >
                   <BookOpen className={`w-5 h-5 ${isDiaryActive ? 'text-blue-400' : ''}`} />
-                  日記
-                  {hasNewDiary && (
+                  日訁E                  {hasNewDiary && (
                     <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                   )}
                 </Link>
@@ -132,12 +131,12 @@ export function MobileSidebar({
                   href={`/hako/${hakoId}/calendar`} 
                   onClick={onClose} 
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                    pathname.includes(`/hako/${hakoId}/calendar`)
+                    pathname?.includes(`/hako/${hakoId}/calendar`)
                       ? 'bg-white/10 text-white border-white/5' 
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <Calendar className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
+                  <Calendar className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/calendar`) ? 'text-pink-400' : ''}`} />
                   カレンダー
                 </Link>
               )
@@ -149,12 +148,12 @@ export function MobileSidebar({
                   href={`/hako/${hakoId}/gallery`} 
                   onClick={onClose} 
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                    pathname.includes(`/hako/${hakoId}/gallery`)
+                    pathname?.includes(`/hako/${hakoId}/gallery`)
                       ? 'bg-white/10 text-white border-white/5' 
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <ImageIcon className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
+                  <ImageIcon className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/gallery`) ? 'text-emerald-400' : ''}`} />
                   ギャラリー
                 </Link>
               )
@@ -166,13 +165,13 @@ export function MobileSidebar({
                   href={`/hako/${hakoId}/chat`}
                   onClick={onClose}
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                    pathname.includes(`/hako/${hakoId}/chat`)
+                    pathname?.includes(`/hako/${hakoId}/chat`)
                       ? 'bg-white/10 text-white border-white/5 shadow-sm'
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <MessageCircle className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/chat`) ? 'text-[#00c652]' : ''}`} />
-                  <span>チャット</span>
+                  <MessageCircle className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/chat`) ? 'text-[#00c652]' : ''}`} />
+                  <span>チャチE��</span>
                   {unreadChatCount > 0 && (
                     <span className="absolute top-1/2 -translate-y-1/2 right-4 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm shadow-red-500/20">
                       {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -188,12 +187,12 @@ export function MobileSidebar({
                   href={`/hako/${hakoId}/bbs`}
                   onClick={onClose}
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold border relative ${
-                    pathname.includes(`/hako/${hakoId}/bbs`)
+                    pathname?.includes(`/hako/${hakoId}/bbs`)
                       ? 'bg-white/10 text-white border-white/5 shadow-sm'
                       : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <MessageSquare className={`w-5 h-5 ${pathname.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
+                  <MessageSquare className={`w-5 h-5 ${pathname?.includes(`/hako/${hakoId}/bbs`) ? 'text-purple-400' : ''}`} />
                   <span>掲示板</span>
                   {hasNewBbs && (
                     <span className="absolute top-3.5 right-4 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
@@ -223,18 +222,16 @@ export function MobileSidebar({
           }`}
         >
           <Users className={`w-5 h-5 ${pathname === `/hako/${hakoId}/members` ? 'text-orange-400' : ''}`} />
-          メンバー
+          メンバ�E
         </Link>
 
         {isOwner && (
           <div className="space-y-1">
-            <p className="px-4 text-[10px] font-black text-blue-500/50 uppercase tracking-widest mb-2">管理ツール</p>
+            <p className="px-4 text-[10px] font-black text-blue-500/50 uppercase tracking-widest mb-2">管琁E��ール</p>
             <Link href="/owner/dashboard" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-400/70 hover:text-blue-400 hover:bg-blue-500/10 transition-all font-bold">
-              <LayoutDashboard className="w-5 h-5" /> 一覧へ戻る
-            </Link>
+              <LayoutDashboard className="w-5 h-5" /> 一覧へ戻めE            </Link>
             <Link href={`/owner/hako/${hakoId}`} onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-purple-400/70 hover:text-purple-400 hover:bg-purple-500/10 transition-all font-bold">
-              <Settings className="w-5 h-5" /> 箱の設定
-            </Link>
+              <Settings className="w-5 h-5" /> 箱の設宁E            </Link>
           </div>
         )}
 
@@ -271,8 +268,7 @@ export function MobileSidebar({
             className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium text-left"
           >
             <UserMinus className="w-4 h-4" />
-            この箱から退会する
-          </button>
+            こ�E箱から退会すめE          </button>
         )}
       </div>
 
