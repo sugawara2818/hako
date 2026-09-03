@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { PlusSquare, Download } from 'lucide-react'
 
@@ -55,19 +55,20 @@ export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showIOSModal, setShowIOSModal] = useState(false)
   
-  const [clientState, setClientState] = useState({
-    isMounted: false,
-    isIOS: false,
-    isStandalone: false
-  })
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+
+  const isIOS = isMounted ? /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) : false
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isStandalone = isMounted ? (('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches) : false
+  const [isForceStandalone, setIsForceStandalone] = useState(false)
+
+  const effectiveIsStandalone = isStandalone || isForceStandalone
 
   useEffect(() => {
-    const userAgent = window.navigator.userAgent.toLowerCase()
-    const isIOS = /iphone|ipad|ipod/.test(userAgent)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const isStandalone = ('standalone' in window.navigator && (window.navigator as any).standalone) || window.matchMedia('(display-mode: standalone)').matches
-
-    setClientState({ isMounted: true, isIOS, isStandalone })
 
     // Listen for the beforeinstallprompt event (Chrome/Android/Desktop)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -83,7 +84,7 @@ export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
   }, [])
 
   const handleInstallClick = async () => {
-    if (clientState.isIOS) {
+    if (isIOS) {
       setShowIOSModal(true)
       return
     }
@@ -101,15 +102,15 @@ export function InstallButton({ variant = 'sidebar' }: InstallButtonProps) {
     
     if (outcome === 'accepted') {
        // Optional: force hide button by setting pretend-standalone
-       setClientState(prev => ({ ...prev, isStandalone: true }))
+       setIsForceStandalone(true)
     }
   }
 
   // Hide entirely if already installed or not running in a browser environment yet
-  if (!clientState.isMounted || clientState.isStandalone) return null
+  if (!isMounted || effectiveIsStandalone) return null
   
   // On Desktop/Android, if it doesn't fire beforeinstallprompt (e.g., Firefox, or unsupported), hide it unless it's iOS which needs manual flow
-  if (!clientState.isIOS && !deferredPrompt) return null
+  if (!isIOS && !deferredPrompt) return null
 
   if (variant === 'icon') {
     return (

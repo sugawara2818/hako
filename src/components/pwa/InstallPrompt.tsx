@@ -20,16 +20,15 @@ export function InstallPrompt() {
       return // Already installed
     }
 
-    if (/iphone|ipad|ipod/.test(userAgent)) {
-      setPlatform('ios')
-    } else if (/android/.test(userAgent)) {
-      setPlatform('android')
-    }
+    const isIOS = /iphone|ipad|ipod/.test(userAgent)
+    const isAndroid = /android/.test(userAgent)
 
-    // Show prompt after a short delay so it doesn't block immediate rendering
-    if (/iphone|ipad|ipod|android/.test(userAgent)) {
-        const timer = setTimeout(() => setShowPrompt(true), 3000)
-        return () => clearTimeout(timer)
+    if (isIOS || isAndroid) {
+      const timer = setTimeout(() => {
+        setPlatform(isIOS ? 'ios' : 'android')
+        setShowPrompt(true)
+      }, 3000)
+      return () => clearTimeout(timer)
     }
   }, [])
 
